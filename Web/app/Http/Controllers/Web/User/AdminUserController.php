@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Web\User;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -9,12 +11,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Enums\UserRole;
 
-class UserController extends Controller
+class AdminUserController extends Controller
 {
-    public function profile(Request $request)
-    {
-        return response()->json($request->user());
-    }
 
     public function index(Request $request)
     {
