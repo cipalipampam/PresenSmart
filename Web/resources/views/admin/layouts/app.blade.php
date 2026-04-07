@@ -191,26 +191,33 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('admin.users') }}"
-                    class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }}" title="Manajemen User">
-                    <i class="bi bi-people-fill"></i>
-                    <span class="link-text">Manajemen User</span>
+                <a href="{{ route('admin.students.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}" title="Students">
+                    <i class="bi bi-mortarboard-fill"></i>
+                    <span class="link-text">Students</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.employees.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}" title="Employees">
+                    <i class="bi bi-person-badge-fill"></i>
+                    <span class="link-text">Employees</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.attendances.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.attendances.*') ? 'active' : '' }}" title="Attendances">
+                    <i class="bi bi-calendar-check"></i>
+                    <span class="link-text">Attendances</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="{{ route('admin.lokasi') }}"
-                    class="nav-link {{ request()->routeIs('admin.lokasi') ? 'active' : '' }}" title="Lokasi Sekolah">
+                    class="nav-link {{ request()->routeIs('admin.lokasi') || request()->routeIs('admin.locations.*') ? 'active' : '' }}" title="School Location">
                     <i class="bi bi-geo-alt-fill"></i>
-                    <span class="link-text">Lokasi Sekolah</span>
+                    <span class="link-text">Location</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.absen') }}"
-                    class="nav-link {{ request()->routeIs('admin.absen') ? 'active' : '' }}" title="Manajemen Absen">
-                    <i class="bi bi-calendar-check"></i>
-                    <span class="link-text">Manajemen Absen</span>
-                </a>
-            </li
         </ul>
         <div class="mt-auto">
             <form action="{{ route('login') }}" method="POST" class="d-inline">
@@ -263,47 +270,47 @@
             $('[data-toggle="tooltip"]').tooltip()
         })
 
-        // Konfirmasi logout
+        // Logout Confirmation
         function confirmLogout(event) {
             event.preventDefault();
             
-            // Modal konfirmasi logout
+            // Logout confirmation modal
             const modal = `
                 <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Konfirmasi Logout</h5>
+                                <h5 class="modal-title">Logout Confirmation</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
-                                Apakah Anda yakin ingin keluar dari aplikasi?
+                                Are you sure you want to log out?
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                                <button type="button" class="btn btn-danger" id="confirmLogoutBtn">Logout</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" id="confirmLogoutBtn">Log Out</button>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
 
-            // Tambahkan modal ke body
+            // Append modal to body
             $('body').append(modal);
             
-            // Tampilkan modal
+            // Show modal
             $('#logoutModal').modal('show');
 
-            // Tambahkan event listener untuk tombol konfirmasi
+            // Add event listener to confirm button
             $('#confirmLogoutBtn').on('click', function() {
-                // Submit form logout
+                // Submit logout form
                 $('form[action="{{ route('login') }}"]').submit();
             });
         }
 
-        // Tambahkan event listener ke semua tombol logout
+        // Add event listener to all logout buttons
         $(document).ready(function() {
             $('button[type="submit"][title="Logout"]').on('click', confirmLogout);
             $('.dropdown-item.text-danger').on('click', confirmLogout);

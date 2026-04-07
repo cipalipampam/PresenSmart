@@ -22,7 +22,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    Route::controller(SettingController::class)->prefix('lokasi')->group(function () {
+    Route::controller(SettingController::class)->prefix('locations')->group(function () {
         Route::get('/', 'lokasi')->name('lokasi');
         Route::post('/', 'updateLokasi')->name('update_lokasi');
     });

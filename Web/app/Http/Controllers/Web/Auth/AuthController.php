@@ -13,7 +13,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('admin.dashboard');
         }
-        return view('admin.login');
+        return view('admin.auth.login');
     }
 
     public function adminLogin(Request $request)

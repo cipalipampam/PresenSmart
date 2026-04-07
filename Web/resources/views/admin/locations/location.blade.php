@@ -1,8 +1,8 @@
-@extends('admin.layout')
+@extends('admin.layouts.app')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 fw-bold m-0">Edit Lokasi Sekolah</h1>
+        <h1 class="h3 fw-bold m-0">Edit School Location</h1>
         <small class="text-muted">{{ now()->format('l, j F Y') }}</small>
     </div>
 
@@ -17,8 +17,8 @@
         <div class="col-lg-6">
             <div class="card card-custom shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">Pengaturan Koordinat Sekolah</h5>
-                    <form action="{{ route('admin.update_lokasi') }}" method="POST">
+                    <h5 class="card-title mb-4">Coordinate Settings</h5>
+                    <form action="{{ route('admin.update_location') }}" method="POST">
                         @csrf
                         <div class="mb-3">
                             <label for="lat" class="form-label">Latitude</label>
@@ -33,17 +33,17 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="radius" class="form-label">Radius (meter)</label>
+                            <label for="radius" class="form-label">Allowed Radius (meters)</label>
                             <input type="number" class="form-control form-control-lg" id="radius" name="radius"
                                 value="{{ old('radius', $radius) }}" required min="1" placeholder="e.g. 100">
                         </div>
 
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary btn-lg me-2">
-                                <i class="bi bi-save me-1"></i>Simpan Perubahan
+                                <i class="bi bi-save me-1"></i>Save Changes
                             </button>
                             <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-lg">
-                                <i class="bi bi-x-circle me-1"></i>Batal
+                                <i class="bi bi-x-circle me-1"></i>Cancel
                             </a>
                         </div>
                     </form>

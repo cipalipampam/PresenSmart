@@ -1,10 +1,10 @@
-@extends('admin.layout')
+@extends('admin.layouts.app')
 
 @section('content')
 <div class="container-fluid">
     <div class="row mb-4 align-items-center">
         <div class="col-md-6">
-            <h1 class="h2 fw-bold text-primary mb-2">Dashboard Admin</h1>
+            <h1 class="h2 fw-bold text-primary mb-2">Admin Dashboard</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
                     <li class="breadcrumb-item"><a href="#" class="text-muted">Home</a></li>
@@ -15,13 +15,13 @@
         <div class="col-md-6 text-md-end">
             <div class="d-inline-block bg-light rounded p-2">
                 <i class="bi bi-calendar-check me-2 text-primary"></i>
-                <span class="text-muted">{{ now()->translatedFormat('l, d F Y') }}</span>
+                <span class="text-muted">{{ now()->format('l, d F Y') }}</span>
             </div>
         </div>
     </div>
 
     <div class="row g-4 mb-5">
-        {{-- Statistik Utama --}}
+        {{-- Main Stats --}}
         <div class="col-md-4">
             <div class="card border-0 shadow-sm hover-lift">
                 <div class="card-body d-flex align-items-center">
@@ -29,11 +29,11 @@
                         <i class="bi bi-people-fill text-primary fs-3"></i>
                     </div>
                     <div>
-                        <h6 class="text-uppercase text-muted mb-1">Total Pengguna</h6>
+                        <h6 class="text-uppercase text-muted mb-1">Total Students</h6>
                         <div class="d-flex align-items-baseline">
                             <h2 class="h3 mb-0 me-2">{{ $userCount }}</h2>
                             <small class="text-success">
-                                <i class="bi bi-arrow-up"></i> 5%
+                                <i class="bi bi-arrow-up"></i> Active
                             </small>
                         </div>
                     </div>
@@ -48,11 +48,11 @@
                         <i class="bi bi-calendar-check-fill text-success fs-3"></i>
                     </div>
                     <div>
-                        <h6 class="text-uppercase text-muted mb-1">Presensi Hari Ini</h6>
+                        <h6 class="text-uppercase text-muted mb-1">Today's Presence</h6>
                         <div class="d-flex align-items-baseline">
                             <h2 class="h3 mb-0 me-2">{{ $todayPresensiCount }}</h2>
                             <small class="text-success">
-                                <i class="bi bi-graph-up"></i> Aktif
+                                <i class="bi bi-graph-up"></i> Active
                             </small>
                         </div>
                     </div>
@@ -67,7 +67,7 @@
                         <i class="bi bi-geo-alt-fill text-warning fs-3"></i>
                     </div>
                     <div>
-                        <h6 class="text-uppercase text-muted mb-1">Lokasi Sekolah</h6>
+                        <h6 class="text-uppercase text-muted mb-1">School Location</h6>
                         <div class="d-flex align-items-baseline">
                             <h6 class="mb-0 text-dark">
                                 {{ $setting['school_lat'] }}, {{ $setting['school_long'] }}
@@ -84,22 +84,22 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white border-0 pt-4 pb-0">
                     <h5 class="card-title text-primary mb-3">
-                        <i class="bi bi-list-check me-2"></i>Detail Presensi Hari Ini
+                        <i class="bi bi-list-check me-2"></i>Today's Attendance Detail
                     </h5>
                 </div>
                 <div class="card-body pt-2">
                     @if ($todayPresensi->isEmpty())
                         <div class="alert alert-info text-center" role="alert">
-                            <i class="bi bi-info-circle me-2"></i>Belum ada presensi hari ini
+                            <i class="bi bi-info-circle me-2"></i>No attendance recorded today
                         </div>
                     @else
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Nama Siswa</th>
+                                        <th>Name</th>
                                         <th>Status</th>
-                                        <th>Waktu</th>
+                                        <th>Time</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -113,16 +113,16 @@
                                             </td>
                                             <td>
                                                 <span class="badge 
-                                                    @if($presensi->status == 'hadir') bg-success
-                                                    @elseif($presensi->status == 'izin') bg-warning
-                                                    @elseif($presensi->status == 'sakit') bg-info
+                                                    @if($presensi->status == 'present') bg-success
+                                                    @elseif($presensi->status == 'permission') bg-warning
+                                                    @elseif($presensi->status == 'sick') bg-info
                                                     @else bg-danger
                                                     @endif">
-                                                    {{ ucfirst($presensi->status) }}
+                                                    {{ $presensi->status == 'present' ? 'Present' : ($presensi->status == 'permission' ? 'Permission' : ($presensi->status == 'sick' ? 'Sick' : 'Absent')) }}
                                                 </span>
                                             </td>
                                             <td>
-                                                {{ \Carbon\Carbon::parse($presensi->waktu)->format('H:i') }}
+                                                {{ \Carbon\Carbon::parse($presensi->recorded_at)->format('H:i') }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -133,8 +133,8 @@
                         {{-- Pagination --}}
                         <div class="d-flex justify-content-between align-items-center mt-3">
                             <div>
-                                Menampilkan {{ $todayPresensi->firstItem() }} - {{ $todayPresensi->lastItem() }} 
-                                dari {{ $todayPresensi->total() }} data
+                                Showing {{ $todayPresensi->firstItem() }} - {{ $todayPresensi->lastItem() }} 
+                                of {{ $todayPresensi->total() }} records
                             </div>
                             <div>
                                 {{ $todayPresensi->links('pagination::bootstrap-4') }}
@@ -149,25 +149,25 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 pt-4 pb-0">
                     <h5 class="card-title text-primary mb-3">
-                        <i class="bi bi-bar-chart me-2"></i>Ringkasan Presensi
+                        <i class="bi bi-bar-chart me-2"></i>Attendance Summary
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Hadir</span>
-                        <strong>{{ $todayPresensi->where('status', 'hadir')->count() }}</strong>
+                        <span class="text-muted">Present</span>
+                        <strong>{{ $todayPresensi->where('status', 'present')->count() }}</strong>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Izin</span>
-                        <strong>{{ $todayPresensi->where('status', 'izin')->count() }}</strong>
+                        <span class="text-muted">Permission</span>
+                        <strong>{{ $todayPresensi->where('status', 'permission')->count() }}</strong>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Sakit</span>
-                        <strong>{{ $todayPresensi->where('status', 'sakit')->count() }}</strong>
+                        <span class="text-muted">Sick</span>
+                        <strong>{{ $todayPresensi->where('status', 'sick')->count() }}</strong>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span class="text-muted">Alpha</span>
-                        <strong>{{ $todayPresensi->where('status', 'alpha')->count() }}</strong>
+                        <span class="text-muted">Absent</span>
+                        <strong>{{ $todayPresensi->where('status', 'absent')->count() }}</strong>
                     </div>
                 </div>
             </div>

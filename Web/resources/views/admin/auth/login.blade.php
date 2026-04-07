@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login Admin</title>
+    <title>Admin Login - E-Presensi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
         body {
@@ -51,7 +51,7 @@
             color: #fff;
         }
     </style>
-    <!-- Optional: jika ingin pakai ikon dari Bootstrap Icons -->
+    <!-- Optional: bootstrap icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
 </head>
 
@@ -66,22 +66,22 @@
         <form action="{{ route('admin.login') }}" method="POST">
             @csrf
             <div class="mb-3">
-                <label for="email" class="form-label">Alamat Email</label>
+                <label for="email" class="form-label">Email Address</label>
                 <input type="email" class="form-control form-control-lg" id="email" name="email" required autofocus />
             </div>
             <div class="mb-3">
-                <label for="password" class="form-label">Kata Sandi</label>
+                <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control form-control-lg" id="password" name="password" required />
             </div>
             @if ($errors->any())
                 <div class="alert alert-danger py-2">{{ $errors->first() }}</div>
             @endif
             <button type="submit" class="btn btn-primary btn-lg w-100">
-                Masuk
+                Log In
             </button>
         </form>
         {{-- <div class="text-center mt-3">
-            <small class="text-muted">&copy; {{ date('Y') }} Nama Perusahaan Anda</small>
+            <small class="text-muted">&copy; {{ date('Y') }} Your Company Name</small>
         </div> --}}
     </div>
 

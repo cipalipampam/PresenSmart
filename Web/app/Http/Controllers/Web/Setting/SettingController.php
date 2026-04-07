@@ -13,7 +13,7 @@ class SettingController extends Controller
         $lat = Setting::where('key', 'school_lat')->first()?->value;
         $long = Setting::where('key', 'school_long')->first()?->value;
         $radius = Setting::where('key', 'school_radius')->first()?->value;
-        return view('admin.lokasi', compact('lat', 'long', 'radius'));
+        return view('admin.locations.location', compact('lat', 'long', 'radius'));
     }
 
     public function updateLokasi(Request $request)
@@ -21,6 +21,6 @@ class SettingController extends Controller
         Setting::updateOrCreate(['key' => 'school_lat'], ['value' => $request->lat]);
         Setting::updateOrCreate(['key' => 'school_long'], ['value' => $request->long]);
         Setting::updateOrCreate(['key' => 'school_radius'], ['value' => $request->radius]);
-        return redirect()->route('admin.lokasi')->with('success', 'Lokasi sekolah diperbarui!');
+        return redirect()->route('admin.lokasi')->with('success', 'Location settings updated successfully!');
     }
 }
