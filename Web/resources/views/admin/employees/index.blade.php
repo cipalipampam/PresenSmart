@@ -63,7 +63,7 @@
                             @endif
                         </td>
                         <td>{{ $user->name }}</td>
-                        <td>{{ $user->employee->employee_number ?? '-' }}</td>
+                        <td>{{ $user->employee->nip ?? '-' }}</td>
                         <td>{{ $user->employee->position ?? '-' }}</td>
                         <td>
                             @if($user->hasRole('guru'))

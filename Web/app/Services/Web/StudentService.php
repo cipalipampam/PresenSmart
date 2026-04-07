@@ -24,8 +24,8 @@ class StudentService
         $user->assignRole('siswa');
 
         $user->student()->create([
-            'student_number' => $data['student_number'] ?? null,
-            'national_student_number' => $data['national_student_number'] ?? null,
+            'nis' => $data['nis'] ?? null,
+            'nisn' => $data['nisn'] ?? null,
             'grade' => $data['grade'] ?? null,
             'gender' => $data['gender'] ?? null,
             'place_of_birth' => $data['place_of_birth'] ?? null,
@@ -60,8 +60,8 @@ class StudentService
         $user->student()->updateOrCreate(
             ['user_id' => $user->id],
             [
-                'student_number' => $data['student_number'] ?? null,
-                'national_student_number' => $data['national_student_number'] ?? null,
+                'nis' => $data['nis'] ?? null,
+                'nisn' => $data['nisn'] ?? null,
                 'grade' => $data['grade'] ?? null,
                 'gender' => $data['gender'] ?? null,
                 'place_of_birth' => $data['place_of_birth'] ?? null,

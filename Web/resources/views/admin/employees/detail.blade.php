@@ -38,7 +38,7 @@
                                     </tr>
                                     <tr>
                                         <th>Employee ID (NIP)</th>
-                                        <td>{{ $employee->employee->employee_number ?? '-' }}</td>
+                                        <td>{{ $employee->employee->nip ?? '-' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Position / Subject</th>

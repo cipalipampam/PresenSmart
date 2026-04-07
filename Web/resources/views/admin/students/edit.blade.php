@@ -58,12 +58,12 @@
                         <h6 class="text-warning text-darken-3 mb-3"><i class="bi bi-mortarboard"></i> Student Profile Data</h6>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="national_student_number" class="form-label">NISN (National ID)</label>
-                                <input type="text" class="form-control" id="national_student_number" name="national_student_number" value="{{ old('national_student_number', $student->student->national_student_number ?? '') }}">
+                                <label for="nisn" class="form-label">NISN (National ID)</label>
+                                <input type="text" class="form-control" id="nisn" name="nisn" value="{{ old('nisn', $student->student->nisn ?? '') }}">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="student_number" class="form-label">Student ID (NIS)</label>
-                                <input type="text" class="form-control" id="student_number" name="student_number" value="{{ old('student_number', $student->student->student_number ?? '') }}">
+                                <label for="nis" class="form-label">Student ID (NIS)</label>
+                                <input type="text" class="form-control" id="nis" name="nis" value="{{ old('nis', $student->student->nis ?? '') }}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="grade" class="form-label">Grade / Class</label>

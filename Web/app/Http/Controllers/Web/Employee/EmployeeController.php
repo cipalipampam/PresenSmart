@@ -30,7 +30,7 @@ class EmployeeController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhereHas('employee', function($eq) use ($search) {
-                      $eq->where('employee_number', 'like', "%{$search}%");
+                      $eq->where('nip', 'like', "%{$search}%");
                   });
             });
         }

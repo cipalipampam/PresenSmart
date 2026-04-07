@@ -18,7 +18,7 @@ class StoreEmployeeRequest extends FormRequest
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
             'role' => 'required|in:guru,staff',
-            'employee_number' => 'nullable|unique:employees,employee_number',
+            'nip' => 'nullable|unique:employees,nip',
             'position' => 'nullable|string|max:100',
             'gender' => 'nullable|in:male,female',
             'place_of_birth' => 'nullable|string|max:100',

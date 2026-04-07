@@ -24,7 +24,7 @@ class EmployeeService
         $user->assignRole($data['role']);
 
         $user->employee()->create([
-            'employee_number' => $data['employee_number'] ?? null,
+            'nip' => $data['nip'] ?? null,
             'position' => $data['position'] ?? null,
             'gender' => $data['gender'] ?? null,
             'place_of_birth' => $data['place_of_birth'] ?? null,
@@ -61,7 +61,7 @@ class EmployeeService
         $user->employee()->updateOrCreate(
             ['user_id' => $user->id],
             [
-                'employee_number' => $data['employee_number'] ?? null,
+                'nip' => $data['nip'] ?? null,
                 'position' => $data['position'] ?? null,
                 'gender' => $data['gender'] ?? null,
                 'place_of_birth' => $data['place_of_birth'] ?? null,

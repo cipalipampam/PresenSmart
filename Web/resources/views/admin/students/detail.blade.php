@@ -38,11 +38,11 @@
                                     </tr>
                                     <tr>
                                         <th>NISN</th>
-                                        <td>{{ $student->student->national_student_number ?? '-' }}</td>
+                                        <td>{{ $student->student->nisn ?? '-' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Student ID (NIS)</th>
-                                        <td>{{ $student->student->student_number ?? '-' }}</td>
+                                        <td>{{ $student->student->nis ?? '-' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Grade</th>

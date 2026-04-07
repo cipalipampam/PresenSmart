@@ -24,7 +24,7 @@ class UpdateEmployeeRequest extends FormRequest
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|min:6',
             'role' => 'required|in:guru,staff',
-            'employee_number' => ['nullable', Rule::unique('employees', 'employee_number')->ignore($employeeId)],
+            'nip' => ['nullable', Rule::unique('employees', 'nip')->ignore($employeeId)],
             'position' => 'nullable|string|max:100',
             'gender' => 'nullable|in:male,female',
             'place_of_birth' => 'nullable|string|max:100',

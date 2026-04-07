@@ -64,8 +64,8 @@
                             @endif
                         </td>
                         <td>{{ $user->name }}</td>
-                        <td>{{ $user->student->national_student_number ?? '-' }}</td>
-                        <td>{{ $user->student->student_number ?? '-' }}</td>
+                        <td>{{ $user->student->nisn ?? '-' }}</td>
+                        <td>{{ $user->student->nis ?? '-' }}</td>
                         <td>{{ $user->student->grade ?? '-' }}</td>
                         <td>{{ $user->email }}</td>
                         <td>

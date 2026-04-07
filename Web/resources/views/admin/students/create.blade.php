@@ -47,12 +47,12 @@
                         <h6 class="text-primary mb-3"><i class="bi bi-mortarboard"></i> Student Profile Data</h6>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="national_student_number" class="form-label">NISN (National ID)</label>
-                                <input type="text" class="form-control @error('national_student_number') is-invalid @enderror" id="national_student_number" name="national_student_number" value="{{ old('national_student_number') }}">
+                                <label for="nisn" class="form-label">NISN (National ID)</label>
+                                <input type="text" class="form-control @error('nisn') is-invalid @enderror" id="nisn" name="nisn" value="{{ old('nisn') }}">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="student_number" class="form-label">Student ID (NIS)</label>
-                                <input type="text" class="form-control @error('student_number') is-invalid @enderror" id="student_number" name="student_number" value="{{ old('student_number') }}">
+                                <label for="nis" class="form-label">Student ID (NIS)</label>
+                                <input type="text" class="form-control @error('nis') is-invalid @enderror" id="nis" name="nis" value="{{ old('nis') }}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="grade" class="form-label">Grade / Class</label>

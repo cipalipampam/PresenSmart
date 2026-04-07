@@ -66,8 +66,8 @@
                         <h6 class="text-warning text-darken-3 mb-3"><i class="bi bi-briefcase"></i> Employee Profile Data</h6>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="employee_number" class="form-label">NIP (National ID)</label>
-                                <input type="text" class="form-control" id="employee_number" name="employee_number" value="{{ old('employee_number', $employee->employee->employee_number ?? '') }}">
+                                <label for="nip" class="form-label">NIP (National ID)</label>
+                                <input type="text" class="form-control" id="nip" name="nip" value="{{ old('nip', $employee->employee->nip ?? '') }}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="position" class="form-label">Position / Academic Subject</label>
