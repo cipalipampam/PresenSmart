@@ -45,5 +45,15 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- iOS Permission Prompts -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Aplikasi ini memerlukan akses logikasi untuk mendeteksi radius sekolah saat check-in kehadiran.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Aplikasi ini memerlukan akses lokasi untuk verifikasi kehadiran valid.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Aplikasi ini memerlukan kamera untuk mengambil foto bukti/surat medis.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Aplikasi ini memerlukan galeri untuk melampirkan file izin/sakit.</string>
 </dict>
 </plist>

@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'login_page.dart';
-import 'dashboard_page.dart';
-import 'session_manager.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
-class SplashPage extends StatefulWidget {
-  const SplashPage({Key? key}) : super(key: key);
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({Key? key}) : super(key: key);
 
   @override
-  _SplashPageState createState() => _SplashPageState();
+  _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashPageState extends State<SplashPage>
-    with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
 
@@ -20,14 +17,6 @@ class _SplashPageState extends State<SplashPage>
   void initState() {
     super.initState();
 
-    // Set layar penuh dan orientasi potret
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-
-    // Animasi fade in dan scale
     _animationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -42,35 +31,25 @@ class _SplashPageState extends State<SplashPage>
   }
 
   Future<void> _checkSession() async {
-    final token = await SessionManager.getToken();
-    final user = await SessionManager.getUser();
-    await Future.delayed(
-      const Duration(seconds: 2),
-    ); // biar animasi tetap muncul sebentar
-    if (token != null && user != null) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => DashboardPage(token: token, user: user),
-        ),
-      );
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    // Animate for at least 2 seconds before checking
+    await Future.delayed(const Duration(seconds: 2));
+    
+    // Check if Secure Storage has token
+    final isActive = await authProvider.initializeAuth();
+
+    if (!mounted) return;
+
+    if (isActive) {
+      Navigator.of(context).pushReplacementNamed('/dashboard');
     } else {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
+      Navigator.of(context).pushReplacementNamed('/login');
     }
   }
 
   @override
   void dispose() {
-    // Kembalikan pengaturan sistem UI
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-
     _animationController.dispose();
     super.dispose();
   }
@@ -81,7 +60,6 @@ class _SplashPageState extends State<SplashPage>
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // Gradient background
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -105,7 +83,6 @@ class _SplashPageState extends State<SplashPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo atau ikon
                 FadeTransition(
                   opacity: _animation,
                   child: ScaleTransition(
@@ -124,7 +101,7 @@ class _SplashPageState extends State<SplashPage>
                           ),
                         ],
                       ),
-                      child: Center(
+                      child: const Center(
                         child: Icon(
                           Icons.school_rounded,
                           size: 80,
@@ -135,11 +112,10 @@ class _SplashPageState extends State<SplashPage>
                   ),
                 ),
                 const SizedBox(height: 30),
-                // Teks tambahan
                 FadeTransition(
                   opacity: _animation,
                   child: Text(
-                    'E-Presensi',
+                    'PresenSmart',
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
@@ -163,7 +139,6 @@ class _SplashPageState extends State<SplashPage>
   }
 }
 
-// Tambahkan custom clipper wave untuk splash di luar _SplashPageState
 class _SplashWaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
@@ -174,17 +149,9 @@ class _SplashWaveClipper extends CustomClipper<Path> {
     var secondControlPoint = Offset(3 * size.width / 4, size.height - 60);
     var secondEndPoint = Offset(size.width, size.height - 20);
     path.quadraticBezierTo(
-      firstControlPoint.dx,
-      firstControlPoint.dy,
-      firstEndPoint.dx,
-      firstEndPoint.dy,
-    );
+      firstControlPoint.dx, firstControlPoint.dy, firstEndPoint.dx, firstEndPoint.dy);
     path.quadraticBezierTo(
-      secondControlPoint.dx,
-      secondControlPoint.dy,
-      secondEndPoint.dx,
-      secondEndPoint.dy,
-    );
+      secondControlPoint.dx, secondControlPoint.dy, secondEndPoint.dx, secondEndPoint.dy);
     path.lineTo(size.width, 0);
     path.close();
     return path;

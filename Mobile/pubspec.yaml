@@ -33,13 +33,15 @@ dependencies:
   http: ^0.13.6
   geolocator: ^9.0.2
   flutter_map: ^4.0.0
-  latlong2: ^0.8.2  # Turunkan versi sesuai saran
+  latlong2: ^0.8.2
   image_picker: ^1.0.4
   intl: ^0.20.2
   flutter_animate: ^4.5.0
   fl_chart: ^0.66.2
   cached_network_image: ^3.2.3
   shared_preferences: ^2.2.2
+  provider: ^6.1.1
+  dio: ^5.4.0
 
 dev_dependencies:
   flutter_test:

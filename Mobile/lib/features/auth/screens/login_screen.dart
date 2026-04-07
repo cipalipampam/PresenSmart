@@ -1,74 +1,41 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'dashboard_page.dart';
-import 'api_service.dart';
-import 'session_manager.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _isLoading = false;
   bool _obscurePassword = true;
-  String? _errorMessage;
 
   Future<void> _login() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    try {
-      final response = await ApiService.login(
-        _emailController.text,
-        _passwordController.text,
-      );
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200 && data['token'] != null) {
-        // Simpan session pakai SessionManager
-        await SessionManager.saveSession(data['token'], data['user']);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) =>
-                    DashboardPage(token: data['token'], user: data['user']),
-          ),
-        );
-      } else {
-        setState(() {
-          _errorMessage = data['error'] ?? 'Login gagal';
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_errorMessage!),
-            backgroundColor: Colors.red.shade700,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Terjadi kesalahan koneksi';
-      });
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    final success = await authProvider.login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
+
+    if (success) {
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_errorMessage!),
+          content: Text(authProvider.errorMessage ?? 'Login gagal'),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
         ),
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -109,7 +76,6 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Logo atau ikon aplikasi
                           Padding(
                             padding: const EdgeInsets.only(bottom: 24.0),
                             child: Hero(
@@ -126,12 +92,10 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           Text(
-                                'E-Presensi Siswa',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineSmall?.copyWith(
+                                'PresenSmart',
+                                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF3A8D99),
+                                  color: const Color(0xFF3A8D99),
                                 ),
                               )
                               .animate()
@@ -142,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                                 controller: _emailController,
                                 decoration: InputDecoration(
                                   labelText: 'Email',
-                                  prefixIcon: Icon(
+                                  prefixIcon: const Icon(
                                     Icons.email_outlined,
                                     color: Color(0xFF43C59E),
                                   ),
@@ -151,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
-                                    borderSide: BorderSide(
+                                    borderSide: const BorderSide(
                                       color: Color(0xFF43C59E),
                                       width: 2,
                                     ),
@@ -160,12 +124,6 @@ class _LoginPageState extends State<LoginPage> {
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Email wajib diisi';
-                                  }
-                                  final emailRegex = RegExp(
-                                    r'^[^@\s]+@[^@\s]+\.[^@\s]+',
-                                  );
-                                  if (!emailRegex.hasMatch(value)) {
-                                    return 'Format email tidak valid';
                                   }
                                   return null;
                                 },
@@ -179,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                                 controller: _passwordController,
                                 decoration: InputDecoration(
                                   labelText: 'Password',
-                                  prefixIcon: Icon(
+                                  prefixIcon: const Icon(
                                     Icons.lock_outline,
                                     color: Color(0xFF43C59E),
                                   ),
@@ -188,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                                       _obscurePassword
                                           ? Icons.visibility_off_outlined
                                           : Icons.visibility_outlined,
-                                      color: Color(0xFF43C59E),
+                                      color: const Color(0xFF43C59E),
                                     ),
                                     onPressed: () {
                                       setState(() {
@@ -201,7 +159,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
-                                    borderSide: BorderSide(
+                                    borderSide: const BorderSide(
                                       color: Color(0xFF43C59E),
                                       width: 2,
                                     ),
@@ -218,50 +176,49 @@ class _LoginPageState extends State<LoginPage> {
                               .fadeIn(duration: 500.ms)
                               .slideX(begin: 0.1, end: 0),
                           const SizedBox(height: 28),
-                          SizedBox(
+                          
+                          Consumer<AuthProvider>(
+                            builder: (context, authProvider, child) {
+                              return SizedBox(
                                 width: double.infinity,
                                 height: 50,
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Color(0xFF43C59E),
+                                    backgroundColor: const Color(0xFF43C59E),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                   ),
-                                  onPressed:
-                                      _isLoading
-                                          ? null
-                                          : () {
-                                            if (_formKey.currentState!
-                                                .validate()) {
-                                              _login();
-                                            }
-                                          },
-                                  child:
-                                      _isLoading
-                                          ? const SizedBox(
-                                            height: 24,
-                                            width: 24,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 3,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                          : const Text(
-                                            'Login',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                  onPressed: authProvider.isLoading
+                                      ? null
+                                      : () {
+                                          if (_formKey.currentState!.validate()) {
+                                            _login();
+                                          }
+                                        },
+                                  child: authProvider.isLoading
+                                      ? const SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 3,
+                                            color: Colors.white,
                                           ),
+                                        )
+                                      : const Text(
+                                          'Login',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                 ),
-                              )
-                              .animate()
-                              .fadeIn(duration: 500.ms)
-                              .scale(
-                                begin: Offset(0.9, 0.9),
-                                end: Offset(1, 1),
-                              ),
+                              ).animate().fadeIn(duration: 500.ms).scale(
+                                    begin: const Offset(0.9, 0.9),
+                                    end: const Offset(1, 1),
+                                  );
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -273,5 +230,12 @@ class _LoginPageState extends State<LoginPage> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }
