@@ -3,35 +3,69 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Auth\LoginRequest;
+use App\Services\Api\Auth\AuthService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\User;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    protected AuthService $authService;
+
+    public function __construct(AuthService $authService)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        $this->authService = $authService;
+    }
 
-        $user = User::where('email', $request->email)->first();
+    /**
+     * Handle user login.
+     */
+    public function login(LoginRequest $request): JsonResponse
+    {
+        try {
+            $data = $this->authService->login($request->validated());
 
-        if (!$user || !\Hash::check($request->password, $user->password)) {
-            return response()->json(['error' => 'Email atau password salah'], 401);
+            return response()->json([
+                'success' => true,
+                'message' => 'Login berhasil',
+                'data' => [
+                    'token' => $data['token'],
+                    'user' => $data['user'],
+                    'role'  => $data['role']
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 401);
         }
+    }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+    /**
+     * Handle user logout.
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        $this->authService->logout($request->user());
 
         return response()->json([
-            'token' => $token,
-            'user' => $user,
+            'success' => true,
+            'message' => 'Logout berhasil'
         ]);
     }
 
-    public function logout(Request $request)
+    /**
+     * Get authenticated user data.
+     */
+    public function user(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Logged out']);
+        $userData = $this->authService->getProfile($request->user());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil berhasil diambil',
+            'data' => $userData
+        ]);
     }
 }
