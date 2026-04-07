@@ -12,6 +12,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/login', function () {
+    return redirect()->route('admin.login_form');
+})->name('login');
+
 Route::controller(AuthController::class)->group(function () {
     Route::get('/admin/login', 'showAdminLogin')->name('admin.login_form');
     Route::post('/admin/login', 'adminLogin')->name('admin.login');
@@ -23,8 +27,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     Route::controller(SettingController::class)->prefix('locations')->group(function () {
-        Route::get('/', 'lokasi')->name('lokasi');
-        Route::post('/', 'updateLokasi')->name('update_lokasi');
+        Route::get('/', 'location')->name('location');
+        Route::post('/', 'updateLocation')->name('update_location');
     });
 
     // Delegated to decoupled StudentController

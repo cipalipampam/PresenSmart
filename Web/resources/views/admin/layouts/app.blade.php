@@ -212,15 +212,15 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('admin.lokasi') }}"
-                    class="nav-link {{ request()->routeIs('admin.lokasi') || request()->routeIs('admin.locations.*') ? 'active' : '' }}" title="School Location">
+                <a href="{{ route('admin.location') }}"
+                    class="nav-link {{ request()->routeIs('admin.location') || request()->routeIs('admin.locations.*') ? 'active' : '' }}" title="School Location">
                     <i class="bi bi-geo-alt-fill"></i>
                     <span class="link-text">Location</span>
                 </a>
             </li>
         </ul>
         <div class="mt-auto">
-            <form action="{{ route('login') }}" method="POST" class="d-inline">
+            <form action="{{ route('logout') }}" method="POST" class="d-inline">
                 @csrf
                 <button type="submit" class="nav-link text-light bg-transparent border-0" title="Logout">
                     <i class="bi bi-box-arrow-right"></i>
@@ -245,7 +245,7 @@
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><form action="{{ route('login') }}" method="POST" class="d-inline">
+                        <li><form action="{{ route('logout') }}" method="POST" class="d-inline">
                             @csrf
                             <button type="submit" class="dropdown-item text-danger">
                                 <i class="bi bi-box-arrow-right me-2"></i>Logout
@@ -306,7 +306,7 @@
             // Add event listener to confirm button
             $('#confirmLogoutBtn').on('click', function() {
                 // Submit logout form
-                $('form[action="{{ route('login') }}"]').submit();
+                $('form[action="{{ route('logout') }}"]').submit();
             });
         }
 

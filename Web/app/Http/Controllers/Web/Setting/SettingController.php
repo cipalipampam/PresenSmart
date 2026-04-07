@@ -8,7 +8,7 @@ use App\Models\Setting;
 
 class SettingController extends Controller
 {
-    public function lokasi()
+    public function location()
     {
         $lat = Setting::where('key', 'school_lat')->first()?->value;
         $long = Setting::where('key', 'school_long')->first()?->value;
@@ -16,11 +16,11 @@ class SettingController extends Controller
         return view('admin.locations.location', compact('lat', 'long', 'radius'));
     }
 
-    public function updateLokasi(Request $request)
+    public function updateLocation(Request $request)
     {
         Setting::updateOrCreate(['key' => 'school_lat'], ['value' => $request->lat]);
         Setting::updateOrCreate(['key' => 'school_long'], ['value' => $request->long]);
         Setting::updateOrCreate(['key' => 'school_radius'], ['value' => $request->radius]);
-        return redirect()->route('admin.lokasi')->with('success', 'Location settings updated successfully!');
+        return redirect()->route('admin.location')->with('success', 'Location settings updated successfully!');
     }
 }
