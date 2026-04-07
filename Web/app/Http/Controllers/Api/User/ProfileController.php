@@ -9,6 +9,9 @@ class ProfileController extends Controller
 {
     public function profile(Request $request)
     {
-        return response()->json($request->user());
+        $user = $request->user()->load(['student', 'employee']);
+        $data = $user->toArray();
+        $data['role'] = $user->getRoleNames()->first() ?? 'user';
+        return response()->json($data);
     }
 }
