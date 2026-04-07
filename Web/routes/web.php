@@ -2,11 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\Auth\AuthController;
-use App\Http\Controllers\Web\User\AdminUserController;
 use App\Http\Controllers\Web\Setting\SettingController;
 use App\Http\Controllers\Web\Dashboard\DashboardController;
-use App\Http\Controllers\Web\Presensi\AbsenController;
-use App\Http\Controllers\Web\Presensi\AdminPresensiController;
+use App\Http\Controllers\Web\Attendance\AdminAttendanceController;
+use App\Http\Controllers\Web\Student\StudentController;
+use App\Http\Controllers\Web\Employee\EmployeeController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,53 +18,45 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/logout', 'adminLogout')->name('logout'); 
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
     
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
     Route::controller(SettingController::class)->prefix('lokasi')->group(function () {
         Route::get('/', 'lokasi')->name('lokasi');
         Route::post('/', 'updateLokasi')->name('update_lokasi');
     });
 
-    Route::controller(AdminUserController::class)->prefix('users')->group(function () {
-        Route::get('/', 'index')->name('users');
-        Route::get('/create', 'create')->name('users.create');
-        Route::post('/', 'store')->name('users.store');
-        Route::get('/{id}', 'show')->name('users.show');
-        Route::get('/{id}/edit', 'edit')->name('users.edit');
-        Route::put('/{id}', 'update')->name('users.update');
-        Route::delete('/{id}', 'destroy')->name('users.destroy');
+    // Delegated to decoupled StudentController
+    Route::controller(StudentController::class)->prefix('students')->name('students.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{student}', 'show')->name('show');
+        Route::get('/{student}/edit', 'edit')->name('edit');
+        Route::put('/{student}', 'update')->name('update');
+        Route::delete('/{student}', 'destroy')->name('destroy');
     });
 
-    Route::controller(AbsenController::class)->prefix('absen')->group(function () {
-        Route::get('/', 'index')->name('absen');
-        Route::get('/create', 'createAbsen')->name('absen_create');
-        Route::post('/create', 'storeAbsen')->name('absen_store');
-        Route::get('/{id}/edit', 'editAbsen')->name('absen_edit');
-        Route::post('/{id}/update', 'updateAbsen')->name('absen_update');
-        Route::post('/{id}/delete', 'deleteAbsen')->name('absen_delete');
-        
-        Route::get('/{id}/show', 'show')->name('absen.show');
-        Route::get('/{id}/edit-presensi', 'edit')->name('absen.edit');
-        Route::put('/{id}/update-presensi', 'update')->name('absen.update');
-        Route::delete('/{id}/hapus-presensi', 'destroy')->name('absen.destroy');
+    // Delegated to decoupled EmployeeController
+    Route::controller(EmployeeController::class)->prefix('employees')->name('employees.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{employee}', 'show')->name('show');
+        Route::get('/{employee}/edit', 'edit')->name('edit');
+        Route::put('/{employee}', 'update')->name('update');
+        Route::delete('/{employee}', 'destroy')->name('destroy');
     });
-    
-    Route::controller(AdminPresensiController::class)->prefix('presensi')->name('presensi.')->group(function () {
-        Route::get('/', 'adminIndex')->name('index');
-        Route::get('/{id}', 'adminShow')->name('show');
-        Route::get('/{id}/edit', 'adminEdit')->name('edit');
-        Route::put('/{id}', 'adminUpdate')->name('update');
-        Route::delete('/{id}', 'adminDestroy')->name('destroy');
-    });
-    
-    // Utilities dari Print Absen dari AdminPresensiController
-    Route::get('/absen/print', [AdminPresensiController::class, 'print'])->name('absen.print');
-});
 
-// Endpoint Utilities & CronJobs
-Route::controller(AdminPresensiController::class)->group(function () {
-    Route::get('/test-alpha-presensi', 'checkAndRecordAlpha')->name('test.alpha.presensi');
-    Route::get('/debug-presensi-status', 'debugPresensiStatus')->name('debug.presensi.status');
-    Route::get('/presensi/stats', 'getPresensiStats')->name('presensi.stats');
+    Route::controller(AdminAttendanceController::class)->prefix('attendances')->name('attendances.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{id}', 'show')->name('show');
+        Route::get('/{id}/edit', 'edit')->name('edit');
+        Route::put('/{id}', 'update')->name('update');
+        Route::delete('/{id}', 'destroy')->name('destroy');
+        Route::get('/report/print', 'print')->name('print');
+    });
 });
