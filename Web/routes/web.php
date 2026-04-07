@@ -12,68 +12,59 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Route Login Admin
-Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login_form');
-Route::post('/admin/login', [AuthController::class, 'adminLogin'])->name('admin.login');
-
-// Route Logout
-Route::post('/logout', [AuthController::class, 'adminLogout'])->name('login');
-
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
-    Route::get('/lokasi', [SettingController::class, 'lokasi'])->name('lokasi');
-    Route::post('/lokasi', [SettingController::class, 'updateLokasi'])->name('update_lokasi');
-
-    // Route logout admin
-    Route::post('/logout', [AuthController::class, 'adminLogout'])->name('logout');
-
-    // Manajemen User
-    Route::get('/users', [AdminUserController::class, 'index'])->name('users');
-    Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
-    Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
-    Route::get('/users/{id}', [AdminUserController::class, 'show'])->name('users.show');
-    Route::get('/users/{id}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{id}', [AdminUserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('users.destroy');
-
-    // Manajemen Absen
-    Route::get('/absen', [AbsenController::class, 'index'])->name('absen');
-    Route::get('/absen/create', [AbsenController::class, 'createAbsen'])->name('absen_create');
-    Route::post('/absen/create', [AbsenController::class, 'storeAbsen'])->name('absen_store');
-    Route::get('/absen/{id}/edit', [AbsenController::class, 'editAbsen'])->name('absen_edit');
-    Route::post('/absen/{id}/update', [AbsenController::class, 'updateAbsen'])->name('absen_update');
-    Route::post('/absen/{id}/delete', [AbsenController::class, 'deleteAbsen'])->name('absen_delete');
-
-    // Route tambahan untuk presensi
-    Route::get('/absen/{id}/show', [AbsenController::class, 'show'])->name('absen.show');
-    Route::get('/absen/{id}/edit-presensi', [AbsenController::class, 'edit'])->name('absen.edit');
-    Route::put('/absen/{id}/update-presensi', [AbsenController::class, 'update'])->name('absen.update');
-    Route::delete('/absen/{id}/hapus-presensi', [AbsenController::class, 'destroy'])->name('absen.destroy');
-
-    // Route untuk manajemen presensi admin
-    Route::get('/presensi', [AdminPresensiController::class, 'adminIndex'])->name('presensi.index');
-    Route::get('/presensi/{id}', [AdminPresensiController::class, 'adminShow'])->name('presensi.show');
-    Route::get('/presensi/{id}/edit', [AdminPresensiController::class, 'adminEdit'])->name('presensi.edit');
-    Route::put('/presensi/{id}', [AdminPresensiController::class, 'adminUpdate'])->name('presensi.update');
-    Route::delete('/presensi/{id}', [AdminPresensiController::class, 'adminDestroy'])->name('presensi.destroy');
+Route::controller(AuthController::class)->group(function () {
+    Route::get('/admin/login', 'showAdminLogin')->name('admin.login_form');
+    Route::post('/admin/login', 'adminLogin')->name('admin.login');
+    Route::post('/logout', 'adminLogout')->name('logout'); 
 });
 
-Route::get('/test-alpha-presensi', [AdminPresensiController::class, 'checkAndRecordAlpha'])
-    ->name('test.alpha.presensi');
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::controller(SettingController::class)->prefix('lokasi')->group(function () {
+        Route::get('/', 'lokasi')->name('lokasi');
+        Route::post('/', 'updateLokasi')->name('update_lokasi');
+    });
 
-Route::get('/debug-presensi-status', [AdminPresensiController::class, 'debugPresensiStatus'])
-    ->name('debug.presensi.status');
+    Route::controller(AdminUserController::class)->prefix('users')->group(function () {
+        Route::get('/', 'index')->name('users');
+        Route::get('/create', 'create')->name('users.create');
+        Route::post('/', 'store')->name('users.store');
+        Route::get('/{id}', 'show')->name('users.show');
+        Route::get('/{id}/edit', 'edit')->name('users.edit');
+        Route::put('/{id}', 'update')->name('users.update');
+        Route::delete('/{id}', 'destroy')->name('users.destroy');
+    });
 
-Route::get('/presensi/stats', [AdminPresensiController::class, 'getPresensiStats'])
-    ->name('presensi.stats');
+    Route::controller(AbsenController::class)->prefix('absen')->group(function () {
+        Route::get('/', 'index')->name('absen');
+        Route::get('/create', 'createAbsen')->name('absen_create');
+        Route::post('/create', 'storeAbsen')->name('absen_store');
+        Route::get('/{id}/edit', 'editAbsen')->name('absen_edit');
+        Route::post('/{id}/update', 'updateAbsen')->name('absen_update');
+        Route::post('/{id}/delete', 'deleteAbsen')->name('absen_delete');
+        
+        Route::get('/{id}/show', 'show')->name('absen.show');
+        Route::get('/{id}/edit-presensi', 'edit')->name('absen.edit');
+        Route::put('/{id}/update-presensi', 'update')->name('absen.update');
+        Route::delete('/{id}/hapus-presensi', 'destroy')->name('absen.destroy');
+    });
+    
+    Route::controller(AdminPresensiController::class)->prefix('presensi')->name('presensi.')->group(function () {
+        Route::get('/', 'adminIndex')->name('index');
+        Route::get('/{id}', 'adminShow')->name('show');
+        Route::get('/{id}/edit', 'adminEdit')->name('edit');
+        Route::put('/{id}', 'adminUpdate')->name('update');
+        Route::delete('/{id}', 'adminDestroy')->name('destroy');
+    });
+    
+    // Utilities dari Print Absen dari AdminPresensiController
+    Route::get('/absen/print', [AdminPresensiController::class, 'print'])->name('absen.print');
+});
 
-// Hapus route export absen
-// Route::get('/admin/absen/export', [AdminPresensiController::class, 'export'])
-//     ->name('admin.absen.export');
-
-Route::get('/admin/absen/print', [AdminPresensiController::class, 'print'])
-    ->name('admin.absen.print');
-
-Route::get('/admin/dashboard', [DashboardController::class, 'index'])
-    ->name('admin.dashboard');
+// Endpoint Utilities & CronJobs
+Route::controller(AdminPresensiController::class)->group(function () {
+    Route::get('/test-alpha-presensi', 'checkAndRecordAlpha')->name('test.alpha.presensi');
+    Route::get('/debug-presensi-status', 'debugPresensiStatus')->name('debug.presensi.status');
+    Route::get('/presensi/stats', 'getPresensiStats')->name('presensi.stats');
+});

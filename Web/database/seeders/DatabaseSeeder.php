@@ -3,10 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Enums\UserRole;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Student;
+use App\Models\Employee;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Setting;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,110 +16,71 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Buat user admin
-        // Password default: admin123
-        // Email: admin@sekolah.com
-        User::updateOrCreate(
-            ['nisn' => '0000000000'],
+        // 1. Setup Roles
+        $this->call([RoleSeeder::class]);
+
+        // 2. Buat user admin
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@sekolah.com'],
             [
                 'name' => 'Admin Utama',
-                'email' => 'admin@sekolah.com',
-                'password' => bcrypt('admin123'),
-                'nisn' => '0000000000', // NISN admin
-                'role' => UserRole::ADMIN,
-                
-                // Field baru
-                'nis' => 123456,
-                'jenis_kelamin' => 'laki_laki',
-                'tempat_lahir' => 'Jakarta',
-                'tanggal_lahir' => '1990-01-01',
-                'agama' => 'islam',
-                'alamat' => 'Jl. Contoh No. 123, Jakarta',
-                'no_telp' => 6281234567890,
-                'pas_foto' => null,
+                'password' => Hash::make('admin123'),
+            ]
+        );
+        if (!$admin->hasRole('admin')) {
+            $admin->assignRole('admin');
+        }
+
+        // 3. Buat Pegawai / Guru
+        $guru = User::firstOrCreate(
+            ['email' => 'guru@sekolah.com'],
+            [
+                'name' => 'Guru Teladan',
+                'password' => Hash::make('password123'),
+            ]
+        );
+        if (!$guru->hasRole('guru')) {
+            $guru->assignRole('guru');
+        }
+        Employee::firstOrCreate(
+            ['user_id' => $guru->id],
+            [
+                'nip' => '198001012005011001',
+                'position' => 'Guru Matematika',
+                'gender' => 'male',
+                'religion' => 'islam',
+                'phone_number' => '08123456789',
             ]
         );
 
-        // Contoh user siswa
-        User::updateOrCreate(
-            ['nisn' => '1234567890'],
+        // 4. Buat contoh Siswa
+        $siswa = User::firstOrCreate(
+            ['email' => 'siswa@sekolah.com'],
             [
                 'name' => 'Siswa Contoh',
-                'email' => 'siswa@sekolah.com',
-                'password' => bcrypt('admin123'),
-                'nisn' => '1234567890', // NISN siswa
-                'role' => UserRole::SISWA,
-                
-                // Field baru
-                'nis' => 654320,
-                'jenis_kelamin' => 'laki_laki',
-                'tempat_lahir' => 'Bandung',
-                'tanggal_lahir' => '2005-05-15',
-                'agama' => 'kristen',
-                'alamat' => 'Jl. Merdeka No. 45, Bandung',
-                'no_telp' => 6287654321098,
-                'pas_foto' => null,
+                'password' => Hash::make('password123'),
             ]
         );
-
-        // Buat user admin tambahan
-        User::updateOrCreate(
-            ['nisn' => '0000000001'],
+        if (!$siswa->hasRole('siswa')) {
+            $siswa->assignRole('siswa');
+        }
+        Student::firstOrCreate(
+            ['user_id' => $siswa->id],
             [
-                'name' => 'Admin Sekolah',
-                'email' => 'admin.sekolah@sekolah.com',
-                'password' => bcrypt('admin123'),
-                'nisn' => '0000000001',
-                'role' => UserRole::ADMIN,
-                
-                'nis' => 123457,
-                'jenis_kelamin' => 'perempuan',
-                'tempat_lahir' => 'Surabaya',
-                'tanggal_lahir' => '1985-07-15',
-                'agama' => 'kristen',
-                'alamat' => 'Jl. Merdeka No. 456, Surabaya',
-                'no_telp' => 6287654321000,
-                'pas_foto' => null,
+                'nis' => '654320',
+                'nisn' => '1234567890',
+                'grade' => 'X-IPA-1',
+                'gender' => 'male',
+                'place_of_birth' => 'Bandung',
+                'date_of_birth' => '2005-05-15',
+                'religion' => 'islam',
+                'address' => 'Jl. Merdeka No. 45',
             ]
         );
 
-        User::updateOrCreate(
-            ['nisn' => '0000000002'],
-            [
-                'name' => 'Admin Keuangan',
-                'email' => 'admin.keuangan@sekolah.com',
-            'password' => bcrypt('admin123'),
-                'nisn' => '0000000002',
-                'role' => UserRole::ADMIN,
-                
-                'nis' => 123458,
-                'jenis_kelamin' => 'laki_laki',
-                'tempat_lahir' => 'Bandung',
-                'tanggal_lahir' => '1988-03-20',
-                'agama' => 'katholik',
-                'alamat' => 'Jl. Raya Bandung No. 789',
-                'no_telp' => 6282345678901,
-                'pas_foto' => null,
-            ]
-        );
-
-        \App\Models\Setting::updateOrCreate([
-            'key' => 'school_lat',
-        ], [
-            'value' => '-6.200000',
-        ]);
-        \App\Models\Setting::updateOrCreate([
-            'key' => 'school_long',
-        ], [
-            'value' => '106.816666',
-        ]);
-        \App\Models\Setting::updateOrCreate([
-            'key' => 'school_radius',
-        ], [
-            'value' => '100',
-        ]);
-
-        // Panggil seeder datasiswa
-        $this->call([datasiswa::class]);
+        // 5. Settings Standard
+        Setting::updateOrCreate(['key' => 'school_lat'], ['value' => '-6.200000']);
+        Setting::updateOrCreate(['key' => 'school_long'], ['value' => '106.816666']);
+        Setting::updateOrCreate(['key' => 'school_radius'], ['value' => '100']);
     }
 }

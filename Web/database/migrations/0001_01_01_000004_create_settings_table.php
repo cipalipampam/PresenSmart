@@ -16,7 +16,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Tambahkan default settings untuk waktu presensi
         DB::table('settings')->insert([
             ['key' => 'presensi_start_time', 'value' => '07:00'],
             ['key' => 'presensi_end_time', 'value' => '09:00'],

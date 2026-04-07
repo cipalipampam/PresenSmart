@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('presensis', function (Blueprint $table) {
+        Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->datetime('waktu');
-            $table->decimal('lat', 10, 7)->nullable(); // Buat nullable
-            $table->decimal('long', 10, 7)->nullable(); // Buat nullable
-            $table->string('status'); // hadir, izin, sakit
-            $table->text('alasan')->nullable(); // Tambah kolom alasan
+            $table->datetime('recorded_at');
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->string('status');
+            $table->text('notes')->nullable();
+            $table->string('proof_image')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('presensis');
+        Schema::dropIfExists('attendances');
     }
 };
