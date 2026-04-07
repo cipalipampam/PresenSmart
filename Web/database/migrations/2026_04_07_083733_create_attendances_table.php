@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->string('status');
+            $table->boolean('is_late')->default(false);
             $table->text('notes')->nullable();
             $table->string('proof_image')->nullable();
             $table->timestamps();

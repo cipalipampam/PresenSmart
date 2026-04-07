@@ -9,14 +9,14 @@ import '../providers/attendance_provider.dart';
 
 enum PresensiType { hadir, izin, sakit }
 
-class PresensiScreen extends StatefulWidget {
-  const PresensiScreen({Key? key}) : super(key: key);
+class AttendanceScreen extends StatefulWidget {
+  const AttendanceScreen({Key? key}) : super(key: key);
 
   @override
-  State<PresensiScreen> createState() => _PresensiScreenState();
+  _AttendanceScreenState createState() => _AttendanceScreenState();
 }
 
-class _PresensiScreenState extends State<PresensiScreen> {
+class _AttendanceScreenState extends State<AttendanceScreen> {
   PresensiType _selectedPresensiType = PresensiType.hadir;
   
   Position? _currentPosition;
@@ -29,13 +29,16 @@ class _PresensiScreenState extends State<PresensiScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AttendanceProvider>(context, listen: false).fetchHistory();
+    });
     _fetchLocation();
   }
 
   Future<void> _fetchLocation() async {
     if (_selectedPresensiType != PresensiType.hadir) return;
     
-    setState(() => _errorGps = null);
+    if (mounted) setState(() => _errorGps = null);
 
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -55,11 +58,12 @@ class _PresensiScreenState extends State<PresensiScreen> {
         desiredAccuracy: LocationAccuracy.best,
       );
 
+      if (!mounted) return;
       setState(() {
         _currentPosition = position;
       });
     } catch (e) {
-      setState(() => _errorGps = e.toString());
+      if (mounted) setState(() => _errorGps = e.toString());
     }
   }
 
@@ -221,6 +225,7 @@ class _PresensiScreenState extends State<PresensiScreen> {
                       children: [
                         TileLayer(
                           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.epresensi',
                         ),
                         MarkerLayer(
                           markers: [
@@ -347,9 +352,32 @@ class _PresensiScreenState extends State<PresensiScreen> {
 
             const SizedBox(height: 32),
 
-            // Tombol Kirim
+            // Tombol Kirim atau Indikator Selesai
             Consumer<AttendanceProvider>(
               builder: (context, provider, child) {
+                if (provider.hasCheckedInToday) {
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.green.shade200),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green, size: 30),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Anda sudah melakukan presensi hari ini. Tidak dapat mengirim data ganda.',
+                            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 return SizedBox(
                   width: double.infinity,
                   height: 55,

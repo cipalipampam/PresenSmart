@@ -52,7 +52,22 @@ class AttendanceService
             ]);
         }
 
-        // 4. Handle proof image if any
+        // 4. Handle time restrictions (07:00 base, 10 min tolerance)
+        $checkInEndStr = Setting::where('key', 'check_in_end')->first()?->value ?? '07:00';
+        $toleranceMinutes = (int)(Setting::where('key', 'late_tolerance_minutes')->first()?->value ?? 10);
+        
+        $cutoffOnTime = Carbon::createFromTimeString($checkInEndStr);
+        $cutoffLate = $cutoffOnTime->copy()->addMinutes($toleranceMinutes);
+        $currentTime = Carbon::now();
+
+        if ($currentTime->greaterThan($cutoffLate)) {
+            throw ValidationException::withMessages([
+                'attendance' => ['Batas toleransi terlambat habis (Maks. '.$cutoffLate->format('H:i').'). Pintu absensi masuk telah ditutup. Anda tercatat Alfa.']
+            ]);
+        }
+        $isLate = $currentTime->greaterThan($cutoffOnTime);
+
+        // 5. Handle proof image if any
         $proofPath = null;
         if (isset($data['proof_image'])) {
             $proofPath = $data['proof_image']->store('attendances', 'public');
@@ -61,6 +76,7 @@ class AttendanceService
         return Attendance::create([
             'user_id' => $user->id,
             'status' => 'present',
+            'is_late' => $isLate,
             'latitude' => $data['latitude'],
             'longitude' => $data['longitude'],
             'notes' => $data['notes'] ?? null,

@@ -3,9 +3,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../auth/providers/auth_provider.dart';
 
-import '../../attendance/screens/presensi_screen.dart';
-import '../../attendance/screens/riwayat_screen.dart';
-import '../../profile/screens/profil_screen.dart';
+import '../../attendance/screens/attendance_screen.dart';
+import '../../attendance/screens/history_screen.dart';
+import '../../profile/screens/profile_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -17,12 +17,12 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
 
-  List<Widget> get _pages => [
-        const DashboardHomeTab(),
-        const PresensiScreen(),
-        const RiwayatScreen(),
-        const ProfilScreen(),
-      ];
+  final List<Widget> _screens = [
+    const DashboardHomeTab(),
+    const AttendanceScreen(),
+    const HistoryScreen(),
+    const ProfileScreen(),
+  ];
 
   List<BottomNavigationBarItem> get _navItems => const [
         BottomNavigationBarItem(
@@ -53,7 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
 
         return Scaffold(
-          body: SafeArea(child: _pages[_selectedIndex]),
+          body: SafeArea(child: _screens[_selectedIndex]),
           bottomNavigationBar: BottomNavigationBar(
             items: _navItems,
             currentIndex: _selectedIndex,
