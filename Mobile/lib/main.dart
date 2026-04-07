@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AttendanceProvider()),
       ],
       child: MaterialApp(
-        title: 'E-Presensi SMK',
+        title: 'PresenSmart',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: const Color(0xFF7ED6A8),

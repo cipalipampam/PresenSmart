@@ -1,6 +1,6 @@
 {
-    "name": "epresensi",
-    "short_name": "epresensi",
+    "name": "PresenSmart",
+    "short_name": "PresenSmart",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
