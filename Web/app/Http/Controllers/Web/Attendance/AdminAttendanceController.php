@@ -52,14 +52,23 @@ class AdminAttendanceController extends Controller
             'user_id' => 'required|exists:users,id',
             'recorded_at' => 'required|date',
             'status' => 'required|in:present,absent,sick,permission',
-            'notes' => 'nullable|string|max:500'
+            'notes' => 'nullable|string|max:500',
+            'proof_image' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
+
+        $proofPath = null;
+        if ($request->hasFile('proof_image')) {
+            $file = $request->file('proof_image');
+            $fileName = time() . '_' . $request->user_id . '.' . $file->getClientOriginalExtension();
+            $proofPath = $file->storeAs('attendances', $fileName, 'public');
+        }
 
         Attendance::create([
             'user_id' => $request->user_id,
             'recorded_at' => $request->recorded_at,
             'status' => $request->status,
             'notes' => $request->notes,
+            'proof_image' => $proofPath,
         ]);
 
         return redirect()->route('admin.attendances.index')->with('success', 'Attendance recorded successfully.');
