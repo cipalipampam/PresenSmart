@@ -24,6 +24,48 @@ class AttendanceProvider with ChangeNotifier {
         a.recordedAt.day == now.day);
   }
 
+  bool get hasCheckedOutToday {
+    if (_historyList.isEmpty) return false;
+    final now = DateTime.now();
+    return _historyList.any((a) => 
+        a.recordedAt.year == now.year && 
+        a.recordedAt.month == now.month && 
+        a.recordedAt.day == now.day &&
+        a.checkOutTime != null);
+  }
+
+  bool get isPendingIzinSakitToday {
+    if (_historyList.isEmpty) return false;
+    final now = DateTime.now();
+    return _historyList.any((a) => 
+        a.recordedAt.year == now.year && 
+        a.recordedAt.month == now.month && 
+        a.recordedAt.day == now.day &&
+        (a.status == 'sick' || a.status == 'permission') &&
+        a.isApproved == null);
+  }
+
+  bool get isRejectedToday {
+    if (_historyList.isEmpty) return false;
+    final now = DateTime.now();
+    return _historyList.any((a) => 
+        a.recordedAt.year == now.year && 
+        a.recordedAt.month == now.month && 
+        a.recordedAt.day == now.day &&
+        a.isApproved == false);
+  }
+
+  bool get isIzinSakitApprovedToday {
+    if (_historyList.isEmpty) return false;
+    final now = DateTime.now();
+    return _historyList.any((a) => 
+        a.recordedAt.year == now.year && 
+        a.recordedAt.month == now.month && 
+        a.recordedAt.day == now.day &&
+        (a.status == 'sick' || a.status == 'permission') &&
+        a.isApproved == true);
+  }
+
   Future<bool> checkIn({
     required double latitude,
     required double longitude,
@@ -63,6 +105,33 @@ class AttendanceProvider with ChangeNotifier {
       return false;
     } catch (e) {
       _errorMessage = 'Kesalahan sistem: ${e.toString()}';
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<bool> checkOut() async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final response = await _apiClient.client.post('/attendances/check-out');
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        await fetchHistory();
+        _setLoading(false);
+        return true;
+      } else {
+        _errorMessage = response.data['message'] ?? 'Gagal absen pulang.';
+        _setLoading(false);
+        return false;
+      }
+    } on DioException catch (e) {
+      _errorMessage = e.response?.data['message'] ?? 'Terjadi kesalahan saat memproses kepulangan.';
+      _setLoading(false);
+      return false;
+    } catch (e) {
+      _errorMessage = 'Terjadi kesalahan sistem.';
       _setLoading(false);
       return false;
     }

@@ -107,15 +107,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: isHadir 
-                              ? (data.isLate ? Colors.orange : Colors.green) 
-                              : Colors.redAccent,
+                          color: isHadir ? Colors.green : Colors.orange,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          isHadir && data.isLate 
-                              ? 'TERLAMBAT' 
-                              : data.status.toUpperCase(),
+                          isHadir 
+                              ? (data.isLate ? 'TERLAMBAT' : 'HADIR')
+                              : (data.isApproved == null 
+                                  ? 'MENUNGGU PERSETUJUAN'
+                                  : data.status.toUpperCase()),
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,

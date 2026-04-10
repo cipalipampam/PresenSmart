@@ -7,6 +7,8 @@ class AttendanceModel {
   final String? notes;
   final String? proofImage;
   final bool isLate;
+  final DateTime? checkOutTime;
+  final bool? isApproved;
 
   AttendanceModel({
     required this.id,
@@ -17,9 +19,16 @@ class AttendanceModel {
     this.notes,
     this.proofImage,
     this.isLate = false,
+    this.checkOutTime,
+    this.isApproved,
   });
 
   factory AttendanceModel.fromJson(Map<String, dynamic> json) {
+    bool? approvedState;
+    if (json['is_approved'] != null) {
+      approvedState = json['is_approved'] == 1 || json['is_approved'] == true;
+    }
+
     return AttendanceModel(
       id: json['id'] ?? 0,
       recordedAt: DateTime.parse(json['recorded_at']).toLocal(),
@@ -29,6 +38,8 @@ class AttendanceModel {
       notes: json['notes'],
       proofImage: json['proof_image'],
       isLate: (json['is_late'] == 1 || json['is_late'] == true),
+      checkOutTime: json['check_out_time'] != null ? DateTime.parse(json['check_out_time']).toLocal() : null,
+      isApproved: approvedState,
     );
   }
 }

@@ -17,13 +17,6 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const DashboardHomeTab(),
-    const AttendanceScreen(),
-    const HistoryScreen(),
-    const ProfileScreen(),
-  ];
-
   List<BottomNavigationBarItem> get _navItems => const [
         BottomNavigationBarItem(
           icon: Icon(Icons.dashboard),
@@ -52,8 +45,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
         }
 
+        final List<Widget> screens = [
+          const DashboardHomeTab(),
+          AttendanceScreen(
+            onNavigateToHistory: () => setState(() => _selectedIndex = 2),
+          ),
+          HistoryScreen(),
+          ProfileScreen(),
+        ];
+
         return Scaffold(
-          body: SafeArea(child: _screens[_selectedIndex]),
+          body: SafeArea(child: screens[_selectedIndex]),
           bottomNavigationBar: BottomNavigationBar(
             items: _navItems,
             currentIndex: _selectedIndex,

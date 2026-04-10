@@ -10,7 +10,8 @@ import '../providers/attendance_provider.dart';
 enum PresensiType { hadir, izin, sakit }
 
 class AttendanceScreen extends StatefulWidget {
-  const AttendanceScreen({Key? key}) : super(key: key);
+  final VoidCallback? onNavigateToHistory;
+  const AttendanceScreen({Key? key, this.onNavigateToHistory}) : super(key: key);
 
   @override
   _AttendanceScreenState createState() => _AttendanceScreenState();
@@ -132,6 +133,29 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         SnackBar(content: Text(attendanceProvider.errorMessage ?? 'Terjadi kesalahan sistem'), backgroundColor: Colors.red),
       );
     }
+  }
+
+  Widget _buildBannerBlock({required IconData icon, required Color color, required String text}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 30),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   String _getTabName(PresensiType type) {
@@ -355,25 +379,70 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             // Tombol Kirim atau Indikator Selesai
             Consumer<AttendanceProvider>(
               builder: (context, provider, child) {
+                if (provider.isRejectedToday) {
+                  return _buildBannerBlock(
+                    icon: Icons.cancel,
+                    color: Colors.red,
+                    text: 'Permohonan Anda ditolak. Anda tercatat Alfa hari ini.',
+                  );
+                }
+                
+                if (provider.isPendingIzinSakitToday) {
+                  return _buildBannerBlock(
+                    icon: Icons.hourglass_empty,
+                    color: Colors.orange,
+                    text: 'Permohonan Izin/Sakit Anda sedang menunggu persetujuan Admin.',
+                  );
+                }
+
+                if (provider.isIzinSakitApprovedToday) {
+                  return _buildBannerBlock(
+                    icon: Icons.check_circle,
+                    color: Colors.green,
+                    text: 'Permohonan disetujui. Selamat beristirahat hari ini.',
+                  );
+                }
+
+                if (provider.hasCheckedOutToday) {
+                  return _buildBannerBlock(
+                    icon: Icons.check_circle,
+                    color: Colors.blueAccent,
+                    text: 'Anda telah menyelesaikan jam kerja/sekolah hari ini.',
+                  );
+                }
+
                 if (provider.hasCheckedInToday) {
-                  return Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.green.shade200),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.green, size: 30),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Anda sudah melakukan presensi hari ini. Tidak dapat mengirim data ganda.',
-                            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orangeAccent,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: provider.isLoading ? null : () async {
+                        final success = await provider.checkOut();
+                        if (success) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Berhasil absen pulang!'), backgroundColor: Colors.green),
+                            );
+                            widget.onNavigateToHistory?.call();
+                          }
+                        } else {
+                          if (mounted && provider.errorMessage != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(provider.errorMessage!), backgroundColor: Colors.red),
+                            );
+                          }
+                        }
+                      },
+                      child: provider.isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              'ABSEN PULANG',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
                     ),
                   );
                 }
