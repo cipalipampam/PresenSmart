@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - E-Presensi</title>
+    <title>Admin - PresenSmart</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -179,7 +179,7 @@
     <!-- Sidebar -->
     <div class="sidebar d-flex flex-column p-3" id="sidebar">
         <div class="d-flex align-items-center justify-content-between mb-4">
-            <span class="fs-4 fw-bold text-light text-truncate">E-Presensi</span>
+            <span class="fs-4 fw-bold text-light text-truncate">PresenSmart</span>
             <i id="toggleSidebar" class="bi bi-list toggle-btn"></i>
         </div>
         <ul class="nav nav-pills flex-column mb-auto">
@@ -218,6 +218,13 @@
                     <span class="link-text">Location</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.attendance_settings') }}"
+                    class="nav-link {{ request()->routeIs('admin.attendance_settings') ? 'active' : '' }}" title="setting time">
+                    <i class="bi bi-stopwatch-fill"></i>
+                    <span class="link-text">settings time</span>
+                </a>
+            </li>
         </ul>
         <div class="mt-auto">
             <form action="{{ route('logout') }}" method="POST" class="d-inline">
@@ -236,21 +243,51 @@
             <span class="navbar-brand">Admin</span>
             <ul class="navbar-nav ms-auto align-items-center">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle fs-4 me-2"></i>{{ Auth::user()->name ?? 'Admin' }}
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button"
+                        data-toggle="dropdown" aria-expanded="false">
+                        {{-- Avatar Inisial --}}
+                        <div style="width:34px;height:34px;border-radius:50%;background:#43C59E;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;flex-shrink:0">
+                            {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+                        </div>
+                        <span class="d-none d-md-inline">{{ Auth::user()->name ?? 'Admin' }}</span>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width:240px">
+                        {{-- Header Profil --}}
                         <li>
-                            <hr class="dropdown-divider">
+                            <div class="px-3 py-3 border-bottom">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div style="width:46px;height:46px;border-radius:50%;background:#43C59E;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;flex-shrink:0">
+                                        {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+                                    </div>
+                                    <div style="overflow:hidden">
+                                        <div class="fw-bold text-truncate" style="max-width:160px">{{ Auth::user()->name ?? 'Admin' }}</div>
+                                        <div class="text-muted small text-truncate" style="max-width:160px">{{ Auth::user()->email ?? '' }}</div>
+                                        <span class="badge bg-success mt-1">Administrator</span>
+                                    </div>
+                                </div>
+                            </div>
                         </li>
-                        <li><form action="{{ route('logout') }}" method="POST" class="d-inline">
-                            @csrf
-                            <button type="submit" class="dropdown-item text-danger">
-                                <i class="bi bi-box-arrow-right me-2"></i>Logout
-                            </button>
-                        </form></li>
+                        {{-- Quick Links --}}
+                        <li>
+                            <a class="dropdown-item py-2" href="{{ route('admin.location') }}">
+                                <i class="bi bi-geo-alt-fill text-success me-2"></i>Lokasi Sekolah
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2" href="{{ route('admin.attendance_settings') }}">
+                                <i class="bi bi-stopwatch-fill text-warning me-2"></i>Pengaturan Waktu
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        {{-- Logout --}}
+                        <li>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="dropdown-item py-2 text-danger">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                </button>
+                            </form>
+                        </li>
                     </ul>
                 </li>
             </ul>

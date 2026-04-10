@@ -12,23 +12,74 @@ class AdminAttendanceController extends Controller
 {
     public function index(Request $request)
     {
-        $tanggal = $request->input('date', now()->toDateString());
         $search = $request->input('search', '');
+        $date = $request->input('date');
+        $month = $request->input('month');
+        $year = $request->input('year', date('Y'));
+        $role = $request->input('role');
+        $grade = $request->input('grade');
         $perPage = $request->input('per_page', 10);
 
-        $query = Attendance::with(['user.student', 'user.employee'])
-            ->whereDate('recorded_at', $tanggal);
+        $query = Attendance::with(['user.student', 'user.employee']);
 
+        // Search by Name
         if (!empty($search)) {
             $query->whereHas('user', function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%");
             });
         }
 
-        $attendances = $query->orderBy('recorded_at', 'desc')->paginate($perPage);
-        $attendances->appends(['date' => $tanggal, 'search' => $search, 'per_page' => $perPage]);
+        // Filter by Date or Month/Year
+        if (!empty($date)) {
+            $query->whereDate('recorded_at', $date);
+        } else {
+            if (!empty($month)) {
+                $query->whereMonth('recorded_at', $month);
+            }
+            if (!empty($year)) {
+                $query->whereYear('recorded_at', $year);
+            }
+            
+            // If No Date and No Month are provided, default to current month
+            if (empty($date) && empty($month) && empty($request->input('year'))) {
+                $query->whereMonth('recorded_at', date('m'))
+                      ->whereYear('recorded_at', date('Y'));
+            }
+        }
 
-        return view('admin.attendances.index', compact('attendances', 'tanggal'));
+        // Filter by Role
+        if (!empty($role)) {
+            $query->whereHas('user', function($q) use ($role) {
+                if ($role === 'employee') {
+                    $q->role(['guru', 'staff']);
+                } else {
+                    $q->role($role);
+                }
+            });
+        }
+
+        // Filter by Grade (Students only)
+        if (!empty($grade)) {
+            $query->whereHas('user.student', function($q) use ($grade) {
+                $q->where('grade', $grade);
+            });
+        }
+
+        $attendances = $query->orderBy('recorded_at', 'desc')->paginate($perPage);
+        
+        $attendances->appends([
+            'search' => $search,
+            'date' => $date,
+            'month' => $month,
+            'year' => $year,
+            'role' => $role,
+            'grade' => $grade,
+            'per_page' => $perPage
+        ]);
+
+        $grades = \App\Models\Student::distinct()->whereNotNull('grade')->pluck('grade')->sort();
+
+        return view('admin.attendances.index', compact('attendances', 'search', 'date', 'month', 'year', 'role', 'grade', 'grades'));
     }
 
     public function show($id)
@@ -72,6 +123,26 @@ class AdminAttendanceController extends Controller
         ]);
 
         return redirect()->route('admin.attendances.index')->with('success', 'Attendance recorded successfully.');
+    }
+
+    public function approve(Request $request, $id)
+    {
+        $attendance = Attendance::findOrFail($id);
+        
+        $request->validate([
+            'action' => 'required|in:approve,reject'
+        ]);
+
+        if ($request->action == 'approve') {
+            $attendance->update(['is_approved' => true]);
+            return redirect()->back()->with('success', 'Permohonan berhasil disetujui (Approved).');
+        } elseif ($request->action == 'reject') {
+            $attendance->update([
+                'is_approved' => false,
+                'status' => 'absent'
+            ]);
+            return redirect()->back()->with('success', 'Permohonan ditolak. Status otomatis menjadi Absent (Alfa).');
+        }
     }
 
     public function edit($id)
@@ -124,14 +195,53 @@ class AdminAttendanceController extends Controller
 
     public function print(Request $request)
     {
-        $tanggal = $request->input('date', now()->toDateString());
-        $attendances = Attendance::with(['user.student', 'user.employee'])
-            ->whereDate('recorded_at', $tanggal)
-            ->get();
+        $search = $request->input('search', '');
+        $date = $request->input('date');
+        $month = $request->input('month');
+        $year = $request->input('year');
+        $role = $request->input('role');
+        $grade = $request->input('grade');
 
-        return view('admin.attendances.print', [
-            'attendances' => $attendances,
-            'tanggal' => $tanggal,
-        ]);
+        $query = Attendance::with(['user.student', 'user.employee']);
+
+        if (!empty($search)) {
+            $query->whereHas('user', function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($date)) {
+            $query->whereDate('recorded_at', $date);
+        } else {
+            if (!empty($month)) {
+                $query->whereMonth('recorded_at', $month);
+            }
+            if (!empty($year)) {
+                $query->whereYear('recorded_at', $year);
+            }
+            if (empty($date) && empty($month) && empty($year)) {
+                $query->whereDate('recorded_at', now()->toDateString());
+            }
+        }
+
+        if (!empty($role)) {
+            $query->whereHas('user', function($q) use ($role) {
+                if ($role === 'employee') {
+                    $q->role(['guru', 'staff']);
+                } else {
+                    $q->role($role);
+                }
+            });
+        }
+
+        if (!empty($grade)) {
+            $query->whereHas('user.student', function($q) use ($grade) {
+                $q->where('grade', $grade);
+            });
+        }
+
+        $attendances = $query->orderBy('recorded_at', 'desc')->get();
+
+        return view('admin.attendances.print', compact('attendances', 'date', 'month', 'year', 'role', 'grade'));
     }
 }

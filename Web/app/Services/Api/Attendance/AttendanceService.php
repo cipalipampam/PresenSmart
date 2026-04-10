@@ -77,6 +77,7 @@ class AttendanceService
             'user_id' => $user->id,
             'status' => 'present',
             'is_late' => $isLate,
+            'is_approved' => true,
             'latitude' => $data['latitude'],
             'longitude' => $data['longitude'],
             'notes' => $data['notes'] ?? null,
@@ -108,10 +109,48 @@ class AttendanceService
         return Attendance::create([
             'user_id' => $user->id,
             'status' => $data['status'],
-            'notes' => $data['notes'],
+            'notes' => $data['notes'] ?? null,
             'proof_image' => $proofPath,
             'recorded_at' => Carbon::now(),
         ]);
+    }
+
+    public function checkOut(array $data, User $user)
+    {
+        $today = Carbon::today();
+        
+        $attendance = Attendance::where('user_id', $user->id)
+            ->whereDate('recorded_at', $today)
+            ->where('status', 'present')
+            ->first();
+
+        if (!$attendance) {
+            throw ValidationException::withMessages([
+                'attendance' => ['Anda belum melakukan absensi masuk (Check-in) hari ini.']
+            ]);
+        }
+
+        if ($attendance->check_out_time) {
+            throw ValidationException::withMessages([
+                'attendance' => ['Anda sudah melakukan absensi pulang hari ini.']
+            ]);
+        }
+
+        $checkOutStartStr = Setting::where('key', 'check_out_start')->first()?->value ?? '15:00';
+        $checkOutStart = Carbon::createFromTimeString($checkOutStartStr);
+        $currentTime = Carbon::now();
+
+        if ($currentTime->lessThan($checkOutStart)) {
+            throw ValidationException::withMessages([
+                'attendance' => ['Waktu absensi pulang belum dimulai (Minimal '.$checkOutStart->format('H:i').').']
+            ]);
+        }
+
+        $attendance->update([
+            'check_out_time' => $currentTime,
+        ]);
+
+        return $attendance;
     }
 
     /**

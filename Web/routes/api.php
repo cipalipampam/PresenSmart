@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::controller(\App\Http\Controllers\Api\Attendance\AttendanceController::class)->prefix('attendances')->group(function () {
         Route::get('/', 'history');
         Route::post('/check-in', 'checkIn');
+        Route::post('/check-out', 'checkOut');
         Route::post('/permission', 'permission');
     });
 });

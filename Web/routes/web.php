@@ -31,6 +31,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
         Route::post('/', 'updateLocation')->name('update_location');
     });
 
+    Route::controller(SettingController::class)->prefix('attendance-settings')->group(function () {
+        Route::get('/', 'attendance')->name('attendance_settings');
+        Route::post('/', 'updateAttendanceSettings')->name('update_attendance_settings');
+    });
+
     // Delegated to decoupled StudentController
     Route::controller(StudentController::class)->prefix('students')->name('students.')->group(function () {
         Route::get('/', 'index')->name('index');
@@ -57,6 +62,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
         Route::get('/', 'index')->name('index');
         Route::get('/create', 'create')->name('create');
         Route::post('/', 'store')->name('store');
+        Route::post('/{id}/approve', 'approve')->name('approve');
         Route::get('/{id}', 'show')->name('show');
         Route::get('/{id}/edit', 'edit')->name('edit');
         Route::put('/{id}', 'update')->name('update');

@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->datetime('recorded_at');
+            $table->datetime('check_out_time')->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->string('status');
             $table->boolean('is_late')->default(false);
+            $table->boolean('is_approved')->nullable();
             $table->text('notes')->nullable();
             $table->string('proof_image')->nullable();
             $table->timestamps();

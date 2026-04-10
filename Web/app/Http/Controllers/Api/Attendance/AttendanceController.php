@@ -41,6 +41,29 @@ class AttendanceController extends Controller
         }
     }
 
+    public function checkOut(Request $request): JsonResponse
+    {
+        try {
+            $attendance = $this->attendanceService->checkOut($request->all(), $request->user());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil absen pulang.',
+                'data' => $attendance
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function permission(PermissionRequest $request): JsonResponse
     {
         try {
