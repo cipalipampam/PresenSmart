@@ -7,290 +7,123 @@
     <title>Admin - PresenSmart</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <style>
-        :root {
-            --sidebar-bg: #004a99;
-            --sidebar-hover: #0066cc;
-            --navbar-bg: #005bb5;
-            --link-active-bg: #007fff;
-            --body-bg: #f7fbff;
-            --card-bg: #ffffff;
-            --card-shadow: rgba(0, 0, 0, 0.1);
-            --text-main: #1e293b;
-            --text-light: #ffffff;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--body-bg);
-            color: var(--text-main);
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 240px;
-            min-height: 100vh;
-            background-color: var(--sidebar-bg);
-            position: fixed;
-            transition: width 0.3s;
-            box-shadow: 2px 0 12px var(--card-shadow);
-        }
-
-        .sidebar.collapsed {
-            width: 70px;
-        }
-
-        .sidebar .nav-link {
-            color: var(--text-light);
-            padding: 0.75rem 1rem;
-            margin: 0.25rem 0;
-            border-radius: 0.375rem;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
-
-        .sidebar .nav-link:hover {
-            background-color: var(--sidebar-hover);
-            text-decoration: none;
-        }
-
-        .sidebar .nav-link.active {
-            background-color: var(--link-active-bg);
-            box-shadow: inset 4px 0 0 var(--text-light);
-        }
-
-        .sidebar .bi {
-            font-size: 1.3rem;
-        }
-
-        .sidebar .link-text {
-            margin-left: 0.75rem;
-            opacity: 1;
-            transition: opacity 0.3s;
-        }
-
-        .sidebar.collapsed .link-text {
-            opacity: 0;
-            width: 0;
-            margin: 0;
-            pointer-events: none;
-        }
-
-        .sidebar .nav-link {
-            position: relative;
-        }
-
-        .sidebar.collapsed .nav-link {
-            justify-content: center;
-        }
-
-        .sidebar.collapsed .nav-link[title]:hover::after {
-            content: attr(title);
-            position: absolute;
-            left: 60px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #222;
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 6px;
-            white-space: nowrap;
-            font-size: 0.95rem;
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Top Navbar */
-        .navbar {
-            margin-left: 240px;
-            background-color: var(--navbar-bg) !important;
-            box-shadow: 0 2px 8px var(--card-shadow);
-            transition: margin-left 0.3s;
-        }
-
-        .sidebar.collapsed~.navbar {
-            margin-left: 70px;
-        }
-
-        .navbar .navbar-brand {
-            font-weight: 700;
-            font-size: 1.3rem;
-            color: var(--text-light);
-        }
-
-        .navbar .nav-link {
-            color: var(--text-light) !important;
-            transition: color 0.3s;
-        }
-
-        /* Content */
-        .content-wrapper {
-            margin-left: 240px;
-            padding: 2rem;
-            transition: margin-left 0.3s;
-        }
-
-        .sidebar.collapsed~.content-wrapper {
-            margin-left: 70px;
-        }
-
-        /* Cards */
-        .card-custom {
-            background-color: var(--card-bg);
-            border: none;
-            border-radius: 0.75rem;
-            box-shadow: 0 6px 18px var(--card-shadow);
-            transition: transform 0.3s;
-        }
-
-        .card-custom:hover {
-            transform: translateY(-6px);
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 1rem;
-            color: var(--text-light);
-            background-color: var(--navbar-bg);
-        }
-
-        /* Toggle Button */
-        .toggle-btn {
-            font-size: 1.5rem;
-            color: var(--text-light);
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .toggle-btn:hover {
-            transform: rotate(90deg);
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    @stack('styles')
 </head>
 
 <body>
     <!-- Sidebar -->
-    <div class="sidebar d-flex flex-column p-3" id="sidebar">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <span class="fs-4 fw-bold text-light text-truncate">PresenSmart</span>
-            <i id="toggleSidebar" class="bi bi-list toggle-btn"></i>
+    <div class="sidebar d-flex flex-column" id="sidebar">
+        <div class="sidebar-header">
+            <span class="fs-4 fw-bold text-gradient link-text">PresenSmart</span>
+            <i id="toggleSidebar" class="bi bi-list toggle-btn text-white fs-3 cursor-pointer" style="cursor: pointer;"></i>
         </div>
-        <ul class="nav nav-pills flex-column mb-auto">
-            <li class="nav-item">
-                <a href="{{ route('admin.dashboard') }}"
-                    class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" title="Dashboard">
-                    <i class="bi bi-speedometer2"></i>
-                    <span class="link-text">Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.students.index') }}"
-                    class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}" title="Students">
-                    <i class="bi bi-mortarboard-fill"></i>
-                    <span class="link-text">Students</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.employees.index') }}"
-                    class="nav-link {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}" title="Employees">
-                    <i class="bi bi-person-badge-fill"></i>
-                    <span class="link-text">Employees</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.attendances.index') }}"
-                    class="nav-link {{ request()->routeIs('admin.attendances.*') ? 'active' : '' }}" title="Attendances">
-                    <i class="bi bi-calendar-check"></i>
-                    <span class="link-text">Attendances</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.location') }}"
-                    class="nav-link {{ request()->routeIs('admin.location') || request()->routeIs('admin.locations.*') ? 'active' : '' }}" title="School Location">
-                    <i class="bi bi-geo-alt-fill"></i>
-                    <span class="link-text">Location</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.attendance_settings') }}"
-                    class="nav-link {{ request()->routeIs('admin.attendance_settings') ? 'active' : '' }}" title="setting time">
-                    <i class="bi bi-stopwatch-fill"></i>
-                    <span class="link-text">settings time</span>
-                </a>
-            </li>
-        </ul>
-        <div class="mt-auto">
-            <form action="{{ route('logout') }}" method="POST" class="d-inline">
+        
+        <div class="py-4">
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li class="nav-item">
+                    <a href="{{ route('admin.dashboard') }}"
+                        class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" title="Dashboard">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span class="link-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.students.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}" title="Students">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        <span class="link-text">Students</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.employees.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}" title="Employees">
+                        <i class="bi bi-person-badge-fill"></i>
+                        <span class="link-text">Employees</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.attendances.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.attendances.*') ? 'active' : '' }}" title="Attendances">
+                        <i class="bi bi-calendar-check-fill"></i>
+                        <span class="link-text">Attendances</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.location') }}"
+                        class="nav-link {{ request()->routeIs('admin.location') || request()->routeIs('admin.locations.*') ? 'active' : '' }}" title="School Location">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span class="link-text">Location</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.attendance_settings') }}"
+                        class="nav-link {{ request()->routeIs('admin.attendance_settings') ? 'active' : '' }}" title="Settings Time">
+                        <i class="bi bi-stopwatch-fill"></i>
+                        <span class="link-text">Time Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="mt-auto p-3 border-top border-secondary border-opacity-10">
+            <form action="{{ route('logout') }}" method="POST" id="logout-form">
                 @csrf
-                <button type="submit" class="nav-link text-light bg-transparent border-0" title="Logout">
+                <button type="submit" class="nav-link w-100 text-danger bg-transparent border-0 d-flex align-items-center gap-3" title="Logout">
                     <i class="bi bi-box-arrow-right"></i>
-                    <span class="link-text">Logout</span>
+                    <span class="link-text fw-semibold">Logout</span>
                 </button>
             </form>
         </div>
     </div>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container-fluid">
-            <span class="navbar-brand">Admin</span>
-            <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button"
-                        data-toggle="dropdown" aria-expanded="false">
-                        {{-- Avatar Inisial --}}
-                        <div style="width:34px;height:34px;border-radius:50%;background:#43C59E;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;flex-shrink:0">
-                            {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white-50 border-end pe-3 d-none d-md-inline">Terminal #01</span>
+                <span class="navbar-brand fw-bold m-0 p-0 text-white">Administrator Portal</span>
+            </div>
+            
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-3" href="#" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="avatar-sm">
+                            <div class="bg-primary bg-gradient rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 38px; height: 38px;">
+                                {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+                            </div>
                         </div>
-                        <span class="d-none d-md-inline">{{ Auth::user()->name ?? 'Admin' }}</span>
+                        <div class="d-none d-md-block text-start">
+                            <div class="fw-semibold text-white line-height-1" style="font-size: 0.9rem;">{{ Auth::user()->name ?? 'Admin' }}</div>
+                            <div class="text-white-50 small" style="font-size: 0.75rem;">Super Admin</div>
+                        </div>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width:240px">
-                        {{-- Header Profil --}}
-                        <li>
-                            <div class="px-3 py-3 border-bottom">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div style="width:46px;height:46px;border-radius:50%;background:#43C59E;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;flex-shrink:0">
-                                        {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
-                                    </div>
-                                    <div style="overflow:hidden">
-                                        <div class="fw-bold text-truncate" style="max-width:160px">{{ Auth::user()->name ?? 'Admin' }}</div>
-                                        <div class="text-muted small text-truncate" style="max-width:160px">{{ Auth::user()->email ?? '' }}</div>
-                                        <span class="badge bg-success mt-1">Administrator</span>
-                                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end glass shadow py-2 mt-2 border-0" style="min-width: 260px;">
+                        <li class="px-3 py-3 border-bottom border-secondary border-opacity-10">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-primary bg-gradient rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                                    {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+                                </div>
+                                <div class="overflow-hidden">
+                                    <div class="fw-bold text-white text-truncate">{{ Auth::user()->name ?? 'Admin' }}</div>
+                                    <div class="text-white-50 small text-truncate">{{ Auth::user()->email ?? '' }}</div>
                                 </div>
                             </div>
                         </li>
-                        {{-- Quick Links --}}
+                        <li><a class="dropdown-item py-2 text-white-50 mt-2" href="{{ route('admin.attendance_settings') }}"><i class="bi bi-gear me-2"></i> Settings</a></li>
+                        <li><hr class="dropdown-divider border-secondary border-opacity-10"></li>
                         <li>
-                            <a class="dropdown-item py-2" href="{{ route('admin.location') }}">
-                                <i class="bi bi-geo-alt-fill text-success me-2"></i>Lokasi Sekolah
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item py-2" href="{{ route('admin.attendance_settings') }}">
-                                <i class="bi bi-stopwatch-fill text-warning me-2"></i>Pengaturan Waktu
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider my-1"></li>
-                        {{-- Logout --}}
-                        <li>
-                            <form action="{{ route('logout') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="dropdown-item py-2 text-danger">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                </button>
-                            </form>
+                            <button type="submit" form="logout-form" class="dropdown-item py-2 text-danger">
+                                <i class="bi bi-box-arrow-right me-2"></i> Sign Out
+                            </button>
                         </li>
                     </ul>
-                </li>
-            </ul>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -300,59 +133,33 @@
             @yield('content')
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(function () {
-            $('[data-toggle="tooltip"]').tooltip()
-        })
-
-        // Logout Confirmation
-        function confirmLogout(event) {
-            event.preventDefault();
-            
-            // Logout confirmation modal
-            const modal = `
-                <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Logout Confirmation</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                Are you sure you want to log out?
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-danger" id="confirmLogoutBtn">Log Out</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // Append modal to body
-            $('body').append(modal);
-            
-            // Show modal
-            $('#logoutModal').modal('show');
-
-            // Add event listener to confirm button
-            $('#confirmLogoutBtn').on('click', function() {
-                // Submit logout form
-                $('form[action="{{ route('logout') }}"]').submit();
+        // Sidebar Toggle
+        const toggleBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
             });
+
+            // Restore State
+            if (localStorage.getItem('sidebar-collapsed') === 'true') {
+                sidebar.classList.add('collapsed');
+            }
         }
 
-        // Add event listener to all logout buttons
-        $(document).ready(function() {
-            $('button[type="submit"][title="Logout"]').on('click', confirmLogout);
-            $('.dropdown-item.text-danger').on('click', confirmLogout);
-        });
+        // Initialize Tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
     </script>
+    @stack('scripts')
 </body>
 
 </html>
