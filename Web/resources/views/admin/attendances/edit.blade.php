@@ -36,7 +36,7 @@
             <div class="col-lg-8">
                 {{-- Data Section --}}
                 <div class="card glass border-0 shadow-lg mb-4">
-                    <div class="card-header bg-white bg-opacity-5 border-0 py-3">
+                    <div class="card-header bg-light-soft border-0 py-3">
                         <h6 class="mb-0 text-white fw-bold"><i class="bi bi-pencil-square me-2 text-amber"></i>Entry Modification</h6>
                     </div>
                     <div class="card-body p-4">
@@ -78,7 +78,7 @@
             <div class="col-lg-4">
                 {{-- Verification Section --}}
                 <div class="card glass border-0 shadow-lg mb-4">
-                    <div class="card-header bg-white bg-opacity-5 border-0 py-3">
+                    <div class="card-header bg-light-soft border-0 py-3">
                         <h6 class="mb-0 text-white fw-bold"><i class="bi bi-file-earmark-text me-2 text-amber"></i>Verification Ledger</h6>
                     </div>
                     <div class="card-body p-4">

@@ -35,7 +35,7 @@
             <div class="col-lg-8">
                 {{-- Account Section --}}
                 <div class="card glass border-0 shadow-lg mb-4">
-                    <div class="card-header bg-white bg-opacity-5 border-0 py-3">
+                    <div class="card-header bg-light-soft border-0 py-3">
                         <h6 class="mb-0 text-white fw-bold"><i class="bi bi-shield-lock me-2 text-cyan"></i>Authentication Credentials</h6>
                     </div>
                     <div class="card-body p-4">
@@ -67,7 +67,7 @@
 
                 {{-- Profile Section --}}
                 <div class="card glass border-0 shadow-lg mb-4">
-                    <div class="card-header bg-white bg-opacity-5 border-0 py-3">
+                    <div class="card-header bg-light-soft border-0 py-3">
                         <h6 class="mb-0 text-white fw-bold"><i class="bi bi-mortarboard me-2 text-cyan"></i>Academic & Personal Detail</h6>
                     </div>
                     <div class="card-body p-4">
@@ -131,12 +131,12 @@
             <div class="col-lg-4">
                 {{-- Media Section --}}
                 <div class="card glass border-0 shadow-lg mb-4">
-                    <div class="card-header bg-white bg-opacity-5 border-0 py-3">
+                    <div class="card-header bg-light-soft border-0 py-3">
                         <h6 class="mb-0 text-white fw-bold"><i class="bi bi-camera me-2 text-cyan"></i>Identification Photo</h6>
                     </div>
                     <div class="card-body p-4 text-center">
                         <div class="mb-4">
-                            <div class="avatar-preview mx-auto rounded-4 mb-3 d-flex align-items-center justify-content-center bg-white bg-opacity-5 border border-white border-opacity-10" style="width: 150px; height: 180px;">
+                            <div class="avatar-preview mx-auto rounded-4 mb-3 d-flex align-items-center justify-content-center bg-light-soft border border-white border-opacity-10" style="width: 150px; height: 180px;">
                                 <i class="bi bi-person-bounding-box text-white-25 display-4"></i>
                             </div>
                             <p class="text-white-25 small mb-0">Preview will appear here</p>

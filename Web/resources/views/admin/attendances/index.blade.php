@@ -2,83 +2,104 @@
 
 @section('content')
 <div class="container-fluid py-4">
+
+    {{-- ===== PAGE HEADER ===== --}}
     <div class="row align-items-center mb-4">
         <div class="col-md-6">
-            <h2 class="fw-bold text-white mb-0">Attendance Tracking</h2>
-            <p class="text-white-50 small mb-0">Manage and monitor daily attendance records across the institution.</p>
+            <h2 class="fw-bold text-white mb-1">Attendance Records</h2>
+            <p class="text-white-50 small mb-0">Monitor and manage daily attendance logs for all members.</p>
         </div>
-        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+        <div class="col-md-6 text-md-end mt-3 mt-md-0 d-flex align-items-center justify-content-md-end gap-2 flex-wrap">
+            {{-- Export Dropdown --}}
+            <div class="dropdown">
+                <button class="btn border-0 bg-light-soft text-white dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-download me-2"></i>Export
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end glass border-0 shadow py-2">
+                    <li>
+                        <a class="dropdown-item" href="{{ route('admin.attendances.index', array_merge(request()->query(), ['export' => 'excel'])) }}">
+                            <i class="bi bi-file-earmark-excel me-2 text-emerald"></i>Excel (.xlsx)
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('admin.attendances.index', array_merge(request()->query(), ['export' => 'pdf'])) }}">
+                            <i class="bi bi-file-earmark-pdf me-2" style="color:#ef4444;"></i>PDF
+                        </a>
+                    </li>
+                </ul>
+            </div>
             <a href="{{ route('admin.attendances.create') }}" class="btn btn-primary shadow-sm border-0">
-                <i class="bi bi-plus-lg me-2"></i>Record Manual Entry
+                <i class="bi bi-plus-lg me-2"></i>Record Manual Attendance
             </a>
         </div>
     </div>
 
-    <!-- Filter Card -->
+    {{-- ===== FILTER CARD ===== --}}
     <div class="card glass border-0 shadow-lg mb-4">
         <div class="card-body p-4">
-            <form action="{{ route('admin.attendances.index') }}" method="GET" class="row g-4 align-items-end">
-                <div class="col-lg-2 col-md-4">
-                    <label for="search" class="form-label text-white-50 small fw-semibold">Search Member</label>
-                    <div class="input-group">
-                        <span class="input-group-text border-0 bg-light-soft text-white-50"><i class="bi bi-search"></i></span>
-                        <input type="text" name="search" id="search" class="form-control" placeholder="Name..." value="{{ request('search') }}">
+            <form action="{{ route('admin.attendances.index') }}" method="GET">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-3 col-md-6">
+                        <label for="search" class="form-label text-white-50 small fw-semibold">Search Member</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-0 bg-light-soft text-white-50"><i class="bi bi-search"></i></span>
+                            <input type="text" name="search" id="search" class="form-control"
+                                   placeholder="Member name..." value="{{ request('search') }}">
+                        </div>
                     </div>
-                </div>
-                <div class="col-lg-2 col-md-4">
-                    <label for="date" class="form-label text-white-50 small fw-semibold">Specific Day</label>
-                    <input type="date" name="date" id="date" class="form-control" value="{{ request('date') }}">
-                </div>
-                <div class="col-lg-2 col-md-4">
-                    <label for="month" class="form-label text-white-50 small fw-semibold">Month</label>
-                    <select name="month" id="month" class="form-select">
-                        <option value="">All Months</option>
-                        @for ($m = 1; $m <= 12; $m++)
-                            @php $mVal = sprintf('%02d', $m); @endphp
-                            <option value="{{ $mVal }}" {{ request('month', date('m')) == $mVal && !request('date') ? 'selected' : (request('month') == $mVal ? 'selected' : '') }}>
-                                {{ date('F', mktime(0, 0, 0, $m, 1)) }}
-                            </option>
-                        @endfor
-                    </select>
-                </div>
-                <div class="col-lg-1 col-md-4">
-                    <label for="year" class="form-label text-white-50 small fw-semibold">Year</label>
-                    <select name="year" id="year" class="form-select">
-                        @php $currentYear = date('Y'); @endphp
-                        @for ($y = $currentYear; $y >= $currentYear - 4; $y--)
-                            <option value="{{ $y }}" {{ request('year', $currentYear) == $y ? 'selected' : '' }}>
-                                {{ $y }}
-                            </option>
-                        @endfor
-                    </select>
-                </div>
-                <div class="col-lg-2 col-md-4">
-                    <label for="role" class="form-label text-white-50 small fw-semibold">Identify Role</label>
-                    <select name="role" id="role" class="form-select" onchange="toggleGradeFilter()">
-                        <option value="">Full Staff & Students</option>
-                        <option value="siswa" {{ request('role') == 'siswa' ? 'selected' : '' }}>Students Only</option>
-                        <option value="employee" {{ request('role') == 'employee' ? 'selected' : '' }}>All Employees</option>
-                        <option value="guru" {{ request('role') == 'guru' ? 'selected' : '' }}>Teachers Only</option>
-                        <option value="staff" {{ request('role') == 'staff' ? 'selected' : '' }}>Staff Only</option>
-                    </select>
-                </div>
-                <div class="col-lg-1 col-md-4" id="grade-filter-container" style="{{ request('role') == 'siswa' ? '' : 'display: none;' }}">
-                    <label for="grade" class="form-label text-white-50 small fw-semibold">Grade</label>
-                    <select name="grade" id="grade" class="form-select">
-                        <option value="">All</option>
-                        @foreach($grades as $g)
-                            <option value="{{ $g }}" {{ request('grade') == $g ? 'selected' : '' }}>{{ $g }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-lg-2 col-md-4">
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary flex-fill">
-                            <i class="bi bi-arrow-right-short fs-4"></i>
-                        </button>
-                        <a href="{{ route('admin.attendances.index') }}" class="btn btn-outline-secondary flex-fill border-0 bg-light-soft text-white">
-                            <i class="bi bi-arrow-counterclockwise fs-4"></i>
-                        </a>
+                    <div class="col-lg-2 col-md-6">
+                        <label for="date" class="form-label text-white-50 small fw-semibold">Date</label>
+                        <input type="date" name="date" id="date" class="form-control" value="{{ request('date') }}">
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <label for="month" class="form-label text-white-50 small fw-semibold">Month</label>
+                        <select name="month" id="month" class="form-select">
+                            <option value="">All Months</option>
+                            @for ($m = 1; $m <= 12; $m++)
+                                @php $mVal = sprintf('%02d', $m); @endphp
+                                <option value="{{ $mVal }}" {{ request('month', date('m')) == $mVal && !request('date') ? 'selected' : (request('month') == $mVal ? 'selected' : '') }}>
+                                    {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+                                </option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="col-lg-1 col-md-4">
+                        <label for="year" class="form-label text-white-50 small fw-semibold">Year</label>
+                        <select name="year" id="year" class="form-select">
+                            @php $currentYear = date('Y'); @endphp
+                            @for ($y = $currentYear; $y >= $currentYear - 4; $y--)
+                                <option value="{{ $y }}" {{ request('year', $currentYear) == $y ? 'selected' : '' }}>{{ $y }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-4" id="grade-filter-container" style="{{ request('role') == 'siswa' ? '' : 'display:none;' }}">
+                        <label for="grade" class="form-label text-white-50 small fw-semibold">Grade</label>
+                        <select name="grade" id="grade" class="form-select">
+                            <option value="">All</option>
+                            @foreach($grades as $g)
+                                <option value="{{ $g }}" {{ request('grade') == $g ? 'selected' : '' }}>{{ $g }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label for="role" class="form-label text-white-50 small fw-semibold">Role Filter</label>
+                        <select name="role" id="role" class="form-select" onchange="toggleGradeFilter()">
+                            <option value="">All Members</option>
+                            <option value="siswa"    {{ request('role') == 'siswa'    ? 'selected' : '' }}>Students</option>
+                            <option value="employee" {{ request('role') == 'employee' ? 'selected' : '' }}>All Employees</option>
+                            <option value="guru"     {{ request('role') == 'guru'     ? 'selected' : '' }}>Teachers</option>
+                            <option value="staff"    {{ request('role') == 'staff'    ? 'selected' : '' }}>Staff</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-fill">
+                                <i class="bi bi-search me-1"></i>Search
+                            </button>
+                            <a href="{{ route('admin.attendances.index') }}" class="btn border-0 bg-light-soft text-white flex-fill">
+                                <i class="bi bi-x-lg me-1"></i>Reset
+                            </a>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -86,138 +107,145 @@
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success border-0 bg-success bg-opacity-10 text-success d-flex align-items-center mb-4" role="alert">
+        <div class="alert border-0 d-flex align-items-center mb-4" role="alert"
+             style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2)!important;border-radius:10px;">
             <i class="bi bi-check-circle-fill me-2 fs-5"></i>
             <div>{{ session('success') }}</div>
-            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" style="filter:invert(1);opacity:0.5;"></button>
         </div>
     @endif
 
-    <!-- Data Table Card -->
+    {{-- ===== DATA TABLE ===== --}}
     <div class="card border-0 shadow-lg overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4">No</th>
-                        <th>Personnel Name</th>
-                        <th>Classification</th>
-                        <th>Presence Status</th>
-                        <th>Log Time</th>
-                        <th>Documentation</th>
-                        <th class="text-end pe-4">Control</th>
+                        <th class="ps-4" style="width:50px;">No</th>
+                        <th>Member Name</th>
+                        <th>Role</th>
+                        <th>Attendance Status</th>
+                        <th>Time</th>
+                        <th>Proof</th>
+                        <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="border-top-0">
-                    @forelse($attendances as $index => $attendance)
+                    @forelse($attendances as $attendance)
                         <tr>
-                            <td class="ps-4 text-white-50">{{ ($attendances->currentPage() - 1) * $attendances->perPage() + $loop->iteration }}</td>
+                            <td class="ps-4 text-white-50">
+                                {{ ($attendances->currentPage() - 1) * $attendances->perPage() + $loop->iteration }}
+                            </td>
                             <td>
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="bg-light-soft rounded-circle text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                    <div class="bg-light-soft rounded-circle text-white d-flex align-items-center justify-content-center fw-bold"
+                                         style="width:34px;height:34px;font-size:0.8rem;flex-shrink:0;">
                                         {{ strtoupper(substr($attendance->user->name, 0, 1)) }}
                                     </div>
-                                    <div class="fw-semibold text-white">{{ $attendance->user->name }}</div>
+                                    <span class="fw-semibold text-white">{{ $attendance->user->name }}</span>
                                 </div>
                             </td>
                             <td>
                                 @if($attendance->user->hasRole('siswa'))
-                                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">Student</span>
+                                    <span class="badge px-2 py-1" style="background:rgba(6,182,212,0.1);color:#06b6d4;border:1px solid rgba(6,182,212,0.2);">Student</span>
                                 @elseif($attendance->user->hasRole('guru'))
-                                    <span class="badge bg-emerald bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1" style="color: #10b981 !important;">Teacher</span>
+                                    <span class="badge px-2 py-1" style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);">Teacher</span>
                                 @elseif($attendance->user->hasRole('staff'))
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1">Staff</span>
+                                    <span class="badge px-2 py-1" style="background:rgba(148,163,184,0.1);color:#94a3b8;border:1px solid rgba(148,163,184,0.2);">Staff</span>
                                 @endif
                             </td>
                             <td>
                                 @if($attendance->status == 'present')
-                                    <div class="d-flex align-items-center text-success">
-                                        <div class="rounded-circle bg-success me-2" style="width: 8px; height: 8px;"></div>
-                                        <span>Present</span>
+                                    <div class="d-flex align-items-center gap-2" style="color:#10b981;">
+                                        <div class="rounded-circle" style="width:7px;height:7px;background:#10b981;flex-shrink:0;"></div>
+                                        <span class="small fw-medium">Present</span>
                                     </div>
                                 @elseif($attendance->status == 'permission' || $attendance->status == 'sick')
                                     @if($attendance->is_approved === null)
-                                        <div class="d-flex align-items-center text-warning">
-                                            <div class="rounded-circle bg-warning me-2" style="width: 8px; height: 8px;"></div>
-                                            <span>Pending {{ ucfirst($attendance->status) }}</span>
+                                        <div class="d-flex align-items-center gap-2" style="color:#f59e0b;">
+                                            <div class="rounded-circle" style="width:7px;height:7px;background:#f59e0b;flex-shrink:0;"></div>
+                                            <span class="small fw-medium">Pending — {{ $attendance->status == 'sick' ? 'Sick' : 'Permission' }}</span>
                                         </div>
                                     @elseif($attendance->is_approved == true)
-                                        <div class="d-flex align-items-center text-info">
-                                            <div class="rounded-circle bg-info me-2" style="width: 8px; height: 8px;"></div>
-                                            <span>Approved {{ ucfirst($attendance->status) }}</span>
+                                        <div class="d-flex align-items-center gap-2" style="color:#06b6d4;">
+                                            <div class="rounded-circle" style="width:7px;height:7px;background:#06b6d4;flex-shrink:0;"></div>
+                                            <span class="small fw-medium">Approved — {{ $attendance->status == 'sick' ? 'Sick' : 'Permission' }}</span>
                                         </div>
                                     @else
-                                        <div class="d-flex align-items-center text-danger">
-                                            <div class="rounded-circle bg-danger me-2" style="width: 8px; height: 8px;"></div>
-                                            <span>Rejected</span>
+                                        <div class="d-flex align-items-center gap-2" style="color:#ef4444;">
+                                            <div class="rounded-circle" style="width:7px;height:7px;background:#ef4444;flex-shrink:0;"></div>
+                                            <span class="small fw-medium">Rejected</span>
                                         </div>
                                     @endif
                                 @else
-                                    <div class="d-flex align-items-center text-danger">
-                                        <div class="rounded-circle bg-danger me-2" style="width: 8px; height: 8px;"></div>
-                                        <span>Absent</span>
+                                    <div class="d-flex align-items-center gap-2" style="color:#ef4444;">
+                                        <div class="rounded-circle" style="width:7px;height:7px;background:#ef4444;flex-shrink:0;"></div>
+                                        <span class="small fw-medium">Absent</span>
                                     </div>
                                 @endif
                             </td>
-                            <td class="text-white-50">
+                            <td class="text-white-50 small">
                                 {{ \Carbon\Carbon::parse($attendance->recorded_at)->format('d M, H:i') }}
                             </td>
                             <td>
                                 @if($attendance->proof_image)
-                                    <a href="{{ Storage::url($attendance->proof_image) }}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                    <a href="{{ Storage::url($attendance->proof_image) }}" target="_blank"
+                                       class="btn btn-sm border-0 px-3 py-1 rounded-pill"
+                                       style="background:rgba(6,182,212,0.1);color:#06b6d4;font-size:0.78rem;">
                                         <i class="bi bi-eye me-1"></i>View
                                     </a>
                                 @else
-                                    <span class="text-white-25 small fst-italic">No attachment</span>
+                                    <span class="text-white-50 small fst-italic">None</span>
                                 @endif
                             </td>
                             <td class="text-end pe-4">
-                                <div class="d-flex align-items-center justify-content-end gap-2">
+                                <div class="d-flex align-items-center justify-content-end gap-1">
                                     @if(($attendance->status == 'permission' || $attendance->status == 'sick') && $attendance->is_approved === null)
                                         <form action="{{ route('admin.attendances.approve', $attendance->id) }}" method="POST" class="d-inline">
                                             @csrf
-                                            <button type="submit" name="action" value="approve" class="btn btn-sm btn-success rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0;" title="Approve">
+                                            <button type="submit" name="action" value="approve"
+                                                class="btn btn-action btn-action-approve" title="Approve">
                                                 <i class="bi bi-check-lg"></i>
                                             </button>
                                         </form>
                                         <form action="{{ route('admin.attendances.approve', $attendance->id) }}" method="POST" class="d-inline">
                                             @csrf
-                                            <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0;" title="Reject">
+                                            <button type="submit" name="action" value="reject"
+                                                class="btn btn-action btn-action-reject" title="Reject">
                                                 <i class="bi bi-x-lg"></i>
                                             </button>
                                         </form>
                                     @endif
-                                    <a href="{{ route('admin.attendances.edit', $attendance->id) }}" class="btn btn-sm btn-warning rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0; background: #f59e0b; border: none; color: white;" title="Edit">
+                                    <a href="{{ route('admin.attendances.edit', $attendance->id) }}"
+                                       class="btn btn-action btn-action-edit" title="Edit">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    <form action="{{ route('admin.attendances.destroy', $attendance->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Confirm deletion of this record?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0; background: #ef4444; border: none;" title="Delete">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                       class="btn btn-action btn-action-delete" title="Delete"
+                                       data-delete-url="{{ route('admin.attendances.destroy', $attendance->id) }}"
+                                       data-delete-name="attendance for {{ $attendance->user->name }} on {{ \Carbon\Carbon::parse($attendance->recorded_at)->format('d M Y') }}">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-white-25">
-                                <div class="mb-3">
-                                    <i class="bi bi-search fs-1"></i>
-                                </div>
-                                <h5>No logs found matching those criteria</h5>
-                                <p class="small mb-0">Try adjusting your filters to broaden your search.</p>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="mb-3"><i class="bi bi-calendar-x fs-1 text-white-25"></i></div>
+                                <h6 class="text-white-50 fw-medium">No attendance records found</h6>
+                                <p class="text-muted small mb-0">Try adjusting filters to broaden your search.</p>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        
+
         <div class="card-footer bg-transparent border-0 p-4 border-top border-secondary border-opacity-10 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
             <div class="text-white-50 small">
-                Showing entries <span class="text-white">{{ $attendances->firstItem() ?? 0 }}-{{ $attendances->lastItem() ?? 0 }}</span> of total <span class="text-white">{{ $attendances->total() }}</span>
+                Showing <span class="text-white fw-bold">{{ $attendances->firstItem() ?? 0 }}-{{ $attendances->lastItem() ?? 0 }}</span>
+                from total <span class="text-white fw-bold">{{ $attendances->total() }}</span> records
             </div>
             <div class="pagination-modern">
                 {{ $attendances->appends(request()->query())->links('pagination::bootstrap-5') }}
@@ -227,37 +255,15 @@
 </div>
 
 <script>
-    function toggleGradeFilter() {
-        const roleSelect = document.getElementById('role');
-        const gradeContainer = document.getElementById('grade-filter-container');
-        if (roleSelect.value === 'siswa') {
-            gradeContainer.style.display = 'block';
-        } else {
-            gradeContainer.style.display = 'none';
-            document.getElementById('grade').value = '';
-        }
+function toggleGradeFilter() {
+    const roleSelect = document.getElementById('role');
+    const gradeContainer = document.getElementById('grade-filter-container');
+    if (roleSelect.value === 'siswa') {
+        gradeContainer.style.display = 'block';
+    } else {
+        gradeContainer.style.display = 'none';
+        document.getElementById('grade').value = '';
     }
+}
 </script>
-
-<style>
-    /* Pagination Specific Styling for Dark Theme */
-    .pagination-modern .pagination {
-        margin-bottom: 0;
-    }
-    .pagination-modern .page-link {
-        background-color: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: var(--text-secondary);
-        padding: 0.5rem 0.9rem;
-    }
-    .pagination-modern .page-item.active .page-link {
-        background-color: var(--accent-primary);
-        border-color: var(--accent-primary);
-        color: white;
-    }
-    .pagination-modern .page-link:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: var(--text-primary);
-    }
-</style>
 @endsection

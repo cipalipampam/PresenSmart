@@ -26,14 +26,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    Route::controller(SettingController::class)->prefix('locations')->group(function () {
-        Route::get('/', 'location')->name('location');
-        Route::post('/', 'updateLocation')->name('update_location');
-    });
-
-    Route::controller(SettingController::class)->prefix('attendance-settings')->group(function () {
-        Route::get('/', 'attendance')->name('attendance_settings');
-        Route::post('/', 'updateAttendanceSettings')->name('update_attendance_settings');
+    Route::controller(SettingController::class)->prefix('settings')->group(function () {
+        Route::get('/', 'index')->name('settings.index');
+        Route::post('/location', 'updateLocation')->name('update_location');
+        Route::post('/attendance', 'updateAttendanceSettings')->name('update_attendance_settings');
     });
 
     // Delegated to decoupled StudentController

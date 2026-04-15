@@ -35,7 +35,7 @@
             <div class="col-lg-8">
                 {{-- Entry Section --}}
                 <div class="card glass border-0 shadow-lg mb-4">
-                    <div class="card-header bg-white bg-opacity-5 border-0 py-3">
+                    <div class="card-header bg-light-soft border-0 py-3">
                         <h6 class="mb-0 text-white fw-bold"><i class="bi bi-info-circle me-2 text-success"></i>Entry Details</h6>
                     </div>
                     <div class="card-body p-4">
@@ -84,12 +84,12 @@
             <div class="col-lg-4">
                 {{-- attachment Section --}}
                 <div class="card glass border-0 shadow-lg mb-4">
-                    <div class="card-header bg-white bg-opacity-5 border-0 py-3">
+                    <div class="card-header bg-light-soft border-0 py-3">
                         <h6 class="mb-0 text-white fw-bold"><i class="bi bi-paperclip me-2 text-success"></i>Verification Source</h6>
                     </div>
                     <div class="card-body p-4 text-center">
                         <div class="mb-4">
-                            <div class="avatar-preview mx-auto rounded-4 mb-3 d-flex align-items-center justify-content-center bg-white bg-opacity-5 border border-white border-opacity-10" style="width: 150px; height: 120px;">
+                            <div class="avatar-preview mx-auto rounded-4 mb-3 d-flex align-items-center justify-content-center bg-light-soft border border-white border-opacity-10" style="width: 150px; height: 120px;">
                                 <i class="bi bi-file-earmark-medical text-white-25 display-4"></i>
                             </div>
                             <p class="text-white-25 small mb-0">Evidence, certificates, or documents</p>
