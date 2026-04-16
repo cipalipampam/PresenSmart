@@ -22,8 +22,19 @@
                         </a>
                     </li>
                     <li>
+                        <a class="dropdown-item" href="{{ route('admin.attendances.index', array_merge(request()->query(), ['export' => 'csv'])) }}">
+                            <i class="bi bi-filetype-csv me-2 text-info"></i>CSV (.csv)
+                        </a>
+                    </li>
+                    <li>
                         <a class="dropdown-item" href="{{ route('admin.attendances.index', array_merge(request()->query(), ['export' => 'pdf'])) }}">
                             <i class="bi bi-file-earmark-pdf me-2" style="color:#ef4444;"></i>PDF
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider border-white-10"></li>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('admin.attendances.index', array_merge(request()->query(), ['export' => 'zip'])) }}">
+                            <i class="bi bi-file-earmark-zip me-2 text-warning"></i>All Formats (.zip)
                         </a>
                     </li>
                 </ul>

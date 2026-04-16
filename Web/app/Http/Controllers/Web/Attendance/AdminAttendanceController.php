@@ -65,6 +65,90 @@ class AdminAttendanceController extends Controller
             });
         }
 
+        // Multi-Format Export functionality
+        $exportType = $request->input('export');
+        
+        if (in_array($exportType, ['excel', 'csv', 'pdf', 'zip'])) {
+            $exportData = $query->orderBy('recorded_at', 'desc')->get();
+            
+            $dataArray = [
+                ['<center><b>No</b></center>', '<center><b>Name</b></center>', '<center><b>Role</b></center>', '<center><b>Status</b></center>', '<center><b>Time</b></center>', '<center><b>Notes</b></center>', '<center><b>Approved</b></center>']
+            ];
+            $csvArray = [
+                ['No', 'Name', 'Role', 'Status', 'Time', 'Notes', 'Approved']
+            ];
+
+            foreach ($exportData as $index => $row) {
+                $roleStr = '';
+                if ($row->user->hasRole('siswa')) $roleStr = 'Student';
+                elseif ($row->user->hasRole('guru')) $roleStr = 'Teacher';
+                elseif ($row->user->hasRole('staff')) $roleStr = 'Staff';
+
+                $item = [
+                    $index + 1,
+                    $row->user->name,
+                    $roleStr,
+                    ucfirst($row->status),
+                    \Carbon\Carbon::parse($row->recorded_at)->format('d M Y, H:i'),
+                    $row->notes ?? '-',
+                    $row->is_approved === null ? 'N/A' : ($row->is_approved ? 'Yes' : 'No')
+                ];
+                $dataArray[] = $item;
+                $csvArray[] = $item;
+            }
+
+            if ($exportType === 'excel') {
+                $content = (string) \Shuchkin\SimpleXLSXGen::fromArray($dataArray);
+                return response()->streamDownload(function() use ($content) {
+                    echo $content;
+                }, 'Attendance_Records.xlsx');
+            }
+
+            if ($exportType === 'csv') {
+                return response()->streamDownload(function() use ($csvArray) {
+                    $file = fopen('php://output', 'w');
+                    foreach ($csvArray as $line) fputcsv($file, $line);
+                    fclose($file);
+                }, 'Attendance_Records.csv');
+            }
+
+            if ($exportType === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.attendances.export_pdf', ['attendances' => $exportData]);
+                return $pdf->download('Attendance_Records.pdf');
+            }
+
+            if ($exportType === 'zip') {
+                $zip = new \ZipArchive();
+                $zipFileName = 'Attendance_Records_' . time() . '.zip';
+                $zipPath = storage_path('app/public/' . $zipFileName);
+                
+                if ($zip->open($zipPath, \ZipArchive::CREATE) === TRUE) {
+                    $xlsxTemp = tempnam(sys_get_temp_dir(), 'xlsx');
+                    \Shuchkin\SimpleXLSXGen::fromArray($dataArray)->saveAs($xlsxTemp);
+                    $zip->addFile($xlsxTemp, 'Attendance_Records.xlsx');
+
+                    $csvTemp = tempnam(sys_get_temp_dir(), 'csv');
+                    $file = fopen($csvTemp, 'w');
+                    foreach ($csvArray as $line) fputcsv($file, $line);
+                    fclose($file);
+                    $zip->addFile($csvTemp, 'Attendance_Records.csv');
+
+                    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.attendances.export_pdf', ['attendances' => $exportData]);
+                    $pdfTemp = tempnam(sys_get_temp_dir(), 'pdf');
+                    file_put_contents($pdfTemp, $pdf->output());
+                    $zip->addFile($pdfTemp, 'Attendance_Records.pdf');
+
+                    $zip->close();
+                    
+                    unlink($xlsxTemp);
+                    unlink($csvTemp);
+                    unlink($pdfTemp);
+
+                    return response()->download($zipPath)->deleteFileAfterSend(true);
+                }
+            }
+        }
+
         $attendances = $query->orderBy('recorded_at', 'desc')->paginate($perPage);
         
         $attendances->appends([
