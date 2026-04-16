@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../providers/dashboard_provider.dart';
 
 import '../../attendance/screens/attendance_screen.dart';
 import '../../attendance/screens/history_screen.dart';
@@ -82,19 +83,13 @@ class DashboardHomeTab extends StatefulWidget {
 }
 
 class _DashboardHomeTabState extends State<DashboardHomeTab> {
-  final Map<String, String> jadwalHariIni = {
-    'masuk': '07:00',
-    'pulang': '15:00',
-    'status': 'Belum Absen',
-  };
-
-  final List<String> pengumuman = [
-    'Libur tanggal 20 Juli',
-    'Jangan lupa absen masuk sebelum jam 07:15',
-    'Pengambilan rapor tanggal 25 Juli',
-    'Jaga kebersihan kelas setiap hari',
-    'Pakai seragam lengkap setiap Senin dan Kamis',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<DashboardProvider>(context, listen: false).fetchDashboardData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,18 +122,20 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
             ),
           ),
         ),
-        SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // PROFIL SINGKAT
-                Card(
-                  elevation: 12,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
+        Consumer<DashboardProvider>(
+          builder: (context, dashboard, child) {
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // PROFIL SINGKAT
+                    Card(
+                      elevation: 12,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
                   color: Colors.white,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -247,7 +244,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
                                     color: Colors.green,
                                   ),
                                   const SizedBox(width: 4),
-                                  Text('Masuk: ${jadwalHariIni['masuk']}'),
+                                  Text('Masuk: ${dashboard.scheduleMasuk}    Pulang: ${dashboard.schedulePulang}'),
                                 ],
                               ),
                               Row(
@@ -258,7 +255,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
                                     color: Colors.blue,
                                   ),
                                   const SizedBox(width: 4),
-                                  Text('Status: ${jadwalHariIni['status']}'),
+                                  Text('Status: ${dashboard.statusHariIni}'),
                                 ],
                               ),
                             ],
@@ -300,22 +297,31 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        ...pengumuman.map(
-                          (item) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2.0),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.circle,
-                                  size: 8,
-                                  color: Colors.orange,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(child: Text(item)),
-                              ],
+                        if (dashboard.isLoading)
+                          const Center(child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator()))
+                        else if (dashboard.announcements.isEmpty)
+                          const Text('Belum ada pengumuman saat ini.', style: TextStyle(color: Colors.black54))
+                        else
+                          ...dashboard.announcements.map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 6.0),
+                                    child: Icon(
+                                      Icons.circle,
+                                      size: 8,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: Text(item)),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -324,7 +330,9 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
               ],
             ),
           ),
-        ),
+        );
+      }, // Extra bracket needed for Consumer
+    ),
       ],
     );
   }

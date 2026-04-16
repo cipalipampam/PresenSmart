@@ -11,9 +11,17 @@ class AttendanceProvider with ChangeNotifier {
   String? _errorMessage;
   List<AttendanceModel> _historyList = [];
 
+  double? _officeLat;
+  double? _officeLng;
+  int? _officeRadius;
+
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   List<AttendanceModel> get historyList => _historyList;
+
+  double? get officeLat => _officeLat;
+  double? get officeLng => _officeLng;
+  int? get officeRadius => _officeRadius;
 
   bool get hasCheckedInToday {
     if (_historyList.isEmpty) return false;
@@ -208,5 +216,20 @@ class AttendanceProvider with ChangeNotifier {
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  Future<void> fetchLocationSettings() async {
+    try {
+      final response = await _apiClient.client.get('/settings/location');
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = response.data['data'];
+        _officeLat = data['latitude'].toDouble();
+        _officeLng = data['longitude'].toDouble();
+        _officeRadius = data['radius_meters'];
+        notifyListeners();
+      }
+    } catch (e) {
+      // Allow soft fail for settings fetch
+    }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../../../core/constants/app_constants.dart';
 import '../providers/attendance_provider.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -123,6 +124,55 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           ),
                         ),
                       ),
+                      if (data.proofImage != null) ...[
+                        const SizedBox(width: 8),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.image, color: Color(0xFF43C59E), size: 28),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                final storageUrl = AppConstants.baseUrl.replaceAll('/api', '/storage');
+                                final url = '$storageUrl/${data.proofImage!}';
+                                return Dialog(
+                                  backgroundColor: Colors.transparent,
+                                  insetPadding: const EdgeInsets.all(16),
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Image.network(
+                                          url,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (context, error, stackTrace) => Container(
+                                            color: Colors.white,
+                                            padding: const EdgeInsets.all(32),
+                                            child: const Text('Gagal memuat gambar', textAlign: TextAlign.center),
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 8,
+                                        right: 8,
+                                        child: CircleAvatar(
+                                          backgroundColor: Colors.black54,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.close, color: Colors.white),
+                                            onPressed: () => Navigator.pop(context),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
                     ],
                   ),
                 ),

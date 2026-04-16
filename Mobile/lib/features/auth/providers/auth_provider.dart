@@ -25,6 +25,9 @@ class AuthProvider with ChangeNotifier {
     if (token != null && userJson != null) {
       _currentUser = UserModel.fromJson(json.decode(userJson));
       notifyListeners();
+      
+      _syncUserInBackground();
+      
       return true; // Still active
     }
     return false;
@@ -90,5 +93,24 @@ class AuthProvider with ChangeNotifier {
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  Future<void> _syncUserInBackground() async {
+    try {
+      final response = await _apiClient.client.get('/user');
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final userData = response.data['data'];
+        userData['role'] = userData['role_name'] ?? 'user';
+        
+        _currentUser = UserModel.fromJson(userData);
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(AppConstants.userKey, json.encode(userData));
+
+        notifyListeners();
+      }
+    } catch (e) {
+      // Ignore background errors, let it keep using the cached user.
+    }
   }
 }

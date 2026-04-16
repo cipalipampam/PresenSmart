@@ -31,7 +31,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AttendanceProvider>(context, listen: false).fetchHistory();
+      final provider = Provider.of<AttendanceProvider>(context, listen: false);
+      provider.fetchHistory();
+      provider.fetchLocationSettings();
     });
     _fetchLocation();
   }
@@ -230,47 +232,74 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             // TAMPIL Peta saat Mode = Hadir
             if (_selectedPresensiType == PresensiType.hadir) ...[
               if (_currentPosition != null) ...[
-                Container(
-                  height: 220,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: FlutterMap(
-                      options: MapOptions(
-                        center: latlong.LatLng(
-                          _currentPosition!.latitude,
-                          _currentPosition!.longitude,
-                        ),
-                        zoom: 16.0,
+                Consumer<AttendanceProvider>(
+                  builder: (context, provider, child) {
+                    return Container(
+                      height: 220,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
                       ),
-                      children: [
-                        TileLayer(
-                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.example.epresensi',
-                        ),
-                        MarkerLayer(
-                          markers: [
-                            Marker(
-                              point: latlong.LatLng(
-                                _currentPosition!.latitude,
-                                _currentPosition!.longitude,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: FlutterMap(
+                          options: MapOptions(
+                            center: provider.officeLat != null 
+                              ? latlong.LatLng(provider.officeLat!, provider.officeLng!) 
+                              : latlong.LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                            zoom: 16.0,
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              userAgentPackageName: 'com.example.epresensi',
+                            ),
+                            if (provider.officeLat != null)
+                              CircleLayer(
+                                circles: [
+                                  CircleMarker(
+                                    point: latlong.LatLng(provider.officeLat!, provider.officeLng!),
+                                    color: Colors.blue.withOpacity(0.15),
+                                    borderStrokeWidth: 2,
+                                    borderColor: Colors.blue,
+                                    useRadiusInMeter: true,
+                                    radius: provider.officeRadius?.toDouble() ?? 50.0,
+                                  ),
+                                ],
                               ),
-                              width: 80,
-                              height: 80,
-                              builder: (ctx) => const Icon(
-                                Icons.person_pin_circle,
-                                color: Colors.red,
-                                size: 50,
-                              ),
-                            )
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                                  point: latlong.LatLng(
+                                    _currentPosition!.latitude,
+                                    _currentPosition!.longitude,
+                                  ),
+                                  width: 80,
+                                  height: 80,
+                                  builder: (ctx) => const Icon(
+                                    Icons.person_pin_circle,
+                                    color: Colors.red,
+                                    size: 50,
+                                  ),
+                                ),
+                                if (provider.officeLat != null)
+                                  Marker(
+                                    point: latlong.LatLng(provider.officeLat!, provider.officeLng!),
+                                    width: 80,
+                                    height: 80,
+                                    builder: (ctx) => const Icon(
+                                      Icons.business,
+                                      color: Colors.blue,
+                                      size: 30,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  }
                 ),
                 const SizedBox(height: 12),
                 const Row(
