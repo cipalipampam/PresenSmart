@@ -7,6 +7,7 @@ use App\Http\Controllers\Web\Dashboard\DashboardController;
 use App\Http\Controllers\Web\Attendance\AdminAttendanceController;
 use App\Http\Controllers\Web\Student\StudentController;
 use App\Http\Controllers\Web\Employee\EmployeeController;
+use App\Http\Controllers\Web\AnnouncementController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -65,4 +66,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
         Route::delete('/{id}', 'destroy')->name('destroy');
         Route::get('/report/print', 'print')->name('print');
     });
+
+    Route::resource('announcements', AnnouncementController::class)->except(['show']);
 });

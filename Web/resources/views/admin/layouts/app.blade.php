@@ -58,6 +58,13 @@
                         <span class="link-text">Attendances</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.announcements.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}" title="Announcements">
+                        <i class="bi bi-megaphone-fill"></i>
+                        <span class="link-text">Announcements</span>
+                    </a>
+                </li>
             </ul>
 
             <p class="text-white-50 px-3 mb-2 mt-3" style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;">Configuration</p>
