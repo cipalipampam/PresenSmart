@@ -2,11 +2,20 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
 
+/// Singleton ApiClient — shared across all providers.
+/// Creates a single Dio instance with auth interceptor and 401 force-logout.
 class ApiClient {
-  late Dio dio;
+  // ─── Singleton ───────────────────────────────────────────────────────────
+  static final ApiClient _instance = ApiClient._internal();
+  factory ApiClient() => _instance;
+  ApiClient._internal() {
+    _initDio();
+  }
 
-  ApiClient() {
-    dio = Dio(BaseOptions(
+  late Dio _dio;
+
+  void _initDio() {
+    _dio = Dio(BaseOptions(
       baseUrl: AppConstants.baseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),
@@ -15,23 +24,34 @@ class ApiClient {
       },
     ));
 
-    // Interceptor: Otomatis memanjatkan Bearer Token pada setiap Request yang membutuhkan Auth
-    dio.interceptors.add(InterceptorsWrapper(
+    _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final prefs = await SharedPreferences.getInstance();
         final token = prefs.getString(AppConstants.tokenKey);
-        
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
         return handler.next(options);
       },
-      onError: (DioException e, handler) {
-        // Bisa di-inject logika untuk "Force Logout" apabila token mati (401 Unauthorized)
+      onError: (DioException e, handler) async {
+        // Fix #4: Auto-logout when token is expired or revoked (401 Unauthorized)
+        if (e.response?.statusCode == 401) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove(AppConstants.tokenKey);
+          await prefs.remove(AppConstants.userKey);
+
+          // Notify the app-level navigator to redirect to login.
+          // We use the callback pattern so ApiClient stays framework-agnostic.
+          onUnauthorized?.call();
+        }
         return handler.next(e);
       },
     ));
   }
 
-  Dio get client => dio;
+  /// Set this callback in main.dart or AuthProvider so the app can
+  /// navigate to /login when a 401 is received anywhere.
+  static void Function()? onUnauthorized;
+
+  Dio get client => _dio;
 }

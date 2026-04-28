@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/services/websocket_service.dart';
 import '../models/user_model.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -26,6 +27,9 @@ class AuthProvider with ChangeNotifier {
       _currentUser = UserModel.fromJson(json.decode(userJson));
       notifyListeners();
       
+      // Initialize WebSocket
+      WebSocketService().init(token: token, userId: _currentUser?.id);
+
       _syncUserInBackground();
       
       return true; // Still active
@@ -50,6 +54,9 @@ class AuthProvider with ChangeNotifier {
         userMap['role'] = response.data['data']['role'];
 
         _currentUser = UserModel.fromJson(userMap);
+
+        // Initialize WebSocket
+        WebSocketService().init(token: token, userId: _currentUser?.id);
 
         // Store into preferences
         final prefs = await SharedPreferences.getInstance();
@@ -77,6 +84,7 @@ class AuthProvider with ChangeNotifier {
   Future<void> logout() async {
     _setLoading(true);
     try {
+      WebSocketService().disconnect();
       await _apiClient.client.post('/logout');
     } catch (e) {
       // Ignored: Force kill local session anyway even if server errors out
