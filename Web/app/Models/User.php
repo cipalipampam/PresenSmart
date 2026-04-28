@@ -15,6 +15,14 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
+     * Tell Spatie Permission to always resolve roles/permissions against
+     * the 'web' guard. Without this, API requests authenticated via
+     * Sanctum cause "there is no role X for guard sanctum" because roles
+     * were seeded under the 'web' guard.
+     */
+    protected $guard_name = 'web';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>

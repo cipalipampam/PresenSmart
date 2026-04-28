@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Setting;
 use App\Models\Attendance;
 use App\Models\Announcement;
+use App\Services\SettingCache;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -14,49 +14,73 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        // 1. Get Schedule
-        $checkInEnd = Setting::where('key', 'check_in_end')->value('value') ?? '07:15';
-        $checkOutStart = Setting::where('key', 'check_out_start')->value('value') ?? '15:00';
+        // 1. Get Schedule (single cached read)
+        $settings      = SettingCache::all();
+        $checkInEnd    = $settings->get('check_in_end', '07:15');
+        $checkOutStart = $settings->get('check_out_start', '15:00');
 
-        // 2. Get User Status
+        // 2. Get today's attendance status
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('recorded_at', today())
             ->first();
 
-        $status = 'Belum Absen';
-        if ($attendance) {
-            if ($attendance->status === 'sick') {
-                $status = 'Sakit';
-            } elseif ($attendance->status === 'permission') {
-                $status = 'Izin';
-            } elseif ($attendance->status === 'present') {
-                if ($attendance->check_out_time) {
-                    $status = 'Selesai';
-                } else {
-                    $status = 'Hadir';
-                }
-            }
-        }
+        $status = match(true) {
+            $attendance === null                                       => 'Belum Absen',
+            $attendance->status === 'sick'                            => 'Sakit',
+            $attendance->status === 'permission'                      => 'Izin',
+            $attendance->status === 'present' && $attendance->check_out_time !== null => 'Selesai',
+            $attendance->status === 'present'                         => 'Hadir',
+            default                                                   => 'Belum Absen',
+        };
 
-        // 3. Get Active Announcements
+        // 3. Get Active Announcements — return as structured objects, not flat strings
         $announcements = Announcement::where('is_active', true)
             ->latest()
             ->take(5)
-            ->get(['title', 'content']);
+            ->get(['id', 'title', 'content', 'created_at'])
+            ->map(fn($item) => [
+                'id'         => $item->id,
+                'title'      => $item->title,
+                'content'    => $item->content,
+                'created_at' => $item->created_at?->toDateTimeString(),
+            ]);
+
+        // 4. Calculate monthly stats
+        $month = today()->month;
+        $year = today()->year;
         
-        $pengumumanList = $announcements->map(function ($item) {
-            return $item->title . ($item->content ? ' - ' . $item->content : '');
-        })->toArray();
+        $hadir = Attendance::where('user_id', $user->id)
+                    ->whereMonth('recorded_at', $month)
+                    ->whereYear('recorded_at', $year)
+                    ->where('status', 'present')
+                    ->count();
+                    
+        $izin = Attendance::where('user_id', $user->id)
+                    ->whereMonth('recorded_at', $month)
+                    ->whereYear('recorded_at', $year)
+                    ->whereIn('status', ['permission', 'sick'])
+                    ->count();
+                    
+        $alfa = Attendance::where('user_id', $user->id)
+                    ->whereMonth('recorded_at', $month)
+                    ->whereYear('recorded_at', $year)
+                    ->where('status', 'alpha')
+                    ->count();
 
         return response()->json([
             'success' => true,
-            'data' => [
+            'data'    => [
                 'schedule' => [
-                    'masuk' => substr($checkInEnd, 0, 5), // '07:15:00' -> '07:15'
+                    'masuk'  => substr($checkInEnd, 0, 5),
                     'pulang' => substr($checkOutStart, 0, 5),
-                    'status' => $status
+                    'status' => $status,
                 ],
-                'announcements' => $pengumumanList
+                'stats' => [
+                    'hadir' => $hadir,
+                    'izin'  => $izin,
+                    'alfa'  => $alfa,
+                ],
+                'announcements' => $announcements,
             ]
         ]);
     }

@@ -19,8 +19,8 @@ Route::get('/login', function () {
 
 Route::controller(AuthController::class)->group(function () {
     Route::get('/admin/login', 'showAdminLogin')->name('admin.login_form');
-    Route::post('/admin/login', 'adminLogin')->name('admin.login');
-    Route::post('/logout', 'adminLogout')->name('logout'); 
+    Route::post('/admin/login', 'adminLogin')->middleware('throttle:5,1')->name('admin.login');
+    Route::post('/logout', 'adminLogout')->name('logout');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
@@ -58,13 +58,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::controller(AdminAttendanceController::class)->prefix('attendances')->name('attendances.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/create', 'create')->name('create');
+        Route::get('/report/print', 'print')->name('print'); // ← harus sebelum {id}
         Route::post('/', 'store')->name('store');
         Route::post('/{id}/approve', 'approve')->name('approve');
         Route::get('/{id}', 'show')->name('show');
         Route::get('/{id}/edit', 'edit')->name('edit');
         Route::put('/{id}', 'update')->name('update');
         Route::delete('/{id}', 'destroy')->name('destroy');
-        Route::get('/report/print', 'print')->name('print');
     });
 
     Route::resource('announcements', AnnouncementController::class)->except(['show']);

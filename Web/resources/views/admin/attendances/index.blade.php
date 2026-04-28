@@ -277,4 +277,90 @@ function toggleGradeFilter() {
     }
 }
 </script>
+
+@push('scripts')
+<script>
+// ─── WebSocket: Toast notification on new attendance ─────────────────────────
+if (typeof window.Echo !== 'undefined') {
+    window.Echo.channel('attendance-channel')
+        .listen('.AttendanceLogged', (data) => {
+            showAttendanceToast(data);
+        });
+}
+
+function showAttendanceToast(data) {
+    const statusColors = {
+        present:    { bg: 'rgba(16,185,129,0.15)',  border: 'rgba(16,185,129,0.3)',  text: '#10b981', label: 'Present'    },
+        permission: { bg: 'rgba(245,158,11,0.15)',  border: 'rgba(245,158,11,0.3)',  text: '#f59e0b', label: 'Permission' },
+        sick:       { bg: 'rgba(6,182,212,0.15)',   border: 'rgba(6,182,212,0.3)',   text: '#06b6d4', label: 'Sick'       },
+        absent:     { bg: 'rgba(239,68,68,0.15)',   border: 'rgba(239,68,68,0.3)',   text: '#ef4444', label: 'Absent'     },
+    };
+    const s = statusColors[data.status] ?? statusColors.absent;
+    const name = data.user_name ?? 'Unknown';
+    const time = data.time ?? '';
+
+    // Toast container (create once)
+    let container = document.getElementById('ws-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'ws-toast-container';
+        container.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:10px;';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        background: rgba(15,23,42,0.95);
+        border: 1px solid ${s.border};
+        border-left: 3px solid ${s.text};
+        border-radius: 10px;
+        padding: 12px 16px;
+        min-width: 280px;
+        max-width: 340px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: wsToastIn 0.35s ease;
+        cursor: pointer;
+    `;
+    toast.innerHTML = `
+        <div style="width:36px;height:36px;border-radius:50%;background:${s.bg};display:flex;align-items:center;justify-content:center;font-weight:700;color:${s.text};font-size:0.85rem;flex-shrink:0;">
+            ${name.charAt(0).toUpperCase()}
+        </div>
+        <div style="flex:1;min-width:0;">
+            <div style="color:#f1f5f9;font-weight:600;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+            <div style="color:${s.text};font-size:0.78rem;font-weight:500;">
+                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${s.text};margin-right:4px;vertical-align:middle;"></span>
+                ${s.label} · ${time}
+            </div>
+        </div>
+        <div style="color:#64748b;font-size:0.7rem;font-weight:500;flex-shrink:0;">New<br>Record</div>
+    `;
+
+    // Click to dismiss
+    toast.onclick = () => toast.remove();
+
+    // Auto dismiss after 5s
+    container.prepend(toast);
+    setTimeout(() => {
+        toast.style.animation = 'wsToastOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+</script>
+
+<style>
+@keyframes wsToastIn {
+    from { opacity:0; transform:translateX(40px); }
+    to   { opacity:1; transform:translateX(0); }
+}
+@keyframes wsToastOut {
+    from { opacity:1; transform:translateX(0); }
+    to   { opacity:0; transform:translateX(40px); }
+}
+</style>
+@endpush
+
 @endsection
+

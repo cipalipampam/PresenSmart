@@ -21,6 +21,11 @@
                 <i class="bi bi-calendar3 me-2 text-cyan"></i>
                 <span class="text-white-50 fw-medium small">{{ now()->format('l, d F Y') }}</span>
             </div>
+            {{-- WebSocket Live badge --}}
+            <div class="d-inline-flex align-items-center gap-2 ms-2 px-3 py-2 rounded-pill" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);">
+                <span id="ws-live-dot" class="rounded-circle" style="width:7px;height:7px;background:#10b981;display:inline-block;"></span>
+                <span class="small fw-semibold" style="color:#10b981;">Live</span>
+            </div>
         </div>
     </div>
 
@@ -63,7 +68,7 @@
                     </div>
                     <div class="d-flex align-items-end justify-content-between">
                         <div>
-                            <h2 class="display-5 fw-bold text-white mb-1">{{ $todayPresensiCount }}</h2>
+                            <h2 id="ws-present-count" class="display-5 fw-bold text-white mb-1">{{ $todayPresensiCount }}</h2>
                             <span class="trend-badge trend-up">
                                 <i class="bi bi-check-all me-1"></i>Attendances Logged
                             </span>
@@ -153,7 +158,7 @@
                                         <th class="pe-4 text-end">Time</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="ws-attendance-tbody">
                                     @foreach ($todayPresensi as $presensi)
                                         <tr class="border-top border-white border-opacity-5">
                                             <td class="ps-4">
@@ -279,9 +284,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 (function() {
-    // Weekly attendance chart — use $weeklyData if passed by controller, else build 7-day labels
+    // ─── Weekly Chart ────────────────────────────────────────────────────────
     @php
-        // Build 7-day labels and empty dataset as fallback
         $weeklyLabels = [];
         $weeklyValues = [];
         for ($i = 6; $i >= 0; $i--) {
@@ -346,5 +350,106 @@
         }
     });
 })();
+
+// ─── WebSocket Listeners ─────────────────────────────────────────────────────
+if (typeof window.Echo !== 'undefined') {
+
+    // ── Listener 1: New attendance logged ─────────────────────────────────
+    window.Echo.channel('attendance-channel')
+        .listen('.AttendanceLogged', (data) => {
+            // 1a. Update "Present Today" stat card
+            const statEl = document.getElementById('ws-present-count');
+            if (statEl) {
+                const current = parseInt(statEl.textContent, 10) || 0;
+                if (data.status === 'present') {
+                    statEl.textContent = current + 1;
+                    statEl.closest('.card').classList.add('ws-flash');
+                    setTimeout(() => statEl.closest('.card').classList.remove('ws-flash'), 1200);
+                }
+            }
+
+            // 1b. Prepend row to today's attendance log table
+            const tbody = document.getElementById('ws-attendance-tbody');
+            if (tbody) {
+                const statusMap = {
+                    present:    { label: 'Present',    color: '#10b981' },
+                    permission: { label: 'Permission',  color: '#f59e0b' },
+                    sick:       { label: 'Sick',        color: '#06b6d4' },
+                    absent:     { label: 'Absent',      color: '#ef4444' },
+                };
+                const s = statusMap[data.status] ?? statusMap.absent;
+                const initial = (data.user_name ?? '?').charAt(0).toUpperCase();
+
+                const row = document.createElement('tr');
+                row.className = 'border-top border-white border-opacity-5 ws-new-row';
+                row.innerHTML = `
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-light-soft rounded-circle text-cyan d-flex align-items-center justify-content-center fw-bold"
+                                 style="width:34px;height:34px;font-size:0.8rem;flex-shrink:0;">${initial}</div>
+                            <span class="fw-medium text-white">${data.user_name ?? 'Unknown'}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2" style="color:${s.color};">
+                            <div class="rounded-circle" style="width:7px;height:7px;background:${s.color};flex-shrink:0;"></div>
+                            <span class="small fw-medium">${s.label}</span>
+                        </div>
+                    </td>
+                    <td class="pe-4 text-end">
+                        <span class="text-white-50 small fw-medium">${data.time ?? ''}</span>
+                    </td>
+                `;
+                // Remove "no records" placeholder if present
+                const empty = tbody.querySelector('td[colspan]');
+                if (empty) empty.closest('tr').remove();
+
+                tbody.prepend(row);
+            }
+
+            // 1c. Live indicator pulse
+            const dot = document.getElementById('ws-live-dot');
+            if (dot) { dot.classList.add('ws-pulse'); setTimeout(() => dot.classList.remove('ws-pulse'), 1000); }
+        });
+
+    // ── Listener 2: Dashboard stats updated ───────────────────────────────
+    window.Echo.channel('dashboard-stats')
+        .listen('.DashboardStatsUpdated', (data) => {
+            const map = {
+                'ws-present-count':    data.total_present,
+                'ws-late-count':       data.total_late,
+                'ws-permission-count': data.total_permission,
+            };
+            Object.entries(map).forEach(([id, val]) => {
+                const el = document.getElementById(id);
+                if (el && val !== undefined) {
+                    el.textContent = val;
+                    el.closest('.card')?.classList.add('ws-flash');
+                    setTimeout(() => el.closest('.card')?.classList.remove('ws-flash'), 1200);
+                }
+            });
+        });
+}
 </script>
+
+{{-- WebSocket UI styles -------------------------------------------------------}}
+<style>
+@keyframes wsFlash {
+    0%   { box-shadow: 0 0 0 0 rgba(6,182,212,0); }
+    40%  { box-shadow: 0 0 0 8px rgba(6,182,212,0.35); }
+    100% { box-shadow: 0 0 0 0 rgba(6,182,212,0); }
+}
+@keyframes wsPulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.4; transform:scale(1.5); }
+}
+@keyframes wsSlide {
+    from { opacity:0; transform:translateY(-10px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+.ws-flash { animation: wsFlash 1.2s ease; }
+.ws-pulse { animation: wsPulse 1s ease; }
+.ws-new-row { animation: wsSlide 0.4s ease; }
+</style>
 @endpush
+

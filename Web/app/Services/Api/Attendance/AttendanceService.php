@@ -3,8 +3,9 @@
 namespace App\Services\Api\Attendance;
 
 use App\Models\Attendance;
-use App\Models\Setting;
 use App\Models\User;
+use App\Services\SettingCache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -27,10 +28,11 @@ class AttendanceService
             ]);
         }
 
-        // 2. Fetch school coordinates and radius
-        $schoolLat = Setting::where('key', 'school_lat')->first()?->value;
-        $schoolLong = Setting::where('key', 'school_long')->first()?->value;
-        $schoolRadius = Setting::where('key', 'school_radius')->first()?->value;
+        // 2. Fetch school coordinates and radius (single cached read)
+        $settings     = SettingCache::all();
+        $schoolLat    = $settings->get('school_lat');
+        $schoolLong   = $settings->get('school_long');
+        $schoolRadius = $settings->get('school_radius');
 
         if (!$schoolLat || !$schoolLong || !$schoolRadius) {
             throw ValidationException::withMessages([
@@ -40,9 +42,9 @@ class AttendanceService
 
         // 3. Calculate Haversine distance
         $distance = $this->calculateDistance(
-            (float) $schoolLat, 
-            (float) $schoolLong, 
-            (float) $data['latitude'], 
+            (float) $schoolLat,
+            (float) $schoolLong,
+            (float) $data['latitude'],
             (float) $data['longitude']
         );
 
@@ -52,17 +54,17 @@ class AttendanceService
             ]);
         }
 
-        // 4. Handle time restrictions (07:00 base, 10 min tolerance)
-        $checkInEndStr = Setting::where('key', 'check_in_end')->first()?->value ?? '07:00';
-        $toleranceMinutes = (int)(Setting::where('key', 'late_tolerance_minutes')->first()?->value ?? 10);
-        
+        // 4. Handle time restrictions
+        $checkInEndStr    = $settings->get('check_in_end', '07:00');
+        $toleranceMinutes = (int) $settings->get('late_tolerance_minutes', 10);
+
         $cutoffOnTime = Carbon::createFromTimeString($checkInEndStr);
-        $cutoffLate = $cutoffOnTime->copy()->addMinutes($toleranceMinutes);
-        $currentTime = Carbon::now();
+        $cutoffLate   = $cutoffOnTime->copy()->addMinutes($toleranceMinutes);
+        $currentTime  = Carbon::now();
 
         if ($currentTime->greaterThan($cutoffLate)) {
             throw ValidationException::withMessages([
-                'attendance' => ['Batas toleransi terlambat habis (Maks. '.$cutoffLate->format('H:i').'). Pintu absensi masuk telah ditutup. Anda tercatat Alfa.']
+                'attendance' => ['Batas toleransi terlambat habis (Maks. ' . $cutoffLate->format('H:i') . '). Pintu absensi masuk telah ditutup. Anda tercatat Alfa.']
             ]);
         }
         $isLate = $currentTime->greaterThan($cutoffOnTime);
@@ -73,21 +75,30 @@ class AttendanceService
             $proofPath = $data['proof_image']->store('attendances', 'public');
         }
 
-        return Attendance::create([
-            'user_id' => $user->id,
-            'status' => 'present',
-            'is_late' => $isLate,
-            'is_approved' => true,
-            'latitude' => $data['latitude'],
-            'longitude' => $data['longitude'],
-            'notes' => $data['notes'] ?? null,
-            'proof_image' => $proofPath,
-            'recorded_at' => Carbon::now(),
-        ]);
+        $attendance = DB::transaction(function () use ($user, $data, $isLate, $proofPath) {
+            $record = Attendance::create([
+                'user_id'     => $user->id,
+                'status'      => 'present',
+                'is_late'     => $isLate,
+                'is_approved' => true,
+                'latitude'    => $data['latitude'],
+                'longitude'   => $data['longitude'],
+                'notes'       => $data['notes'] ?? null,
+                'proof_image' => $proofPath,
+                'recorded_at' => Carbon::now(),
+            ]);
+
+            event(new \App\Events\AttendanceLogged($record));
+            event(new \App\Events\DashboardStatsUpdated());
+
+            return $record;
+        });
+
+        return $attendance;
     }
 
     /**
-     * Submit leave or sickness without geolocation. 
+     * Submit leave or sickness without geolocation.
      */
     public function submitPermission(array $data, User $user)
     {
@@ -106,19 +117,28 @@ class AttendanceService
             $proofPath = $data['proof_image']->store('attendances', 'public');
         }
 
-        return Attendance::create([
-            'user_id' => $user->id,
-            'status' => $data['status'],
-            'notes' => $data['notes'] ?? null,
-            'proof_image' => $proofPath,
-            'recorded_at' => Carbon::now(),
-        ]);
+        $attendance = DB::transaction(function () use ($user, $data, $proofPath) {
+            $record = Attendance::create([
+                'user_id'     => $user->id,
+                'status'      => $data['status'],
+                'notes'       => $data['notes'] ?? null,
+                'proof_image' => $proofPath,
+                'recorded_at' => Carbon::now(),
+            ]);
+
+            event(new \App\Events\AttendanceLogged($record));
+            event(new \App\Events\DashboardStatsUpdated());
+
+            return $record;
+        });
+
+        return $attendance;
     }
 
     public function checkOut(array $data, User $user)
     {
         $today = Carbon::today();
-        
+
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('recorded_at', $today)
             ->where('status', 'present')
@@ -136,19 +156,21 @@ class AttendanceService
             ]);
         }
 
-        $checkOutStartStr = Setting::where('key', 'check_out_start')->first()?->value ?? '15:00';
-        $checkOutStart = Carbon::createFromTimeString($checkOutStartStr);
-        $currentTime = Carbon::now();
+        $checkOutStart = Carbon::createFromTimeString(SettingCache::get('check_out_start', '15:00'));
+        $currentTime   = Carbon::now();
 
         if ($currentTime->lessThan($checkOutStart)) {
             throw ValidationException::withMessages([
-                'attendance' => ['Waktu absensi pulang belum dimulai (Minimal '.$checkOutStart->format('H:i').').']
+                'attendance' => ['Waktu absensi pulang belum dimulai (Minimal ' . $checkOutStart->format('H:i') . ').']
             ]);
         }
 
-        $attendance->update([
-            'check_out_time' => $currentTime,
-        ]);
+        DB::transaction(function () use ($attendance, $currentTime) {
+            $attendance->update(['check_out_time' => $currentTime]);
+
+            event(new \App\Events\AttendanceLogged($attendance));
+            event(new \App\Events\DashboardStatsUpdated());
+        });
 
         return $attendance;
     }
@@ -163,7 +185,7 @@ class AttendanceService
         if ($month) {
             $query->whereMonth('recorded_at', $month);
         }
-        
+
         if ($year) {
             $query->whereYear('recorded_at', $year);
         }
@@ -172,11 +194,11 @@ class AttendanceService
     }
 
     /**
-     * Calculate Distance in meters using Haversine algorithm
+     * Calculate Distance in meters using Haversine algorithm.
      */
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
-        $earthRadius = 6371000; // Radius of Earth in meters
+        $earthRadius = 6371000;
 
         $latDelta = deg2rad($lat2 - $lat1);
         $lonDelta = deg2rad($lon2 - $lon1);

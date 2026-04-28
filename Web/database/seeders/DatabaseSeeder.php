@@ -2,85 +2,79 @@
 
 namespace Database\Seeders;
 
+use App\Models\Setting;
 use App\Models\User;
-use App\Models\Student;
-use App\Models\Employee;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Setting;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // 1. Setup Roles
+        // 1. Roles (harus pertama)
         $this->call([RoleSeeder::class]);
 
-        // 2. Buat user admin
+        // 2. Admin
         $admin = User::firstOrCreate(
             ['email' => 'admin@sekolah.com'],
             [
-                'name' => 'Admin Utama',
+                'name'     => 'Admin Utama',
                 'password' => Hash::make('admin123'),
             ]
         );
         if (!$admin->hasRole('admin')) {
             $admin->assignRole('admin');
         }
+        $this->command->info('✅ Admin berhasil di-seed. (admin@sekolah.com / admin123)');
 
-        // 3. Buat Pegawai / Guru
-        $guru = User::firstOrCreate(
-            ['email' => 'guru@sekolah.com'],
-            [
-                'name' => 'Guru Teladan',
-                'password' => Hash::make('password123'),
-            ]
-        );
-        if (!$guru->hasRole('guru')) {
-            $guru->assignRole('guru');
+        // 3. Siswa (10 orang)
+        $this->call([StudentSeeder::class]);
+
+        // 4. Guru & Staff (3 guru + 2 staff)
+        $this->call([EmployeeSeeder::class]);
+
+        // 5. Pengumuman (5 pengumuman aktif)
+        $this->call([AnnouncementSeeder::class]);
+
+        // 6. Riwayat Presensi (14 hari terakhir, semua user)
+        $this->call([AttendanceSeeder::class]);
+
+        // 7. Settings lengkap
+        $settings = [
+            // Lokasi sekolah (default: SMKN 1 Jakarta)
+            'school_lat'             => '-6.200000',
+            'school_long'            => '106.816666',
+            'school_radius'          => '100',          // meter
+
+            // Jam operasional
+            'check_in_start'         => '06:00',
+            'check_in_end'           => '07:00',        // jam masuk tepat waktu
+            'late_tolerance_minutes' => '15',           // toleransi terlambat
+            'check_out_start'        => '15:00',        // jam pulang minimal
+            'check_out_end'          => '17:00',
+
+            // Alias yang mungkin dipakai di tempat lain
+            'presensi_start_time'    => '07:00',
+            'presensi_end_time'      => '09:00',
+
+            // Info sekolah
+            'school_name'            => 'SMA Negeri 1 Contoh',
+            'school_address'         => 'Jl. Pendidikan No.1, Jakarta Pusat',
+            'school_phone'           => '021-12345678',
+        ];
+
+        foreach ($settings as $key => $value) {
+            Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
-        Employee::firstOrCreate(
-            ['user_id' => $guru->id],
-            [
-                'nip' => '198001012005011001',
-                'position' => 'Guru Matematika',
-                'gender' => 'male',
-                'religion' => 'islam',
-                'phone_number' => '08123456789',
-            ]
-        );
+        $this->command->info('✅ Settings lengkap berhasil di-seed.');
 
-        // 4. Buat contoh Siswa
-        $siswa = User::firstOrCreate(
-            ['email' => 'siswa@sekolah.com'],
-            [
-                'name' => 'Siswa Contoh',
-                'password' => Hash::make('password123'),
-            ]
-        );
-        if (!$siswa->hasRole('siswa')) {
-            $siswa->assignRole('siswa');
-        }
-        Student::firstOrCreate(
-            ['user_id' => $siswa->id],
-            [
-                'nis' => '654320',
-                'nisn' => '1234567890',
-                'grade' => 'X-IPA-1',
-                'gender' => 'male',
-                'place_of_birth' => 'Bandung',
-                'date_of_birth' => '2005-05-15',
-                'religion' => 'islam',
-                'address' => 'Jl. Merdeka No. 45',
-            ]
-        );
-
-        // 5. Settings Standard
-        Setting::updateOrCreate(['key' => 'school_lat'], ['value' => '-6.200000']);
-        Setting::updateOrCreate(['key' => 'school_long'], ['value' => '106.816666']);
-        Setting::updateOrCreate(['key' => 'school_radius'], ['value' => '100']);
+        $this->command->info('');
+        $this->command->info('══════════════════════════════════════════════');
+        $this->command->info('  ✅ Seeding selesai! Akun yang tersedia:');
+        $this->command->info('  Admin  : admin@sekolah.com / admin123');
+        $this->command->info('  Siswa  : ahmad.rizki@siswa.sch.id / password123');
+        $this->command->info('  Guru   : hendra.kusuma@sekolah.sch.id / password123');
+        $this->command->info('  Staff  : agus.triyono@sekolah.sch.id / password123');
+        $this->command->info('══════════════════════════════════════════════');
     }
 }
