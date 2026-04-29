@@ -25,7 +25,7 @@ class StudentController extends Controller
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+                $q->where('users.name', 'like', "%{$search}%")
                   ->orWhereHas('student', function($sq) use ($search) {
                       $sq->where('nisn', 'like', "%{$search}%")
                          ->orWhere('nis', 'like', "%{$search}%");
@@ -33,9 +33,35 @@ class StudentController extends Controller
             });
         }
 
-        $students = $query->orderBy('created_at', 'desc')->paginate($request->input('per_page', 10));
+        if ($request->has('grade') && $request->grade != '') {
+            $grade = $request->grade;
+            $query->whereHas('student', function($q) use ($grade) {
+                $q->where('grade', $grade);
+            });
+        }
 
-        return view('admin.students.index', compact('students'));
+        // Handle sorting
+        if ($request->has('sort') && in_array($request->sort, ['name', 'grade'])) {
+            $direction = $request->direction === 'desc' ? 'desc' : 'asc';
+            
+            if ($request->sort === 'name') {
+                $query->orderBy('name', $direction);
+            } else if ($request->sort === 'grade') {
+                // Sorting by a relationship column requires joining or subquery in Laravel.
+                // Alternatively, we can join the students table.
+                $query->join('students', 'users.id', '=', 'students.user_id')
+                      ->orderBy('students.grade', $direction)
+                      ->select('users.*'); // Ensure we select users' columns
+            }
+        } else {
+            $query->orderBy('users.created_at', 'desc');
+        }
+
+        $students = $query->paginate($request->input('per_page', 10));
+        
+        $grades = \App\Models\Student::select('grade')->whereNotNull('grade')->distinct()->pluck('grade');
+
+        return view('admin.students.index', compact('students', 'grades'));
     }
 
     public function create()
