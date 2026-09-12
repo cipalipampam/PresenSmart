@@ -1,22 +1,48 @@
+<div align="center">
+
 # 🟢 PresenSmart
+
+### Sistem Presensi Digital Berbasis Web & Mobile
+
+<p>
+    <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20?logo=laravel&logoColor=white" alt="Laravel 12">
+    <img src="https://img.shields.io/badge/PHP-8.5%2B-777BB4?logo=php&logoColor=white" alt="PHP 8.5+">
+    <img src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white" alt="Flutter">
+    <img src="https://img.shields.io/badge/Dart-3.7%2B-0175C2?logo=dart&logoColor=white" alt="Dart">
+    <img src="https://img.shields.io/badge/MySQL%20%7C%20SQLite-Database-4479A1?logo=mysql&logoColor=white" alt="Database">
+    <img src="https://img.shields.io/badge/Sanctum-API%20Auth-FF2D20?logo=laravel&logoColor=white" alt="Laravel Sanctum">
+    <img src="https://img.shields.io/badge/Reverb-WebSocket-6C63FF?logo=websocket&logoColor=white" alt="Laravel Reverb">
+    <img src="https://img.shields.io/badge/Vite-6.x-646CFF?logo=vite&logoColor=white" alt="Vite">
+</p>
+
+<p><strong>Platform presensi modern untuk mengelola kehadiran, validasi lokasi, pengajuan izin, dan laporan secara terintegrasi.</strong></p>
+
+<p>
+    📍 <strong>Geofencing</strong> &nbsp;•&nbsp;
+    📸 <strong>Bukti Foto</strong> &nbsp;•&nbsp;
+    ⚡ <strong>Real-time</strong> &nbsp;•&nbsp;
+    📊 <strong>Dashboard Admin</strong>
+</p>
+
+<p>
+    <a href="#-fitur">✨ Fitur Utama</a> •
+    <a href="#-teknologi">🛠️ Tech Stack</a> •
+    <a href="#-arsitektur-direktori">🗂️ Arsitektur</a> •
+    <a href="#-instalasi-dan-menjalankan-backend">⚙️ Backend</a> •
+    <a href="#-instalasi-dan-menjalankan-mobile">📱 Mobile</a> •
+    <a href="#-api-mobile">🔌 API</a> •
+    <a href="#-pengujian">🧪 Testing</a>
+</p>
+
+</div>
+
+---
+
+## 📖 Gambaran Sistem
 
 **PresenSmart** adalah platform presensi digital untuk sekolah atau instansi yang menghubungkan panel administrasi web dengan aplikasi mobile pengguna. Sistem ini menangani presensi masuk dan pulang, validasi lokasi berbasis radius, pengajuan izin/sakit dengan bukti, pengelolaan data anggota, laporan, pengumuman, dan pembaruan informasi melalui WebSocket.
 
-> **Hadir lebih cerdas, kelola lebih mudah.**
-
-## 🧭 Daftar Isi
-
-| 🚀 Mulai | 🧩 Pengembangan | 🛡️ Operasional |
-| --- | --- | --- |
-| [📖 Gambaran Sistem](#-gambaran-sistem) | [🗂️ Arsitektur Direktori](#️-arsitektur-direktori) | [👤 Akun Demo](#-akun-demo) |
-| [✨ Fitur](#-fitur) | [💻 Prasyarat](#-prasyarat) | [🔌 API Mobile](#-api-mobile) |
-| [🛠️ Teknologi](#️-teknologi) | [⚙️ Instalasi Backend](#️-instalasi-dan-menjalankan-backend) | [🔄 Alur Presensi](#-alur-presensi) |
-|  | [📱 Instalasi Mobile](#-instalasi-dan-menjalankan-mobile) | [🔧 Konfigurasi](#-konfigurasi-penting) |
-|  |  | [🧪 Pengujian](#-pengujian) |
-|  |  | [🩹 Troubleshooting](#-troubleshooting) |
-|  |  | [🔐 Catatan Keamanan](#-catatan-keamanan) |
-
-## 📖 Gambaran Sistem
+> 💡 **Hadir lebih cerdas, kelola lebih mudah.**
 
 PresenSmart terdiri dari dua aplikasi yang memakai backend yang sama:
 
