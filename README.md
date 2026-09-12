@@ -1,27 +1,22 @@
-# PresenSmart
+# 🟢 PresenSmart
 
 **PresenSmart** adalah platform presensi digital untuk sekolah atau instansi yang menghubungkan panel administrasi web dengan aplikasi mobile pengguna. Sistem ini menangani presensi masuk dan pulang, validasi lokasi berbasis radius, pengajuan izin/sakit dengan bukti, pengelolaan data anggota, laporan, pengumuman, dan pembaruan informasi melalui WebSocket.
 
 > **Hadir lebih cerdas, kelola lebih mudah.**
 
-## Daftar Isi
+## 🧭 Daftar Isi
 
-- [Gambaran Sistem](#gambaran-sistem)
-- [Fitur](#fitur)
-- [Teknologi](#teknologi)
-- [Arsitektur Direktori](#arsitektur-direktori)
-- [Prasyarat](#prasyarat)
-- [Instalasi dan Menjalankan Backend](#instalasi-dan-menjalankan-backend)
-- [Instalasi dan Menjalankan Mobile](#instalasi-dan-menjalankan-mobile)
-- [Akun Demo](#akun-demo)
-- [API Mobile](#api-mobile)
-- [Alur Presensi](#alur-presensi)
-- [Konfigurasi Penting](#konfigurasi-penting)
-- [Pengujian](#pengujian)
-- [Troubleshooting](#troubleshooting)
-- [Catatan Keamanan](#catatan-keamanan)
+| 🚀 Mulai | 🧩 Pengembangan | 🛡️ Operasional |
+| --- | --- | --- |
+| [📖 Gambaran Sistem](#-gambaran-sistem) | [🗂️ Arsitektur Direktori](#️-arsitektur-direktori) | [👤 Akun Demo](#-akun-demo) |
+| [✨ Fitur](#-fitur) | [💻 Prasyarat](#-prasyarat) | [🔌 API Mobile](#-api-mobile) |
+| [🛠️ Teknologi](#️-teknologi) | [⚙️ Instalasi Backend](#️-instalasi-dan-menjalankan-backend) | [🔄 Alur Presensi](#-alur-presensi) |
+|  | [📱 Instalasi Mobile](#-instalasi-dan-menjalankan-mobile) | [🔧 Konfigurasi](#-konfigurasi-penting) |
+|  |  | [🧪 Pengujian](#-pengujian) |
+|  |  | [🩹 Troubleshooting](#-troubleshooting) |
+|  |  | [🔐 Catatan Keamanan](#-catatan-keamanan) |
 
-## Gambaran Sistem
+## 📖 Gambaran Sistem
 
 PresenSmart terdiri dari dua aplikasi yang memakai backend yang sama:
 
@@ -32,9 +27,9 @@ PresenSmart terdiri dari dua aplikasi yang memakai backend yang sama:
 
 Autentikasi mobile menggunakan Laravel Sanctum dengan bearer token. Panel admin memakai autentikasi session dan hanya dapat diakses oleh role `admin`. Data utama disimpan dalam database relasional, sementara file bukti presensi disimpan pada disk `public`.
 
-## Fitur
+## ✨ Fitur
 
-### Panel Admin Web
+### 🖥️ Panel Admin Web
 
 - Dashboard statistik presensi.
 - CRUD siswa beserta NIS, NISN, kelas, kontak, dan profil.
@@ -47,7 +42,7 @@ Autentikasi mobile menggunakan Laravel Sanctum dengan bearer token. Panel admin 
 - Mengatur lokasi sekolah, radius presensi, jam masuk, toleransi keterlambatan, dan jam pulang.
 - Pembaruan statistik dan data tertentu secara real-time melalui Laravel Reverb.
 
-### Aplikasi Mobile
+### 📱 Aplikasi Mobile
 
 - Login, logout, dan pemulihan sesi lokal.
 - Dashboard status presensi, jadwal, statistik pribadi, dan pengumuman.
@@ -60,9 +55,9 @@ Autentikasi mobile menggunakan Laravel Sanctum dengan bearer token. Panel admin 
 - Profil dinamis untuk siswa, guru, dan staff.
 - Antarmuka dark theme dengan komponen glassmorphism dan animasi.
 
-## Teknologi
+## 🛠️ Teknologi
 
-### Backend dan Web
+### 🧱 Backend dan Web
 
 - Laravel `^12.0` dan PHP `^8.5`.
 - Laravel Sanctum `^4.1` untuk token API.
@@ -72,7 +67,7 @@ Autentikasi mobile menggunakan Laravel Sanctum dengan bearer token. Panel admin 
 - Vite `^6.2.4`, Tailwind CSS `^4.0.0`, Bootstrap 5.3, dan Bootstrap Icons.
 - DomPDF untuk PDF dan SimpleXLSXGen untuk Excel.
 
-### Mobile
+### 📲 Mobile
 
 - Flutter dengan Dart SDK `^3.7.0`.
 - Provider untuk state management.
@@ -83,7 +78,7 @@ Autentikasi mobile menggunakan Laravel Sanctum dengan bearer token. Panel admin 
 - Shared Preferences untuk menyimpan token dan data sesi.
 - Flutter Animate, FL Chart, Intl, dan Cached Network Image untuk pengalaman aplikasi.
 
-## Arsitektur Direktori
+## 🗂️ Arsitektur Direktori
 
 ```text
 PresenSmart/
@@ -104,7 +99,7 @@ PresenSmart/
     └── lib/features/            # Auth, dashboard, attendance, profile
 ```
 
-## Prasyarat
+## 💻 Prasyarat
 
 Pastikan perangkat pengembangan memiliki:
 
@@ -116,7 +111,7 @@ Pastikan perangkat pengembangan memiliki:
 - Database SQLite untuk setup paling sederhana, atau MySQL/PostgreSQL untuk environment bersama.
 - Ekstensi PHP `zip` jika ingin memakai ekspor ZIP.
 
-## Instalasi dan Menjalankan Backend
+## ⚙️ Instalasi dan Menjalankan Backend
 
 Jalankan perintah berikut dari direktori `Web/`.
 
@@ -133,7 +128,7 @@ Pada Windows PowerShell, gunakan perintah berikut untuk menyalin environment:
 Copy-Item .env.example .env
 ```
 
-### Database
+### 🗄️ Database
 
 Konfigurasi default memakai SQLite. Buat file database jika belum tersedia:
 
@@ -152,7 +147,7 @@ Seeder membuat role, akun demo, data siswa/guru/staff, pengumuman, riwayat prese
 
 Untuk MySQL atau PostgreSQL, ubah `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` pada `Web/.env` sebelum menjalankan migration.
 
-### Menjalankan layanan
+### ▶️ Menjalankan Layanan
 
 Buka terminal terpisah dari direktori `Web/`:
 
@@ -175,7 +170,7 @@ Untuk workflow pengembangan Laravel yang sudah didefinisikan di `composer.json`,
 composer run dev
 ```
 
-## Instalasi dan Menjalankan Mobile
+## 📱 Instalasi dan Menjalankan Mobile
 
 Jalankan dari direktori `Mobile/`:
 
@@ -205,7 +200,7 @@ Gunakan nilai berikut sesuai target:
 
 Perangkat fisik dan komputer harus berada pada jaringan yang sama. Android development saat ini mengizinkan HTTP cleartext, tetapi production sebaiknya memakai HTTPS dan WSS.
 
-## Akun Demo
+## 👤 Akun Demo
 
 Akun berikut dibuat oleh `DatabaseSeeder`:
 
@@ -218,7 +213,7 @@ Akun berikut dibuat oleh `DatabaseSeeder`:
 
 Ganti seluruh password demo sebelum deployment atau penggunaan nyata.
 
-## API Mobile
+## 🔌 API Mobile
 
 Base URL: `http://ALAMAT_BACKEND:8000/api/v1`
 
@@ -241,7 +236,7 @@ Authorization: Bearer <SANCTUM_TOKEN>
 Accept: application/json
 ```
 
-## Alur Presensi
+## 🔄 Alur Presensi
 
 1. Pengguna login dan token disimpan secara lokal.
 2. Aplikasi mengambil koordinat perangkat melalui GPS.
@@ -253,9 +248,9 @@ Accept: application/json
 
 Konfigurasi awal seeder menggunakan radius 100 meter, jam check-in `06:00`-`07:00`, toleransi terlambat 15 menit, dan jam check-out `15:00`-`17:00`. Nilai ini dapat diubah dari menu pengaturan admin.
 
-## Konfigurasi Penting
+## 🔧 Konfigurasi Penting
 
-### Environment Laravel
+### 🌐 Environment Laravel
 
 Nilai penting pada `Web/.env` meliputi:
 
@@ -275,17 +270,17 @@ QUEUE_CONNECTION=sync
 
 Nama variable Reverb dapat disesuaikan dengan konfigurasi Laravel Reverb yang digunakan. Pastikan key dan host yang dipakai backend sama dengan `reverbKey`, `reverbHost`, dan `reverbPort` pada aplikasi mobile.
 
-### Permission perangkat
+### 📍 Permission Perangkat
 
 Mobile memerlukan internet, lokasi, kamera, dan akses galeri untuk fitur terkait. Permission Android dan iOS sudah dideklarasikan pada manifest/platform configuration, tetapi pengguna tetap harus memberikan izin saat runtime.
 
-### Storage
+### 📦 Storage
 
 Jalankan `php artisan storage:link` agar foto bukti yang tersimpan pada disk `public` dapat diakses aplikasi. Jangan menyimpan kredensial production atau secret Reverb di repository.
 
-## Pengujian
+## 🧪 Pengujian
 
-### Backend
+### 🧰 Backend
 
 ```bash
 cd Web
@@ -294,7 +289,7 @@ php artisan test
 
 Perintah `composer test` juga tersedia dan menjalankan `php artisan test` setelah membersihkan konfigurasi.
 
-### Mobile
+### 📱 Mobile
 
 ```bash
 cd Mobile
@@ -304,33 +299,33 @@ flutter test
 
 Test Flutter bawaan saat ini masih berupa smoke test template, sehingga skenario login, geolocation, upload bukti, dan WebSocket tetap perlu diuji pada emulator/perangkat nyata.
 
-## Troubleshooting
+## 🩹 Troubleshooting
 
-### Mobile tidak dapat terhubung ke backend
+### 📡 Mobile Tidak Dapat Terhubung ke Backend
 
 - Jangan memakai `127.0.0.1` dari perangkat fisik; gunakan IPv4 komputer.
 - Untuk Android Emulator gunakan `10.0.2.2`.
 - Pastikan `php artisan serve` aktif dan firewall mengizinkan port `8000`.
 - Pastikan perangkat dan komputer berada pada jaringan yang sama.
 
-### WebSocket tidak tersambung
+### 🔌 WebSocket Tidak Tersambung
 
 - Jalankan `php artisan reverb:start`.
 - Pastikan `BROADCAST_CONNECTION` backend menggunakan `reverb`.
 - Samakan host, port, dan key Reverb pada backend dan `app_constants.dart`.
 - Untuk production, gunakan konfigurasi TLS/WSS dan reverse proxy yang benar.
 
-### Foto atau bukti tidak tampil
+### 🖼️ Foto atau Bukti Tidak Tampil
 
 - Jalankan `php artisan storage:link`.
 - Pastikan `FILESYSTEM_DISK=public` atau disk upload yang dipakai sudah dikonfigurasi.
 - Periksa permission kamera/galeri pada perangkat.
 
-### Token dianggap tidak valid
+### 🔑 Token Dianggap Tidak Valid
 
 Backend akan merespons `401` ketika token kedaluwarsa atau dicabut. Aplikasi mobile otomatis menghapus token lokal dan mengarahkan pengguna kembali ke login.
 
-## Catatan Keamanan
+## 🔐 Catatan Keamanan
 
 - Jangan gunakan akun demo dan secret development di production.
 - Gunakan HTTPS untuk API serta WSS untuk WebSocket.
@@ -339,6 +334,6 @@ Backend akan merespons `401` ketika token kedaluwarsa atau dicabut. Aplikasi mob
 - Backup database dan file bukti secara berkala.
 - Tinjau ulang role, permission, dan route admin sebelum deployment.
 
-## Lisensi dan Kontribusi
+## 🤝 Lisensi dan Kontribusi
 
 PresenSmart adalah project aplikasi pada repository ini. Aturan lisensi dan kontribusi dapat ditambahkan sesuai kebijakan pemilik project. Untuk pengembangan, pisahkan perubahan backend dan mobile dengan jelas, jalankan test yang relevan, lalu dokumentasikan perubahan konfigurasi atau endpoint baru.
