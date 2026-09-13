@@ -127,10 +127,14 @@
 
             {{-- ===== ACTIONS ===== --}}
             <div class="d-flex justify-content-end gap-2">
-                <a href="{{ route('admin.attendances.index') }}" class="btn border-0 bg-light-soft text-white px-4">
+                <a href="{{ route(match ($scope) {
+                    'siswa' => 'admin.attendances.students',
+                    'employee' => 'admin.attendances.employees',
+                    default => 'admin.attendances.index',
+                }) }}" class="btn border-0 bg-light-soft text-white px-4">
                     Back
                 </a>
-                <a href="{{ route('admin.attendances.edit', $attendance->id) }}"
+                <a href="{{ route('admin.attendances.edit', array_merge(['id' => $attendance->id], $scope ? ['scope' => $scope] : [])) }}"
                    class="btn btn-warning fw-semibold px-5 text-dark shadow-sm">
                     <i class="bi bi-pencil me-2"></i>Edit Attendance
                 </a>

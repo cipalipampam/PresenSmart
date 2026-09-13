@@ -19,7 +19,8 @@ class AttendanceScreen extends StatefulWidget {
   State<AttendanceScreen> createState() => _AttendanceScreenState();
 }
 
-class _AttendanceScreenState extends State<AttendanceScreen> {
+class _AttendanceScreenState extends State<AttendanceScreen>
+    with WidgetsBindingObserver {
   PresensiType _selectedPresensiType = PresensiType.hadir;
   
   Position? _currentPosition;
@@ -32,12 +33,23 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<AttendanceProvider>(context, listen: false);
       provider.fetchHistory();
       provider.fetchLocationSettings();
     });
     _fetchLocation();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final provider = Provider.of<AttendanceProvider>(context, listen: false);
+      provider.fetchLocationSettings();
+      provider.fetchHistory();
+      _fetchLocation();
+    }
   }
 
   Future<void> _fetchLocation() async {
@@ -168,6 +180,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _keteranganController.dispose();
     super.dispose();
   }

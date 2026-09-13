@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
 class AppConstants {
-  // Android Studio Emulator reaches the host machine through 10.0.2.2.
-  // - Android Emulator  : gunakan 10.0.2.2 (alias loopback ke host PC)
-  // - Device Fisik      : gunakan IPv4 komputer (cek via `ipconfig`), contoh: 192.168.1.x
+  // Default LAN endpoint for local development on a physical device.
+  // Override BACKEND_HOST only when the laptop's network address changes.
   static const String backendHost = String.fromEnvironment(
     'BACKEND_HOST',
-    defaultValue: '10.0.2.2',
+    defaultValue: '192.168.0.104',
   );
   static const String baseUrl = 'http://$backendHost:8000/api/v1';
 

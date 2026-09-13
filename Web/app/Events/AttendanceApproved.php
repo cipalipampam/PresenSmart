@@ -5,27 +5,29 @@ namespace App\Events;
 use App\Models\Attendance;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AttendanceApproved implements ShouldBroadcastNow
+class AttendanceApproved implements ShouldBroadcast, ShouldDispatchAfterCommit
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public Attendance $attendance;
+
     public string $message;
 
     public function __construct(Attendance $attendance, string $message = '')
     {
         $this->attendance = $attendance;
-        $this->message    = $message;
+        $this->message = $message;
     }
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('App.Models.User.' . $this->attendance->user_id),
+            new PrivateChannel('App.Models.User.'.$this->attendance->user_id),
         ];
     }
 
@@ -38,9 +40,9 @@ class AttendanceApproved implements ShouldBroadcastNow
     {
         return [
             'attendance_id' => $this->attendance->id,
-            'status'        => $this->attendance->status,
-            'is_approved'   => $this->attendance->is_approved,
-            'message'       => $this->message,
+            'status' => $this->attendance->status,
+            'is_approved' => $this->attendance->is_approved,
+            'message' => $this->message,
         ];
     }
 }

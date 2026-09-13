@@ -23,11 +23,17 @@ class AdminDashboardStatsService
             )
             ->first();
 
+        $pendingApprovals = Attendance::query()
+            ->whereIn('status', ['permission', 'sick'])
+            ->whereNull('is_approved')
+            ->count();
+
         return [
             'total_students' => User::role('siswa')->count(),
             'total_present' => (int) $attendance->total_present,
             'total_late' => (int) $attendance->total_late,
             'total_permission' => (int) $attendance->total_permission,
+            'pending_approvals' => $pendingApprovals,
         ];
     }
 }

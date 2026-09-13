@@ -1,6 +1,9 @@
 @extends('admin.layouts.app')
 
 @section('content')
+@php
+    $scopeQuery = $attendanceType ? ['scope' => $attendanceType] : [];
+@endphp
 <div class="container-fluid py-4">
 
     {{-- ===== PAGE HEADER ===== --}}
@@ -39,7 +42,7 @@
                     </li>
                 </ul>
             </div>
-            <a href="{{ route('admin.attendances.create') }}" class="btn btn-primary shadow-sm border-0">
+            <a href="{{ route('admin.attendances.create', $scopeQuery) }}" class="btn btn-primary shadow-sm border-0">
                 <i class="bi bi-plus-lg me-2"></i>Record Manual Attendance
             </a>
         </div>
@@ -203,28 +206,30 @@
                             <td class="text-end pe-4">
                                 <div class="d-flex align-items-center justify-content-end gap-1">
                                     @if(($attendance->status == 'permission' || $attendance->status == 'sick') && $attendance->is_approved === null)
-                                        <form action="{{ route('admin.attendances.approve', $attendance->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('admin.attendances.approve', array_merge(['id' => $attendance->id], $scopeQuery)) }}" method="POST" class="d-inline">
                                             @csrf
+                                            @if($attendanceType)<input type="hidden" name="scope" value="{{ $attendanceType }}">@endif
                                             <button type="submit" name="action" value="approve"
                                                 class="btn btn-action btn-action-approve" title="Approve">
                                                 <i class="bi bi-check-lg"></i>
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.attendances.approve', $attendance->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('admin.attendances.approve', array_merge(['id' => $attendance->id], $scopeQuery)) }}" method="POST" class="d-inline">
                                             @csrf
+                                            @if($attendanceType)<input type="hidden" name="scope" value="{{ $attendanceType }}">@endif
                                             <button type="submit" name="action" value="reject"
                                                 class="btn btn-action btn-action-reject" title="Reject">
                                                 <i class="bi bi-x-lg"></i>
                                             </button>
                                         </form>
                                     @endif
-                                    <a href="{{ route('admin.attendances.edit', $attendance->id) }}"
+                                    <a href="{{ route('admin.attendances.edit', array_merge(['id' => $attendance->id], $scopeQuery)) }}"
                                        class="btn btn-action btn-action-edit" title="Edit">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                     <button type="button"
                                        class="btn btn-action btn-action-delete" title="Delete"
-                                       data-delete-url="{{ route('admin.attendances.destroy', $attendance->id) }}"
+                                       data-delete-url="{{ route('admin.attendances.destroy', array_merge(['id' => $attendance->id], $scopeQuery)) }}"
                                        data-delete-name="attendance for {{ $attendance->user->name }} on {{ \Carbon\Carbon::parse($attendance->recorded_at)->format('d M Y') }}">
                                         <i class="bi bi-trash3-fill"></i>
                                     </button>
@@ -281,14 +286,23 @@ function toggleGradeFilter() {
 function registerAttendanceWebSocket() {
     if (typeof window.Echo === 'undefined') return;
 
-    window.Echo.private('admin.attendance')
+    const attendanceScope = @json($attendanceType);
+    const belongsToCurrentScope = (data) => !attendanceScope || data.audience === attendanceScope;
+
+    const attendanceChannel = window.Echo.private('admin.attendance')
         .listen('.AttendanceLogged', (data) => {
+            if (!belongsToCurrentScope(data)) return;
             showAttendanceToast(data);
             scheduleAttendanceRefresh();
         })
-        .listen('.AdminAttendanceChanged', () => {
+        .listen('.AdminAttendanceChanged', (data) => {
+            if (!belongsToCurrentScope(data)) return;
             scheduleAttendanceRefresh();
         });
+
+    attendanceChannel
+        .subscribed(() => console.info('Realtime attendance subscription ready.'))
+        .error((error) => console.error('Realtime attendance subscription failed:', error));
 }
 
 if (typeof window.Echo !== 'undefined') {

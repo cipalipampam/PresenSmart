@@ -88,13 +88,30 @@ class DashboardHomeTab extends StatefulWidget {
   State<DashboardHomeTab> createState() => _DashboardHomeTabState();
 }
 
-class _DashboardHomeTabState extends State<DashboardHomeTab> {
+class _DashboardHomeTabState extends State<DashboardHomeTab>
+    with WidgetsBindingObserver {
+  int _shownApprovalNoticeVersion = 0;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<DashboardProvider>(context, listen: false).fetchDashboardData();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      Provider.of<DashboardProvider>(context, listen: false).fetchDashboardData();
+    }
   }
 
   Widget _buildStatCard(IconData icon, String value, String label, Color color) {
@@ -190,6 +207,26 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
         
         Consumer<DashboardProvider>(
           builder: (context, dashboard, child) {
+            if (dashboard.approvalNoticeVersion > _shownApprovalNoticeVersion) {
+              _shownApprovalNoticeVersion = dashboard.approvalNoticeVersion;
+              final approved = dashboard.approvalAccepted == true;
+              final message = dashboard.approvalMessage ??
+                  'Status pengajuan presensi telah diperbarui.';
+
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Text(message),
+                      backgroundColor: approved ? Colors.green.shade700 : Colors.red.shade700,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+              });
+            }
+
             return RefreshIndicator(
               color: AppConstants.colorPrimaryBase,
               backgroundColor: AppConstants.colorCardDark,
@@ -404,54 +441,65 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
                           ),
                         )
                       else
-                        ...dashboard.announcements.map((item) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0),
-                            child: GlassContainer(
-                              padding: const EdgeInsets.all(16),
-                              backgroundColor: AppConstants.colorCardDark,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width: 4,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: Colors.orangeAccent,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          item.title,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                        if (item.content != null && item.content!.isNotEmpty) ...[
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            item.content!,
-                                            style: const TextStyle(
-                                              color: AppConstants.colorTextSecondary,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ]
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              ),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          switchInCurve: Curves.easeOut,
+                          switchOutCurve: Curves.easeIn,
+                          child: Column(
+                            key: ValueKey(
+                              dashboard.announcements.map((item) => item.id).join(','),
                             ),
-                          ).animate().fadeIn(duration: 500.ms).slideX(begin: 0.2);
-                        }),
+                            children: dashboard.announcements.map((item) {
+                              return Padding(
+                                key: ValueKey(item.id),
+                                padding: const EdgeInsets.only(bottom: 12.0),
+                                child: GlassContainer(
+                                  padding: const EdgeInsets.all(16),
+                                  backgroundColor: AppConstants.colorCardDark,
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 4,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.orangeAccent,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.title,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                            if (item.content != null && item.content!.isNotEmpty) ...[
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                item.content!,
+                                                style: const TextStyle(
+                                                  color: AppConstants.colorTextSecondary,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ]
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
                     ],
                   ),
                 ),

@@ -38,14 +38,15 @@ class AdminAttendanceController extends Controller
         return $this->renderIndex($request, 'employee');
     }
 
-    public function show(int $id)
+    public function show(Request $request, int $id)
     {
         $attendance = Attendance::with(['user.student', 'user.employee'])->findOrFail($id);
+        $scope = $this->scope($request->query('scope'));
         $attendance->proof_url = $attendance->proof_image
             ? route('admin.attendances.proof', $attendance)
             : null;
 
-        return view('admin.attendances.detail', compact('attendance'));
+        return view('admin.attendances.detail', compact('attendance', 'scope'));
     }
 
     public function proof(int $id, AttendanceProofStorage $proofStorage)
@@ -55,50 +56,65 @@ class AdminAttendanceController extends Controller
 
     public function create(Request $request)
     {
-        $users = User::with(['student', 'employee'])->orderBy('name')->get();
+        $scope = $this->scope($request->query('scope'));
+        $users = User::with(['student', 'employee'])
+            ->when($scope === 'siswa', fn (Builder $query) => $query->role('siswa'))
+            ->when($scope === 'employee', fn (Builder $query) => $query->role(['guru', 'staff']))
+            ->orderBy('name')
+            ->get();
         $tanggal = $request->query('date', now()->toDateString());
 
-        return view('admin.attendances.create', compact('users', 'tanggal'));
+        return view('admin.attendances.create', compact('users', 'tanggal', 'scope'));
     }
 
     public function store(StoreAttendanceRequest $request)
     {
-        $this->attendanceService->create($request->validated());
+        $data = $request->validated();
+        $scope = $this->scope($data['scope'] ?? null);
+        unset($data['scope']);
+        $this->attendanceService->create($data);
 
-        return redirect()->route('admin.attendances.index')->with('success', 'Attendance recorded successfully.');
+        return $this->redirectToScope($scope)->with('success', 'Attendance recorded successfully.');
     }
 
     public function approve(ResolveAttendanceRequest $request, int $id)
     {
-        $this->attendanceService->resolve(Attendance::findOrFail($id), $request->validated('action'));
+        $data = $request->validated();
+        $scope = $this->scope($data['scope'] ?? null);
+        $this->attendanceService->resolve(Attendance::findOrFail($id), $data['action']);
 
         $message = $request->action === 'approve'
             ? 'Permohonan berhasil disetujui (Approved).'
             : 'Permohonan ditolak. Status otomatis menjadi Absent (Alfa).';
 
-        return redirect()->back()->with('success', $message);
+        return $this->redirectToScope($scope)->with('success', $message);
     }
 
-    public function edit(int $id)
+    public function edit(Request $request, int $id)
     {
         $attendance = Attendance::with('user')->findOrFail($id);
         $users = User::orderBy('name')->get();
+        $scope = $this->scope($request->query('scope'));
 
-        return view('admin.attendances.edit', compact('attendance', 'users'));
+        return view('admin.attendances.edit', compact('attendance', 'users', 'scope'));
     }
 
     public function update(UpdateAttendanceRequest $request, int $id)
     {
-        $this->attendanceService->update(Attendance::findOrFail($id), $request->validated());
+        $data = $request->validated();
+        $scope = $this->scope($data['scope'] ?? null);
+        unset($data['scope']);
+        $this->attendanceService->update(Attendance::findOrFail($id), $data);
 
-        return redirect()->route('admin.attendances.index')->with('success', 'Attendance updated successfully.');
+        return $this->redirectToScope($scope)->with('success', 'Attendance updated successfully.');
     }
 
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
+        $scope = $this->scope($request->query('scope'));
         $this->attendanceService->delete(Attendance::findOrFail($id));
 
-        return redirect()->route('admin.attendances.index')->with('success', 'Attendance deleted successfully.');
+        return $this->redirectToScope($scope)->with('success', 'Attendance deleted successfully.');
     }
 
     public function print(Request $request)
@@ -142,6 +158,7 @@ class AdminAttendanceController extends Controller
             'year' => $request->integer('year') ?: null,
             'role' => $request->input('role'),
             'grade' => $request->input('grade'),
+            'approval' => $request->input('approval') === 'pending' ? 'pending' : null,
         ];
     }
 
@@ -172,6 +189,25 @@ class AdminAttendanceController extends Controller
             $query->whereHas('user.student', fn (Builder $query) => $query->where('grade', $filters['grade']));
         }
 
+        if ($filters['approval'] === 'pending') {
+            $query->whereIn('status', ['permission', 'sick'])
+                ->whereNull('is_approved');
+        }
+
         return $query;
+    }
+
+    private function scope(?string $scope): ?string
+    {
+        return in_array($scope, ['siswa', 'employee'], true) ? $scope : null;
+    }
+
+    private function redirectToScope(?string $scope)
+    {
+        return redirect()->route(match ($scope) {
+            'siswa' => 'admin.attendances.students',
+            'employee' => 'admin.attendances.employees',
+            default => 'admin.attendances.index',
+        });
     }
 }

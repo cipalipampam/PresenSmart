@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/websocket_service.dart';
@@ -16,6 +18,9 @@ class DashboardProvider with ChangeNotifier {
   int _hadirCount = 0;
   int _izinCount = 0;
   int _alfaCount = 0;
+  String? _approvalMessage;
+  bool? _approvalAccepted;
+  int _approvalNoticeVersion = 0;
 
   // Fix #2: Changed from List<String> to List<AnnouncementModel>
   List<AnnouncementModel> _announcements = [];
@@ -29,16 +34,32 @@ class DashboardProvider with ChangeNotifier {
   int get izinCount => _izinCount;
   int get alfaCount => _alfaCount;
   List<AnnouncementModel> get announcements => _announcements;
+  String? get approvalMessage => _approvalMessage;
+  bool? get approvalAccepted => _approvalAccepted;
+  int get approvalNoticeVersion => _approvalNoticeVersion;
 
   DashboardProvider() {
     // Fix #3: WebSocket listeners registered ONCE in constructor, not inside fetchDashboardData().
     // This prevents callback overwrite and stale-closure bugs.
-    WebSocketService().onAnnouncementCreated = (data) => fetchDashboardData();
-    WebSocketService().onAnnouncementUpdated = (data) => fetchDashboardData();
+    WebSocketService().addAnnouncementListener((data) {
+      debugPrint('Dashboard: announcement event received; fetching latest data.');
+      unawaited(fetchDashboardData(showLoading: false));
+    });
+    WebSocketService().addSettingsListener((data) {
+      debugPrint('Dashboard: settings event received; fetching latest data.');
+      unawaited(fetchDashboardData(showLoading: false));
+    });
+    WebSocketService().addAttendanceApprovalListener((data) {
+      _approvalMessage = data['message'] as String? ?? 'Status pengajuan presensi telah diperbarui.';
+      _approvalAccepted = data['is_approved'] as bool?;
+      _approvalNoticeVersion++;
+      notifyListeners();
+      unawaited(fetchDashboardData(showLoading: false));
+    });
   }
 
-  Future<void> fetchDashboardData() async {
-    _setLoading(true);
+  Future<void> fetchDashboardData({bool showLoading = true}) async {
+    if (showLoading) _setLoading(true);
     _errorMessage = null;
 
     try {
@@ -68,7 +89,11 @@ class DashboardProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = 'Gagal terhubung ke server.';
     } finally {
-      _setLoading(false);
+      if (showLoading) {
+        _setLoading(false);
+      } else {
+        notifyListeners();
+      }
     }
   }
 

@@ -13,6 +13,9 @@ class ResolveAttendanceRequest extends FormRequest
 
     public function rules(): array
     {
-        return ['action' => ['required', 'in:approve,reject']];
+        return [
+            'action' => ['required', 'in:approve,reject'],
+            'scope' => ['nullable', 'in:siswa,employee'],
+        ];
     }
 }

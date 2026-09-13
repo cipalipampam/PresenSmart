@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -29,14 +31,16 @@ class AttendanceProvider with ChangeNotifier {
     // Previously re-registered inside fetchHistory() on every call,
     // which caused the month/year filter value to be captured stale
     // in the closure from the last call's parameters.
-    WebSocketService().onAttendanceApproved = (data) {
+    WebSocketService().addAttendanceApprovalListener((data) {
       // Refresh with no filter params to get the latest full history.
       // The UI can re-apply its own filter on the updated list.
-      fetchHistory();
-    };
-    WebSocketService().onSettingsUpdated = (data) {
-      fetchLocationSettings();
-    };
+      debugPrint('Attendance: approval received; refreshing history.');
+      unawaited(fetchHistory(showLoading: false));
+    });
+    WebSocketService().addSettingsListener((data) {
+      debugPrint('Attendance: settings changed; refreshing location.');
+      unawaited(fetchLocationSettings());
+    });
   }
 
   bool get hasCheckedInToday {
@@ -206,8 +210,8 @@ class AttendanceProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchHistory({int? month, int? year}) async {
-    _setLoading(true);
+  Future<void> fetchHistory({int? month, int? year, bool showLoading = true}) async {
+    if (showLoading) _setLoading(true);
     _errorMessage = null;
 
     try {
@@ -230,7 +234,11 @@ class AttendanceProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = 'Kesalahan sistem: ${e.toString()}';
     } finally {
-      _setLoading(false);
+      if (showLoading) {
+        _setLoading(false);
+      } else {
+        notifyListeners();
+      }
     }
   }
 

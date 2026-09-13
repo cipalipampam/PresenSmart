@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Web\Dashboard;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\User;
 use App\Models\Attendance;
 use App\Models\Setting;
-use Illuminate\Http\Request;
+use App\Models\User;
+use App\Services\Web\Dashboard\AdminDashboardStatsService;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private readonly AdminDashboardStatsService $statsService,
+    ) {}
+
     public function index()
     {
         // Hitung jumlah user (students only for standard context)
@@ -27,12 +30,14 @@ class DashboardController extends Controller
 
         // Hitung total presensi hari ini
         $todayPresensiCount = $todayPresensi->total();
+        $pendingApprovals = $this->statsService->current()['pending_approvals'];
 
         return view('admin.dashboard.index', [
             'userCount' => $userCount,
             'todayPresensi' => $todayPresensi,
             'todayPresensiCount' => $todayPresensiCount,
-            'setting' => $setting
+            'pendingApprovals' => $pendingApprovals,
+            'setting' => $setting,
         ]);
     }
 }

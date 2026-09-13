@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -19,6 +20,13 @@ class AuthProvider with ChangeNotifier {
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+
+  AuthProvider() {
+    WebSocketService().onSessionInvalidated = (_) {
+      debugPrint('Auth: session invalidation received; signing out locally.');
+      unawaited(_invalidateLocalSession());
+    };
+  }
 
   Future<bool> initializeAuth() async {
     final prefs = await SharedPreferences.getInstance();
@@ -98,6 +106,17 @@ class AuthProvider with ChangeNotifier {
       _currentUser = null;
       _setLoading(false);
     }
+  }
+
+  Future<void> _invalidateLocalSession() async {
+    WebSocketService().disconnect();
+    await _sessionStorage.deleteToken();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(AppConstants.userKey);
+    _currentUser = null;
+    notifyListeners();
+    ApiClient.onUnauthorized?.call();
   }
 
   void _setLoading(bool value) {

@@ -32,7 +32,7 @@
     {{-- ===== STAT CARDS ===== --}}
     <div class="row g-4 mb-4">
         {{-- Total Anggota --}}
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card border-0 shadow-lg hover-lift h-100 overflow-hidden">
                 <div class="card-body p-4 position-relative">
                     <div class="d-flex align-items-center mb-3">
@@ -57,7 +57,7 @@
         </div>
 
         {{-- Aktivitas Hari Ini --}}
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card border-0 shadow-lg hover-lift h-100 overflow-hidden">
                 <div class="card-body p-4 position-relative">
                     <div class="d-flex align-items-center mb-3">
@@ -81,8 +81,35 @@
             </div>
         </div>
 
+        {{-- Pengajuan Menunggu --}}
+        <div class="col-xl-3 col-md-6">
+            <a href="{{ route('admin.attendances.index', ['approval' => 'pending', 'date' => null]) }}" class="text-decoration-none d-block h-100">
+                <div class="card border-0 shadow-lg hover-lift h-100 overflow-hidden">
+                    <div class="card-body p-4 position-relative">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-circle bg-warning-soft text-amber me-3">
+                                <i class="bi bi-hourglass-split fs-5"></i>
+                            </div>
+                            <h6 class="text-white-50 text-uppercase fw-bold m-0" style="font-size:0.7rem;letter-spacing:0.06em;">Pending Approval</h6>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-between">
+                            <div>
+                                <h2 id="ws-pending-approval-count" class="display-5 fw-bold text-white mb-1">{{ $pendingApprovals }}</h2>
+                                <span class="trend-badge trend-neu">
+                                    <i class="bi bi-arrow-right-circle me-1"></i>Review submissions
+                                </span>
+                            </div>
+                        </div>
+                        <div class="opacity-10 fs-1 text-amber position-absolute inset-e-0 bottom-0 mb-n1 me-n1">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
         {{-- Lokasi Aktif --}}
-        <div class="col-xl-4 col-md-12">
+        <div class="col-xl-3 col-md-6">
             <div class="card border-0 shadow-lg hover-lift h-100 overflow-hidden">
                 <div class="card-body p-4 position-relative">
                     <div class="d-flex align-items-center mb-3">
@@ -356,7 +383,7 @@ function registerDashboardWebSocket() {
     if (typeof window.Echo === 'undefined') return;
 
     // ── Listener 1: New attendance logged ─────────────────────────────────
-    window.Echo.private('admin.attendance')
+    const dashboardAttendanceChannel = window.Echo.private('admin.attendance')
         .listen('.AttendanceLogged', (data) => {
             // Statistics are refreshed from DashboardStatsUpdated below. This
             // avoids double-counting a checkout, which updates an existing row.
@@ -406,13 +433,18 @@ function registerDashboardWebSocket() {
             if (dot) { dot.classList.add('ws-pulse'); setTimeout(() => dot.classList.remove('ws-pulse'), 1000); }
         });
 
+    dashboardAttendanceChannel
+        .subscribed(() => console.info('Realtime dashboard attendance subscription ready.'))
+        .error((error) => console.error('Realtime dashboard attendance subscription failed:', error));
+
     // ── Listener 2: Dashboard stats updated ───────────────────────────────
-    window.Echo.private('admin.dashboard')
+    const dashboardStatsChannel = window.Echo.private('admin.dashboard')
         .listen('.DashboardStatsUpdated', (data) => {
             const map = {
                 'ws-present-count':    data.total_present,
                 'ws-late-count':       data.total_late,
                 'ws-permission-count': data.total_permission,
+                'ws-pending-approval-count': data.pending_approvals,
             };
             Object.entries(map).forEach(([id, val]) => {
                 const el = document.getElementById(id);
@@ -423,6 +455,10 @@ function registerDashboardWebSocket() {
                 }
             });
         });
+
+    dashboardStatsChannel
+        .subscribed(() => console.info('Realtime dashboard stats subscription ready.'))
+        .error((error) => console.error('Realtime dashboard stats subscription failed:', error));
 }
 
 if (typeof window.Echo !== 'undefined') {

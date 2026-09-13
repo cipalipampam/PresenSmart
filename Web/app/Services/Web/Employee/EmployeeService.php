@@ -2,6 +2,8 @@
 
 namespace App\Services\Web\Employee;
 
+use App\Events\DirectoryChanged;
+use App\Events\SessionInvalidated;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -35,22 +37,24 @@ class EmployeeService
             'profile_picture' => $fotoPath,
         ]);
 
+        event(new DirectoryChanged($user->id, 'employee', 'created'));
+
         return $user;
     }
 
     public function updateEmployee(User $user, array $data)
     {
-        if (!empty($data['password'])) {
+        if (! empty($data['password'])) {
             $user->update(['name' => $data['name'], 'email' => $data['email'], 'password' => Hash::make($data['password'])]);
         } else {
             $user->update(['name' => $data['name'], 'email' => $data['email']]);
         }
-        
+
         $user->syncRoles([$data['role']]);
 
         $currentPic = $user->employee ? $user->employee->profile_picture : null;
         $fotoPath = $currentPic;
-        
+
         if (isset($data['profile_picture'])) {
             if ($currentPic) {
                 Storage::disk('public')->delete($currentPic);
@@ -73,15 +77,21 @@ class EmployeeService
             ]
         );
 
+        event(new DirectoryChanged($user->id, 'employee', 'updated'));
+
         return $user;
     }
 
     public function deleteEmployee(User $user)
     {
+        $userId = $user->id;
         $currentPic = $user->employee ? $user->employee->profile_picture : null;
         if ($currentPic) {
             Storage::disk('public')->delete($currentPic);
         }
+        $user->tokens()->delete();
         $user->delete();
+        event(new DirectoryChanged($userId, 'employee', 'deleted'));
+        event(new SessionInvalidated($userId, 'account_deleted'));
     }
 }

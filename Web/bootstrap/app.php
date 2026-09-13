@@ -13,9 +13,16 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withBroadcasting(
         __DIR__.'/../routes/channels.php',
-        ['middleware' => ['api', 'auth:sanctum']],
+        // Web admins authenticate through their session, while the mobile app
+        // authenticates with a Sanctum bearer token. The web middleware starts
+        // the session required by both flows.
+        ['middleware' => ['web', 'auth:sanctum']],
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Broadcast authorization does not change server state. It must accept
+        // the mobile app's bearer token, which has no browser CSRF token.
+        $middleware->validateCsrfTokens(except: ['broadcasting/auth']);
+
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

@@ -13,6 +13,7 @@ window.Pusher = Pusher;
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
+    csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
     // Defaults to the host serving the page, so LAN browsers do not try to
     // connect to their own localhost. Set VITE_REVERB_HOST only when Reverb
     // is served from a different hostname.

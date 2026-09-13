@@ -2,6 +2,8 @@
 
 namespace App\Services\Web\Student;
 
+use App\Events\DirectoryChanged;
+use App\Events\SessionInvalidated;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -36,12 +38,14 @@ class StudentService
             'profile_picture' => $fotoPath,
         ]);
 
+        event(new DirectoryChanged($user->id, 'siswa', 'created'));
+
         return $user;
     }
 
     public function updateStudent(User $user, array $data)
     {
-        if (!empty($data['password'])) {
+        if (! empty($data['password'])) {
             $user->update(['name' => $data['name'], 'email' => $data['email'], 'password' => Hash::make($data['password'])]);
         } else {
             $user->update(['name' => $data['name'], 'email' => $data['email']]);
@@ -49,7 +53,7 @@ class StudentService
 
         $currentPic = $user->student ? $user->student->profile_picture : null;
         $fotoPath = $currentPic;
-        
+
         if (isset($data['profile_picture'])) {
             if ($currentPic) {
                 Storage::disk('public')->delete($currentPic);
@@ -73,15 +77,21 @@ class StudentService
             ]
         );
 
+        event(new DirectoryChanged($user->id, 'siswa', 'updated'));
+
         return $user;
     }
 
     public function deleteStudent(User $user)
     {
+        $userId = $user->id;
         $currentPic = $user->student ? $user->student->profile_picture : null;
         if ($currentPic) {
             Storage::disk('public')->delete($currentPic);
         }
+        $user->tokens()->delete();
         $user->delete();
+        event(new DirectoryChanged($userId, 'siswa', 'deleted'));
+        event(new SessionInvalidated($userId, 'account_deleted'));
     }
 }

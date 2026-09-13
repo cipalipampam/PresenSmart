@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Attendance;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -15,6 +16,7 @@ class AttendanceLogged implements ShouldBroadcast, ShouldDispatchAfterCommit
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public Attendance $attendance;
+
     public string $action;
 
     /**
@@ -29,7 +31,7 @@ class AttendanceLogged implements ShouldBroadcast, ShouldDispatchAfterCommit
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
+     * @return array<int, Channel>
      */
     public function broadcastOn(): array
     {
@@ -54,6 +56,12 @@ class AttendanceLogged implements ShouldBroadcast, ShouldDispatchAfterCommit
             'status' => $this->attendance->status,
             'time' => $this->attendance->recorded_at ? $this->attendance->recorded_at->format('H:i:s') : now()->format('H:i:s'),
             'action' => $this->action,
+            'audience' => $this->audience(),
         ];
+    }
+
+    private function audience(): string
+    {
+        return $this->attendance->user?->hasRole('siswa') ? 'siswa' : 'employee';
     }
 }

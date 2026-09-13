@@ -1,6 +1,13 @@
 @extends('admin.layouts.app')
 
 @section('content')
+@php
+    $attendanceRouteName = match ($scope) {
+        'siswa' => 'admin.attendances.students',
+        'employee' => 'admin.attendances.employees',
+        default => 'admin.attendances.index',
+    };
+@endphp
 <div class="container-fluid py-4">
     <div class="row align-items-center mb-4">
         <div class="col-md-6">
@@ -8,7 +15,7 @@
             <p class="text-white-50 small mb-0">Modify historical presence data for <strong>{{ $attendance->user->name }}</strong>.</p>
         </div>
         <div class="col-md-6 text-md-end mt-3 mt-md-0">
-            <a href="{{ route('admin.attendances.index') }}" class="btn btn-outline-secondary border-0 bg-light-soft text-white px-4">
+            <a href="{{ route($attendanceRouteName) }}" class="btn btn-outline-secondary border-0 bg-light-soft text-white px-4">
                 <i class="bi bi-arrow-left me-2"></i>Attendance Log
             </a>
         </div>
@@ -31,6 +38,7 @@
     <form action="{{ route('admin.attendances.update', $attendance->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
+        @if($scope)<input type="hidden" name="scope" value="{{ $scope }}">@endif
         
         <div class="row g-4 justify-content-center">
             <div class="col-lg-8">

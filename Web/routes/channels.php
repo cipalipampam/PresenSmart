@@ -27,6 +27,10 @@ Broadcast::channel('admin.dashboard', function ($user) {
     return $user->hasRole('admin');
 });
 
+Broadcast::channel('admin.directory', function ($user) {
+    return $user->hasRole('admin');
+});
+
 /**
  * Signed-in users may receive updated attendance settings and location data.
  */
@@ -35,6 +39,9 @@ Broadcast::channel('settings', function ($user) {
 });
 
 /**
- * The sole public channel is 'announcements', which contains non-sensitive
- * information intended for everyone.
+ * Announcement events are refresh signals. Clients obtain authorized active
+ * announcements from the API after receiving an event.
  */
+Broadcast::channel('announcements', function ($user) {
+    return $user !== null;
+});

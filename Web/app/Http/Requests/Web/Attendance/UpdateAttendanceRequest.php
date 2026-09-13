@@ -17,6 +17,7 @@ class UpdateAttendanceRequest extends FormRequest
             'status' => ['required', 'in:present,absent,sick,permission'],
             'notes' => ['nullable', 'string', 'max:500'],
             'proof_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'scope' => ['nullable', 'in:siswa,employee'],
         ];
     }
 }

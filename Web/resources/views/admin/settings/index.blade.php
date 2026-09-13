@@ -455,3 +455,81 @@ document.getElementById('useMyLocation').addEventListener('click', function () {
 });
 </script>
 @endpush
+
+@push('scripts')
+<script>
+function registerSettingsWebSocket() {
+    if (typeof window.Echo === 'undefined') return;
+
+    let isDirty = false;
+    document.querySelectorAll('#locationForm input, #timeForm input').forEach((input) => {
+        input.addEventListener('input', () => { isDirty = true; });
+        input.addEventListener('change', () => { isDirty = true; });
+    });
+
+    const settingsChannel = window.Echo.private('settings');
+    settingsChannel
+        .listen('.SystemSettingsUpdated', () => {
+            if (isDirty) {
+                showSettingsRealtimeNotice('Pengaturan telah diubah oleh admin lain. Nilai yang sedang Anda edit tetap dipertahankan.', 'warning');
+                return;
+            }
+
+            refreshSettingsValues();
+        })
+        .subscribed(() => console.info('Realtime settings subscription ready.'))
+        .error((error) => console.error('Realtime settings subscription failed:', error));
+}
+
+async function refreshSettingsValues() {
+    try {
+        const response = await fetch(window.location.href, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        if (!response.ok) throw new Error(`Settings refresh failed: ${response.status}`);
+
+        const html = await response.text();
+        const nextDocument = new DOMParser().parseFromString(html, 'text/html');
+        const selectors = [
+            '#lat', '#long', '#radius', '#radiusRange',
+            '[name="check_in_end"]', '[name="check_out_start"]', '[name="late_tolerance"]',
+        ];
+
+        selectors.forEach((selector) => {
+            const current = document.querySelector(selector);
+            const next = nextDocument.querySelector(selector);
+            if (current && next && 'value' in current) current.value = next.value;
+        });
+
+        updateMapFromInput();
+        syncRadiusFromInput(document.getElementById('radius').value);
+        showSettingsRealtimeNotice('Pengaturan terbaru diterapkan.', 'success');
+    } catch (error) {
+        console.error('Realtime settings refresh failed:', error);
+        showSettingsRealtimeNotice('Tidak dapat memuat pengaturan terbaru. Coba lagi nanti.', 'warning');
+    }
+}
+
+function showSettingsRealtimeNotice(message, tone) {
+    let notice = document.getElementById('settings-realtime-notice');
+    if (!notice) {
+        notice = document.createElement('div');
+        notice.id = 'settings-realtime-notice';
+        notice.style.cssText = 'position:fixed;right:24px;bottom:24px;z-index:1080;padding:12px 16px;border-radius:10px;color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.25);transition:opacity .2s ease;';
+        document.body.appendChild(notice);
+    }
+
+    notice.textContent = message;
+    notice.style.background = tone === 'success' ? '#047857' : '#b45309';
+    notice.style.opacity = '1';
+    clearTimeout(window.settingsRealtimeNoticeTimer);
+    window.settingsRealtimeNoticeTimer = setTimeout(() => { notice.style.opacity = '0'; }, 3500);
+}
+
+if (typeof window.Echo !== 'undefined') {
+    registerSettingsWebSocket();
+} else {
+    window.addEventListener('echo:ready', registerSettingsWebSocket, { once: true });
+}
+</script>
+@endpush

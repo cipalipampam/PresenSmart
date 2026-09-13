@@ -189,3 +189,28 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function registerStudentDirectoryWebSocket() {
+    if (typeof window.Echo === 'undefined') return;
+
+    let refreshTimer;
+    const directoryChannel = window.Echo.private('admin.directory');
+    directoryChannel
+        .listen('.DirectoryChanged', (data) => {
+            if (data.audience !== 'siswa') return;
+            clearTimeout(refreshTimer);
+            refreshTimer = setTimeout(() => window.refreshLiveResults?.(), 150);
+        })
+        .subscribed(() => console.info('Realtime student directory subscription ready.'))
+        .error((error) => console.error('Realtime student directory subscription failed:', error));
+}
+
+if (typeof window.Echo !== 'undefined') {
+    registerStudentDirectoryWebSocket();
+} else {
+    window.addEventListener('echo:ready', registerStudentDirectoryWebSocket, { once: true });
+}
+</script>
+@endpush

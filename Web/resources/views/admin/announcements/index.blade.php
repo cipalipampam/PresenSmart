@@ -36,7 +36,7 @@
                         <th class="py-3 px-4 fw-semibold text-white-50 text-end">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="announcement-table-body">
                     @forelse($announcements as $index => $announcement)
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                         <td class="py-3 px-4 text-white-50">{{ $index + 1 }}</td>
@@ -113,6 +113,72 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function registerAnnouncementWebSocket() {
+    if (typeof window.Echo === 'undefined') return;
+
+    let refreshTimer;
+    let refreshController;
+    const announcementChannel = window.Echo.private('announcements');
+    announcementChannel
+        .listen('.AnnouncementChanged', () => {
+            clearTimeout(refreshTimer);
+            refreshTimer = setTimeout(refreshAnnouncementList, 150);
+        })
+        .subscribed(() => console.info('Realtime announcement subscription ready.'))
+        .error((error) => console.error('Realtime announcement subscription failed:', error));
+}
+
+async function refreshAnnouncementList() {
+    refreshController?.abort();
+    refreshController = new AbortController();
+
+    try {
+        const response = await fetch(window.location.href, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            signal: refreshController.signal,
+        });
+        if (!response.ok) throw new Error(`Announcement refresh failed: ${response.status}`);
+
+        const html = await response.text();
+        const nextDocument = new DOMParser().parseFromString(html, 'text/html');
+        const currentBody = document.getElementById('announcement-table-body');
+        const nextBody = nextDocument.getElementById('announcement-table-body');
+        if (!currentBody || !nextBody) return;
+
+        document.querySelectorAll('[id^="editModal"].show').forEach((modal) => {
+            bootstrap.Modal.getInstance(modal)?.hide();
+        });
+        document.querySelectorAll('[id^="editModal"]').forEach((modal) => modal.remove());
+        nextDocument.querySelectorAll('[id^="editModal"]').forEach((modal) => {
+            document.body.appendChild(modal);
+        });
+
+        nextBody.classList.add('announcement-list-entering');
+        currentBody.replaceWith(nextBody);
+    } catch (error) {
+        if (error.name !== 'AbortError') {
+            console.error('Realtime announcement list refresh failed:', error);
+        }
+    }
+}
+
+if (typeof window.Echo !== 'undefined') {
+    registerAnnouncementWebSocket();
+} else {
+    window.addEventListener('echo:ready', registerAnnouncementWebSocket, { once: true });
+}
+</script>
+<style>
+@keyframes announcementListEntering {
+    from { opacity: 0.45; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.announcement-list-entering { animation: announcementListEntering 220ms ease-out; }
+</style>
+@endpush
 
 @push('modals')
 {{-- CREATE MODAL --}}

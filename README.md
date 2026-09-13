@@ -190,14 +190,17 @@ Buka terminal terpisah dari direktori `Web/`:
 
 ```bash
 # Terminal 1: Laravel API dan panel admin
-# 0.0.0.0 diperlukan agar emulator/perangkat eksternal dapat mengakses laptop.
-php artisan serve --host=0.0.0.0 --port=8000
+# Host dan port mengikuti SERVER_HOST/SERVER_PORT pada Web/.env.
+php artisan serve
 
 # Terminal 2: Vite untuk asset frontend
 npm run dev
 
 # Terminal 3: Laravel Reverb WebSocket
-php artisan reverb:start --host=0.0.0.0 --port=8080
+php artisan reverb:start
+
+# Terminal 4: worker untuk broadcast dan pekerjaan latar belakang
+php artisan queue:work
 ```
 
 Untuk laptop lokal, panel admin tersedia di `http://127.0.0.1:8000/admin/login`. Dari emulator/perangkat eksternal, gunakan `http://YOUR_LAN_IP:8000/admin/login`.
@@ -216,17 +219,15 @@ Jalankan dari direktori `Mobile/`:
 flutter pub get
 flutter doctor
 flutter devices
-flutter run --dart-define=BACKEND_HOST=YOUR_LAN_IP --dart-define=REVERB_APP_KEY=YOUR_REVERB_KEY
+flutter run
 ```
 
-`BACKEND_HOST` adalah alamat IPv4 laptop yang menjalankan Laravel. Laptop dan emulator eksternal harus berada pada jaringan yang sama. Nilai default di aplikasi adalah `10.0.2.2`, khusus Android Studio Emulator. Untuk Genymotion gunakan `10.0.3.2`; untuk emulator eksternal atau perangkat fisik gunakan IPv4 laptop Anda.
+Konfigurasi development saat ini memakai `192.168.0.104` sebagai default `BACKEND_HOST`, sehingga perangkat fisik pada jaringan yang sama cukup menjalankan `flutter run`. Laravel dan Reverb memakai host/port dari `Web/.env`, sehingga cukup jalankan `php artisan serve` dan `php artisan reverb:start`.
 
-Konfigurasi host dapat diberikan melalui `--dart-define`, sehingga tidak perlu mengubah source code:
+Jika jaringan berubah, override sekali saat menjalankan Flutter tanpa mengubah source code:
 
 ```powershell
-flutter run `
-    --dart-define=BACKEND_HOST=YOUR_LAN_IP `
-    --dart-define=REVERB_APP_KEY=YOUR_REVERB_KEY
+flutter run --dart-define=BACKEND_HOST=YOUR_LAN_IP
 ```
 
 Gunakan nilai berikut sesuai target:
@@ -276,7 +277,7 @@ Accept: application/json
 4. Backend memeriksa jadwal, toleransi keterlambatan, dan apakah pengguna sudah presensi hari itu.
 5. Check-in disimpan dengan status `present`; check-out hanya dapat dilakukan setelah check-in.
 6. Untuk izin/sakit, pengguna mengirim status, keterangan, dan foto bukti. Pengajuan menunggu persetujuan admin.
-7. Perubahan presensi dan pengumuman dipancarkan melalui channel publik atau channel private pengguna.
+7. Perubahan presensi, pengumuman, pengaturan, dan data master dipancarkan melalui private channel sesuai hak akses. Payload WebSocket hanya berupa sinyal perubahan; aplikasi mengambil ulang data dari endpoint yang berizin.
 
 Konfigurasi awal seeder menggunakan radius 100 meter, jam check-in `06:00`-`07:00`, toleransi terlambat 15 menit, dan jam check-out `15:00`-`17:00`. Nilai ini dapat diubah dari menu pengaturan admin.
 
@@ -307,7 +308,26 @@ VITE_REVERB_HOST=
 QUEUE_CONNECTION=database
 ```
 
-`REVERB_HOST=127.0.0.1` digunakan Laravel untuk mengirim broadcast ke Reverb di laptop, sedangkan `REVERB_SERVER_HOST=0.0.0.0` membuat server menerima koneksi dari jaringan. Jika `VITE_REVERB_HOST` kosong, browser memakai host halaman yang sedang dibuka; isi hanya bila Reverb berada di host berbeda. Aplikasi mobile memakai IP laptop melalui `BACKEND_HOST`, dan key pada `--dart-define=REVERB_APP_KEY=...` harus sama dengan `REVERB_APP_KEY`. Gunakan `QUEUE_CONNECTION=database` dan jalankan `php artisan queue:work` agar broadcast tidak menambah waktu respons presensi. Simpan nilai asli hanya di file `.env` lokal atau secret manager.
+`REVERB_HOST=127.0.0.1` digunakan Laravel untuk mengirim broadcast ke Reverb di laptop, sedangkan `REVERB_SERVER_HOST=0.0.0.0` membuat server menerima koneksi dari jaringan. Aplikasi mobile sudah memakai key default `local-key`, sama dengan `.env` lokal. Gunakan `QUEUE_CONNECTION=database` dan jalankan `php artisan queue:work` agar broadcast tidak menambah waktu respons presensi. Simpan nilai asli hanya di file `.env` lokal atau secret manager.
+
+### Realtime channel
+
+| Channel private | Penerima | Perilaku |
+| --- | --- | --- |
+| `admin.attendance` | Admin | Daftar presensi refresh hanya untuk scope siswa atau employee yang relevan. |
+| `admin.dashboard` | Admin | Statistik dashboard, termasuk jumlah izin/sakit yang menunggu keputusan, diperbarui. |
+| `admin.directory` | Admin | Daftar siswa atau employee admin lain diperbarui. |
+| `announcements` | Pengguna login | Dashboard mobile dan daftar pengumuman admin memuat ulang data. |
+| `settings` | Pengguna login | Mobile memuat ulang lokasi/jam; admin lain menyegarkan settings bila form belum diubah. |
+| `App.Models.User.{id}` | Pengguna terkait | Keputusan izin/sakit (beserta notifikasi saat aplikasi terbuka) serta invalidasi sesi akun. |
+
+Saat development, jalankan pada terminal terpisah:
+
+```powershell
+php artisan serve
+php artisan reverb:start
+php artisan queue:work
+```
 
 ### 📍 Permission Perangkat
 
@@ -315,7 +335,7 @@ Mobile memerlukan internet, lokasi, kamera, dan akses galeri untuk fitur terkait
 
 ### 📦 Storage
 
-Jalankan `php artisan storage:link` agar foto bukti yang tersimpan pada disk `public` dapat diakses aplikasi. Jangan menyimpan kredensial production atau secret Reverb di repository.
+Foto bukti presensi baru disimpan pada disk privat dan diakses melalui URL bertanda tangan sementara, sehingga tidak memerlukan `storage:link`. File lama pada disk public tetap didukung sebagai kompatibilitas. Jangan menyimpan kredensial production atau secret Reverb di repository.
 
 ## 🧪 Pengujian
 
@@ -344,17 +364,17 @@ Widget test saat ini memverifikasi splash screen. Skenario login, geolocation, u
 
 - Jangan memakai `127.0.0.1` dari emulator eksternal atau perangkat fisik; gunakan IPv4 komputer.
 - Android Studio Emulator memakai `10.0.2.2`; Genymotion memakai `10.0.3.2`.
-- Jalankan Laravel dengan `php artisan serve --host=0.0.0.0 --port=8000`.
+- Jalankan Laravel dengan `php artisan serve`.
 - Pastikan firewall mengizinkan port `8000`.
 - Pastikan perangkat dan komputer berada pada jaringan yang sama.
 
 ### 🔌 WebSocket Tidak Tersambung
 
-- Jalankan `php artisan reverb:start --host=0.0.0.0 --port=8080`.
+- Jalankan `php artisan reverb:start`.
 - Pastikan `BROADCAST_CONNECTION` backend menggunakan `reverb`.
-- Samakan `REVERB_APP_KEY` backend dengan `--dart-define=REVERB_APP_KEY=...` pada Flutter.
-- Gunakan IP laptop sebagai `BACKEND_HOST` pada emulator eksternal.
-- Private channel broadcast menggunakan middleware `auth:sanctum`; login harus berhasil terlebih dahulu agar token tersedia.
+- Samakan `REVERB_APP_KEY` backend dengan default `local-key` aplikasi mobile, atau override saat diperlukan.
+- Jika IP laptop berubah, override `BACKEND_HOST` saat menjalankan Flutter.
+- Private channel broadcast mendukung session admin web serta token Sanctum mobile; login harus berhasil terlebih dahulu.
 - Pastikan firewall mengizinkan port `8080`.
 - Untuk production, gunakan konfigurasi TLS/WSS dan reverse proxy yang benar.
 

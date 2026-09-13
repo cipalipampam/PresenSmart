@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Events\AnnouncementChanged;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
-use App\Events\AnnouncementCreated;
-use App\Events\AnnouncementUpdated;
 use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller
@@ -13,24 +12,25 @@ class AnnouncementController extends Controller
     public function index()
     {
         $announcements = Announcement::latest()->get();
+
         return view('admin.announcements.index', compact('announcements'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'title'     => 'required|string|max:255',
-            'content'   => 'nullable|string',
-            'is_active' => 'nullable|boolean'
+            'title' => 'required|string|max:255',
+            'content' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $announcement = Announcement::create([
-            'title'     => $request->title,
-            'content'   => $request->content,
-            'is_active' => $request->has('is_active')
+            'title' => $request->title,
+            'content' => $request->content,
+            'is_active' => $request->has('is_active'),
         ]);
 
-        event(new AnnouncementCreated($announcement));
+        event(AnnouncementChanged::fromAnnouncement($announcement, 'created'));
 
         return redirect()->route('admin.announcements.index')->with('success', 'Pengumuman berhasil ditambahkan!');
     }
@@ -38,26 +38,30 @@ class AnnouncementController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'title'     => 'required|string|max:255',
-            'content'   => 'nullable|string',
-            'is_active' => 'nullable|boolean'
+            'title' => 'required|string|max:255',
+            'content' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $announcement = Announcement::findOrFail($id);
         $announcement->update([
-            'title'     => $request->title,
-            'content'   => $request->content,
-            'is_active' => $request->has('is_active')
+            'title' => $request->title,
+            'content' => $request->content,
+            'is_active' => $request->has('is_active'),
         ]);
 
-        event(new AnnouncementUpdated($announcement)); // ← Fixed: was AnnouncementCreated
+        event(AnnouncementChanged::fromAnnouncement($announcement, 'updated'));
 
         return redirect()->route('admin.announcements.index')->with('success', 'Pengumuman berhasil diperbarui!');
     }
 
     public function destroy(string $id)
     {
-        Announcement::findOrFail($id)->delete();
+        $announcement = Announcement::findOrFail($id);
+        $event = AnnouncementChanged::fromAnnouncement($announcement, 'deleted');
+        $announcement->delete();
+        event($event);
+
         return redirect()->route('admin.announcements.index')->with('success', 'Pengumuman dihapus.');
     }
 }

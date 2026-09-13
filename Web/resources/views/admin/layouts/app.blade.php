@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Admin - PresenSmart</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -300,6 +301,31 @@
                 }
             });
         });
+
+        // Reusable background refresh for index-page result blocks. It keeps
+        // the current URL (filters, sorting and pagination) and never reloads
+        // the surrounding page.
+        window.refreshLiveResults = async function(selector = '.js-live-results') {
+            const currentResults = document.querySelector(selector);
+            if (!currentResults) return;
+
+            try {
+                const response = await fetch(window.location.href, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (!response.ok) throw new Error(`Live refresh failed: ${response.status}`);
+
+                const html = await response.text();
+                const nextDocument = new DOMParser().parseFromString(html, 'text/html');
+                const nextResults = nextDocument.querySelector(selector);
+                if (!nextResults) return;
+
+                nextResults.classList.add('is-entering');
+                currentResults.replaceWith(nextResults);
+            } catch (error) {
+                console.error('Realtime results refresh failed:', error);
+            }
+        };
     </script>
     @stack('scripts')
 </body>

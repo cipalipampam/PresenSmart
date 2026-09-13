@@ -148,3 +148,28 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function registerEmployeeDirectoryWebSocket() {
+    if (typeof window.Echo === 'undefined') return;
+
+    let refreshTimer;
+    const directoryChannel = window.Echo.private('admin.directory');
+    directoryChannel
+        .listen('.DirectoryChanged', (data) => {
+            if (data.audience !== 'employee') return;
+            clearTimeout(refreshTimer);
+            refreshTimer = setTimeout(() => window.refreshLiveResults?.(), 150);
+        })
+        .subscribed(() => console.info('Realtime employee directory subscription ready.'))
+        .error((error) => console.error('Realtime employee directory subscription failed:', error));
+}
+
+if (typeof window.Echo !== 'undefined') {
+    registerEmployeeDirectoryWebSocket();
+} else {
+    window.addEventListener('echo:ready', registerEmployeeDirectoryWebSocket, { once: true });
+}
+</script>
+@endpush

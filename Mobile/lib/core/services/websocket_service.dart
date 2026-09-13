@@ -1,24 +1,76 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
 import '../constants/app_constants.dart';
 
-class WebSocketService {
+class WebSocketService with WidgetsBindingObserver {
   static final WebSocketService _instance = WebSocketService._internal();
   factory WebSocketService() => _instance;
-  WebSocketService._internal();
+  WebSocketService._internal() {
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   PusherChannelsClient? _client;
+  final List<Channel> _registeredChannels = [];
+  Timer? _reconnectTimer;
+  String? _token;
+  int? _userId;
+  int _reconnectAttempt = 0;
+  int _connectionGeneration = 0;
+  bool _isConnecting = false;
+  bool _isManuallyDisconnected = false;
 
   // Callback functions for UI/Providers to listen to
-  Function(Map<String, dynamic>)? onAnnouncementCreated;
-  Function(Map<String, dynamic>)? onAnnouncementUpdated;
-  Function(Map<String, dynamic>)? onAttendanceApproved;
-  Function(Map<String, dynamic>)? onSettingsUpdated;
+  Function(Map<String, dynamic>)? onSessionInvalidated;
+  final List<void Function(Map<String, dynamic>)> _announcementListeners = [];
+  final List<void Function(Map<String, dynamic>)> _attendanceApprovalListeners = [];
+  final List<void Function(Map<String, dynamic>)> _settingsListeners = [];
+
+  void addAttendanceApprovalListener(
+      void Function(Map<String, dynamic>) listener) {
+    if (!_attendanceApprovalListeners.contains(listener)) {
+      _attendanceApprovalListeners.add(listener);
+    }
+  }
+
+  void addAnnouncementListener(void Function(Map<String, dynamic>) listener) {
+    if (!_announcementListeners.contains(listener)) {
+      _announcementListeners.add(listener);
+    }
+  }
+
+  void addSettingsListener(void Function(Map<String, dynamic>) listener) {
+    if (!_settingsListeners.contains(listener)) {
+      _settingsListeners.add(listener);
+    }
+  }
 
   Future<void> init({required String token, int? userId}) async {
     debugPrint("WebSocket: Initializing for user $userId...");
 
+    _token = token;
+    _userId = userId;
+    _isManuallyDisconnected = false;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+
+    await _connect(replaceExisting: true);
+  }
+
+  Future<void> _connect({bool replaceExisting = false}) async {
+    if (_token == null || _isConnecting || _isManuallyDisconnected) return;
+
+    _isConnecting = true;
+    final generation = ++_connectionGeneration;
+
     try {
+      if (replaceExisting) {
+        await _client?.disconnect();
+        _client = null;
+        _registeredChannels.clear();
+      }
+
       final hostOptions = PusherChannelsOptions.fromHost(
         scheme: 'ws',
         host: AppConstants.reverbHost,
@@ -30,40 +82,71 @@ class WebSocketService {
         options: hostOptions,
         connectionErrorHandler: (exception, trace, client) {
           debugPrint("WebSocket Connection Error: $exception");
+          if (generation == _connectionGeneration) _scheduleReconnect();
         },
       );
 
       _client!.lifecycleStream.listen((state) {
         debugPrint("WebSocket Connection State: $state");
+        if (generation != _connectionGeneration) return;
+
+        final stateName = state.toString().toLowerCase();
+        if (stateName.contains('connected')) {
+          _reconnectAttempt = 0;
+          _reconnectTimer?.cancel();
+          _reconnectTimer = null;
+        } else if (stateName.contains('disconnected') ||
+            stateName.contains('failed')) {
+          _scheduleReconnect();
+        }
       });
 
-      // Subscribe to Public Channels
-      _subscribeToPublicChannel("announcements");
+      _client!.onConnectionEstablished.listen((_) {
+        if (generation != _connectionGeneration) return;
 
-      // Subscribe to Private User Channel for personal notifications
-      if (userId != null) {
-        _subscribeToPrivateChannel(
-          "private-App.Models.User.$userId",
-          token: token,
+        for (final channel in _registeredChannels) {
+          channel.subscribeIfNotUnsubscribed();
+        }
+        debugPrint('WebSocket: private channels subscribed.');
+      });
+
+      // Register listeners before connecting. The package recommends subscribing
+      // only after pusher:connection_established, handled above.
+      if (_userId != null) {
+        _registerPrivateChannel(
+          "private-App.Models.User.$_userId",
+          token: _token!,
         );
-        _subscribeToPrivateChannel("private-settings", token: token);
+        _registerPrivateChannel("private-announcements", token: _token!);
+        _registerPrivateChannel("private-settings", token: _token!);
       }
 
       await _client!.connect();
       debugPrint("WebSocket: Connect request sent!");
     } catch (e) {
       debugPrint("WebSocket Init Error: $e");
+      _scheduleReconnect();
+    } finally {
+      _isConnecting = false;
     }
   }
 
-  void _subscribeToPublicChannel(String channelName) {
-    if (_client == null) return;
-    final channel = _client!.publicChannel(channelName);
-    _bindEvents(channel);
-    channel.subscribe();
+  void _scheduleReconnect() {
+    if (_isManuallyDisconnected || _token == null || _reconnectTimer != null) {
+      return;
+    }
+
+    final exponent = _reconnectAttempt > 5 ? 5 : _reconnectAttempt;
+    final seconds = 1 << exponent;
+    _reconnectAttempt++;
+    debugPrint('WebSocket: retrying in $seconds second(s).');
+    _reconnectTimer = Timer(Duration(seconds: seconds), () {
+      _reconnectTimer = null;
+      unawaited(_connect(replaceExisting: true));
+    });
   }
 
-  void _subscribeToPrivateChannel(String channelName, {required String token}) {
+  void _registerPrivateChannel(String channelName, {required String token}) {
     if (_client == null) return;
 
     // Fix #5: Auth endpoint should be /broadcasting/auth (Laravel default),
@@ -86,7 +169,7 @@ class WebSocketService {
     );
 
     _bindEvents(channel);
-    channel.subscribe();
+    _registeredChannels.add(channel);
   }
 
   void _bindEvents(Channel channel) {
@@ -113,18 +196,27 @@ class WebSocketService {
       final eventName = event.name.split('.').last.split('\\').last;
 
       switch (eventName) {
-        case 'AnnouncementCreated':
-          onAnnouncementCreated?.call(data);
-          break;
-        // Fix #7 (from Sprint 2 list, added here): Handle AnnouncementUpdated
-        case 'AnnouncementUpdated':
-          onAnnouncementUpdated?.call(data);
+        case 'AnnouncementChanged':
+          debugPrint('WebSocket: announcement changed; refreshing dashboard.');
+          for (final listener in _announcementListeners) {
+            listener(data);
+          }
           break;
         case 'AttendanceApproved':
-          onAttendanceApproved?.call(data);
+          debugPrint('WebSocket: attendance approval received.');
+          for (final listener in _attendanceApprovalListeners) {
+            listener(data);
+          }
           break;
         case 'SystemSettingsUpdated':
-          onSettingsUpdated?.call(data);
+          debugPrint('WebSocket: settings changed; refreshing dependent data.');
+          for (final listener in _settingsListeners) {
+            listener(data);
+          }
+          break;
+        case 'SessionInvalidated':
+          debugPrint('WebSocket: session invalidated.');
+          onSessionInvalidated?.call(data);
           break;
         default:
           debugPrint("WebSocket: Unhandled event: ${event.name}");
@@ -135,7 +227,26 @@ class WebSocketService {
   }
 
   Future<void> disconnect() async {
+    _isManuallyDisconnected = true;
+    _connectionGeneration++;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    _reconnectAttempt = 0;
+    _token = null;
+    _userId = null;
+    _registeredChannels.clear();
     await _client?.disconnect();
     _client = null;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        _token != null &&
+        !_isManuallyDisconnected) {
+      _reconnectTimer?.cancel();
+      _reconnectTimer = null;
+      unawaited(_connect(replaceExisting: true));
+    }
   }
 }
