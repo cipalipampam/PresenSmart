@@ -3,8 +3,8 @@
 namespace App\Events;
 
 use App\Models\Attendance;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -27,7 +27,7 @@ class DashboardStatsUpdated implements ShouldBroadcastNow, ShouldDispatchAfterCo
     public function broadcastOn(): array
     {
         return [
-            new Channel('dashboard-stats'),
+            new PrivateChannel('admin.dashboard'),
         ];
     }
 

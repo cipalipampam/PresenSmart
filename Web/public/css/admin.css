@@ -90,6 +90,32 @@ body {
     animation: fadeInUp 0.4s ease both;
 }
 
+@keyframes liveResultsIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.js-live-results {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.js-live-results.is-loading {
+    opacity: 0.58;
+    transform: translateY(3px);
+    pointer-events: none;
+}
+
+.js-live-results.is-entering {
+    animation: liveResultsIn 0.28s ease both;
+}
+
 /* ===================================================
    SIDEBAR
    =================================================== */
@@ -219,7 +245,6 @@ body {
     padding: 2rem;
     transition: margin-left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
     min-height: calc(100vh - var(--navbar-height));
-    margin-top: var(--navbar-height);
 }
 
 .sidebar.collapsed~.content-wrapper {

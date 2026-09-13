@@ -17,7 +17,7 @@
     <!-- Search & Filter Card -->
     <div class="card glass border-0 shadow-lg mb-4">
         <div class="card-body p-4">
-            <form action="{{ route('admin.employees.index') }}" method="GET" class="row g-3 align-items-end">
+            <form action="{{ route('admin.employees.index') }}" method="GET" class="row g-3 align-items-end js-live-filter">
                 <div class="col-lg-5 col-md-12">
                     <label for="search" class="form-label text-white-50 small fw-semibold">Directory Search</label>
                     <div class="input-group">
@@ -33,19 +33,13 @@
                         <option value="staff" {{ request('role') == 'staff' ? 'selected' : '' }}>Staff Members</option>
                     </select>
                 </div>
-                <div class="col-lg-2 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <label for="per_page" class="form-label text-white-50 small fw-semibold">Entries</label>
-                    <select name="per_page" id="per_page" class="form-select" onchange="this.form.submit()">
+                    <select name="per_page" id="per_page" class="form-select">
                         <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10 Per Page</option>
                         <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 Per Page</option>
                         <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 Per Page</option>
                     </select>
-                </div>
-                <div class="col-lg-2 col-md-12">
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary flex-fill">Apply</button>
-                        <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary flex-fill border-0 bg-light-soft text-white">Reset</a>
-                    </div>
                 </div>
             </form>
         </div>
@@ -60,6 +54,7 @@
     @endif
 
     <!-- Data Table -->
+    <div class="js-live-results">
     <div class="card border-0 shadow-lg overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -149,6 +144,7 @@
                 {{ $employees->appends(request()->query())->links('pagination::bootstrap-5') }}
             </div>
         </div>
+    </div>
     </div>
 </div>
 @endsection

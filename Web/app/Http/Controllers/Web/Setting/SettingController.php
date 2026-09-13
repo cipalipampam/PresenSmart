@@ -37,13 +37,13 @@ class SettingController extends Controller
         Setting::updateOrCreate(['key' => 'school_long'], ['value' => $request->long]);
         Setting::updateOrCreate(['key' => 'school_radius'], ['value' => $request->radius]);
 
+        SettingCache::flush();
+
         event(new \App\Events\SystemSettingsUpdated([
             'school_lat'    => $request->lat,
             'school_long'   => $request->long,
             'school_radius' => $request->radius,
         ]));
-
-        SettingCache::flush(); // invalidate cache
 
         return redirect()->to(route('admin.settings.index') . '#tab-location')->with('success', 'Pengaturan Batas Lokasi berhasil diperbarui!');
     }
@@ -60,13 +60,13 @@ class SettingController extends Controller
         Setting::updateOrCreate(['key' => 'check_out_start'], ['value' => $request->check_out_start]);
         Setting::updateOrCreate(['key' => 'late_tolerance_minutes'], ['value' => $request->late_tolerance]);
 
+        SettingCache::flush();
+
         event(new \App\Events\SystemSettingsUpdated([
             'check_in_end'           => $request->check_in_end,
             'check_out_start'        => $request->check_out_start,
             'late_tolerance_minutes' => $request->late_tolerance,
         ]));
-
-        SettingCache::flush(); // invalidate cache
 
         return redirect()->to(route('admin.settings.index') . '#tab-time')->with('success', 'Konfigurasi Waktu Presensi berhasil diperbarui!');
     }

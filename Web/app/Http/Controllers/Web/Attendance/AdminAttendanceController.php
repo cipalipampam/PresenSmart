@@ -7,7 +7,6 @@ use App\Models\Attendance;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\Web\Attendance\AttendanceExportService;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -21,8 +20,23 @@ class AdminAttendanceController extends Controller
 
     public function index(Request $request)
     {
+        return $this->renderIndex($request);
+    }
+
+    public function students(Request $request)
+    {
+        return $this->renderIndex($request, 'siswa');
+    }
+
+    public function employees(Request $request)
+    {
+        return $this->renderIndex($request, 'employee');
+    }
+
+    private function renderIndex(Request $request, ?string $attendanceType = null)
+    {
         $filters = $this->getFilters($request);
-        $query   = $this->buildAttendanceQuery($filters);
+        $query   = $this->buildAttendanceQuery($filters, roleOverride: $attendanceType);
 
         // Multi-format export
         $exportType = $request->input('export');
@@ -36,10 +50,12 @@ class AdminAttendanceController extends Controller
 
         $grades = Student::distinct()->whereNotNull('grade')->pluck('grade')->sort();
 
-        return view('admin.attendances.index', array_merge(
-            compact('attendances', 'grades'),
-            $filters
-        ));
+        return view('admin.attendances.index', array_merge(compact('attendances', 'grades'), $filters, [
+            'attendanceType' => $attendanceType,
+            'attendanceRouteName' => $attendanceType === 'siswa'
+                ? 'admin.attendances.students'
+                : ($attendanceType === 'employee' ? 'admin.attendances.employees' : 'admin.attendances.index'),
+        ]));
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -80,13 +96,15 @@ class AdminAttendanceController extends Controller
             $proofPath = $file->storeAs('attendances', $fileName, 'public'); // ← unified path
         }
 
-        Attendance::create([
+        $attendance = Attendance::create([
             'user_id'     => $request->user_id,
             'recorded_at' => $request->recorded_at,
             'status'      => $request->status,
             'notes'       => $request->notes,
             'proof_image' => $proofPath,
         ]);
+
+        $this->broadcastAttendanceChange($attendance, 'created');
 
         return redirect()->route('admin.attendances.index')->with('success', 'Attendance recorded successfully.');
     }
@@ -100,7 +118,7 @@ class AdminAttendanceController extends Controller
         if ($request->action === 'approve') {
             $attendance->update(['is_approved' => true]);
             event(new \App\Events\AttendanceApproved($attendance, 'Pengajuan absensi Anda telah disetujui.'));
-            event(new \App\Events\DashboardStatsUpdated());
+            $this->broadcastAttendanceChange($attendance, 'approved');
             return redirect()->back()->with('success', 'Permohonan berhasil disetujui (Approved).');
         }
 
@@ -109,7 +127,7 @@ class AdminAttendanceController extends Controller
             'status'      => 'absent',
         ]);
         event(new \App\Events\AttendanceApproved($attendance, 'Pengajuan absensi Anda ditolak.'));
-        event(new \App\Events\DashboardStatsUpdated());
+        $this->broadcastAttendanceChange($attendance, 'rejected');
         return redirect()->back()->with('success', 'Permohonan ditolak. Status otomatis menjadi Absent (Alfa).');
     }
 
@@ -143,6 +161,8 @@ class AdminAttendanceController extends Controller
         $attendance->notes  = $request->notes;
         $attendance->save();
 
+        $this->broadcastAttendanceChange($attendance, 'updated');
+
         return redirect()->route('admin.attendances.index')->with('success', 'Attendance updated successfully.');
     }
 
@@ -155,6 +175,7 @@ class AdminAttendanceController extends Controller
         }
 
         $attendance->delete();
+        $this->broadcastAttendanceChange($attendance, 'deleted');
 
         return redirect()->route('admin.attendances.index')->with('success', 'Attendance deleted successfully.');
     }
@@ -180,7 +201,9 @@ class AdminAttendanceController extends Controller
     {
         return [
             'search' => $request->input('search', ''),
-            'date'   => $request->input('date'),
+            'date'   => $request->has('date')
+                ? $request->input('date')
+                : now()->toDateString(),
             'month'  => $request->input('month'),
             'year'   => $request->input('year', date('Y')),
             'role'   => $request->input('role'),
@@ -192,7 +215,7 @@ class AdminAttendanceController extends Controller
      * Build the Eloquent query applying all attendance filters.
      * $defaultToday: when no date/month/year given, default to today instead of current month.
      */
-    private function buildAttendanceQuery(array $filters, bool $defaultToday = false): \Illuminate\Database\Eloquent\Builder
+    private function buildAttendanceQuery(array $filters, bool $defaultToday = false, ?string $roleOverride = null): \Illuminate\Database\Eloquent\Builder
     {
         $query = Attendance::with(['user.student', 'user.employee']);
 
@@ -225,8 +248,8 @@ class AdminAttendanceController extends Controller
         }
 
         // Role filter
-        if (!empty($filters['role'])) {
-            $role = $filters['role'];
+        $role = $roleOverride ?: $filters['role'];
+        if (!empty($role)) {
             $query->whereHas('user', function ($q) use ($role) {
                 $role === 'employee'
                     ? $q->role(['guru', 'staff'])
@@ -241,5 +264,14 @@ class AdminAttendanceController extends Controller
         }
 
         return $query;
+    }
+
+    /**
+     * Notify every open administrator view after an attendance change.
+     */
+    private function broadcastAttendanceChange(Attendance $attendance, string $action): void
+    {
+        event(\App\Events\AdminAttendanceChanged::fromAttendance($attendance, $action));
+        event(new \App\Events\DashboardStatsUpdated());
     }
 }

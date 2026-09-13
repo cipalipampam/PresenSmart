@@ -6,8 +6,8 @@
     {{-- ===== PAGE HEADER ===== --}}
     <div class="row align-items-center mb-4">
         <div class="col-md-6">
-            <h2 class="fw-bold text-white mb-1">Attendance Records</h2>
-            <p class="text-white-50 small mb-0">Monitor and manage daily attendance logs for all members.</p>
+            <h2 class="fw-bold text-white mb-1">{{ $attendanceType === 'siswa' ? 'Student Attendance' : ($attendanceType === 'employee' ? 'Employee Attendance' : 'Attendance Records') }}</h2>
+            <p class="text-white-50 small mb-0">Monitor and manage {{ $attendanceType ? ($attendanceType === 'siswa' ? 'student' : 'employee and staff') : 'all member' }} attendance logs.</p>
         </div>
         <div class="col-md-6 text-md-end mt-3 mt-md-0 d-flex align-items-center justify-content-md-end gap-2 flex-wrap">
             {{-- Export Dropdown --}}
@@ -17,23 +17,23 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end glass border-0 shadow py-2">
                     <li>
-                        <a class="dropdown-item" href="{{ route('admin.attendances.index', array_merge(request()->query(), ['export' => 'excel'])) }}">
+                        <a class="dropdown-item" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'excel'])) }}">
                             <i class="bi bi-file-earmark-excel me-2 text-emerald"></i>Excel (.xlsx)
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="{{ route('admin.attendances.index', array_merge(request()->query(), ['export' => 'csv'])) }}">
+                        <a class="dropdown-item" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'csv'])) }}">
                             <i class="bi bi-filetype-csv me-2 text-info"></i>CSV (.csv)
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="{{ route('admin.attendances.index', array_merge(request()->query(), ['export' => 'pdf'])) }}">
+                        <a class="dropdown-item" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'pdf'])) }}">
                             <i class="bi bi-file-earmark-pdf me-2" style="color:#ef4444;"></i>PDF
                         </a>
                     </li>
                     <li><hr class="dropdown-divider border-white-10"></li>
                     <li>
-                        <a class="dropdown-item" href="{{ route('admin.attendances.index', array_merge(request()->query(), ['export' => 'zip'])) }}">
+                        <a class="dropdown-item" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'zip'])) }}">
                             <i class="bi bi-file-earmark-zip me-2 text-warning"></i>All Formats (.zip)
                         </a>
                     </li>
@@ -48,9 +48,9 @@
     {{-- ===== FILTER CARD ===== --}}
     <div class="card glass border-0 shadow-lg mb-4">
         <div class="card-body p-4">
-            <form action="{{ route('admin.attendances.index') }}" method="GET">
+            <form action="{{ route($attendanceRouteName) }}" method="GET" class="js-live-filter">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-6">
+                    <div class="{{ $attendanceType === 'employee' ? 'col-lg-5' : ($attendanceType === 'siswa' ? 'col-lg-4' : 'col-lg-3') }} col-md-6">
                         <label for="search" class="form-label text-white-50 small fw-semibold">Search Member</label>
                         <div class="input-group">
                             <span class="input-group-text border-0 bg-light-soft text-white-50"><i class="bi bi-search"></i></span>
@@ -58,9 +58,9 @@
                                    placeholder="Member name..." value="{{ request('search') }}">
                         </div>
                     </div>
-                    <div class="col-lg-2 col-md-6">
+                    <div class="{{ $attendanceType === 'employee' ? 'col-lg-4' : 'col-lg-2' }} col-md-6">
                         <label for="date" class="form-label text-white-50 small fw-semibold">Date</label>
-                        <input type="date" name="date" id="date" class="form-control" value="{{ request('date') }}">
+                        <input type="date" name="date" id="date" class="form-control" value="{{ request('date', $date ?? now()->toDateString()) }}">
                     </div>
                     <div class="col-lg-2 col-md-4">
                         <label for="month" class="form-label text-white-50 small fw-semibold">Month</label>
@@ -83,7 +83,7 @@
                             @endfor
                         </select>
                     </div>
-                    <div class="col-lg-2 col-md-4" id="grade-filter-container" style="{{ request('role') == 'siswa' ? '' : 'display:none;' }}">
+                    <div class="{{ $attendanceType === 'siswa' ? 'col-lg-3' : 'col-lg-2' }} col-md-4" id="grade-filter-container" style="{{ $attendanceType === 'siswa' || request('role') == 'siswa' ? '' : 'display:none;' }}">
                         <label for="grade" class="form-label text-white-50 small fw-semibold">Grade</label>
                         <select name="grade" id="grade" class="form-select">
                             <option value="">All</option>
@@ -92,7 +92,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-2 col-md-6">
+                    <div id="role-filter-container" class="{{ $attendanceType ? 'd-none' : (request('role') == 'siswa' ? 'col-lg-2' : 'col-lg-4') }} col-md-6">
                         <label for="role" class="form-label text-white-50 small fw-semibold">Role Filter</label>
                         <select name="role" id="role" class="form-select" onchange="toggleGradeFilter()">
                             <option value="">All Members</option>
@@ -101,16 +101,6 @@
                             <option value="guru"     {{ request('role') == 'guru'     ? 'selected' : '' }}>Teachers</option>
                             <option value="staff"    {{ request('role') == 'staff'    ? 'selected' : '' }}>Staff</option>
                         </select>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary flex-fill">
-                                <i class="bi bi-search me-1"></i>Search
-                            </button>
-                            <a href="{{ route('admin.attendances.index') }}" class="btn border-0 bg-light-soft text-white flex-fill">
-                                <i class="bi bi-x-lg me-1"></i>Reset
-                            </a>
-                        </div>
                     </div>
                 </div>
             </form>
@@ -127,6 +117,7 @@
     @endif
 
     {{-- ===== DATA TABLE ===== --}}
+    <div class="js-live-results">
     <div class="card border-0 shadow-lg overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -263,17 +254,23 @@
             </div>
         </div>
     </div>
+    </div>
 </div>
 
 <script>
 function toggleGradeFilter() {
     const roleSelect = document.getElementById('role');
     const gradeContainer = document.getElementById('grade-filter-container');
+    const roleContainer = document.getElementById('role-filter-container');
     if (roleSelect.value === 'siswa') {
         gradeContainer.style.display = 'block';
+        roleContainer.classList.remove('col-lg-4');
+        roleContainer.classList.add('col-lg-2');
     } else {
         gradeContainer.style.display = 'none';
         document.getElementById('grade').value = '';
+        roleContainer.classList.remove('col-lg-2');
+        roleContainer.classList.add('col-lg-4');
     }
 }
 </script>
@@ -284,10 +281,13 @@ function toggleGradeFilter() {
 function registerAttendanceWebSocket() {
     if (typeof window.Echo === 'undefined') return;
 
-    window.Echo.channel('attendance-channel')
+    window.Echo.private('admin.attendance')
         .listen('.AttendanceLogged', (data) => {
             showAttendanceToast(data);
-            refreshAttendanceTable();
+            scheduleAttendanceRefresh();
+        })
+        .listen('.AdminAttendanceChanged', () => {
+            scheduleAttendanceRefresh();
         });
 }
 
@@ -297,10 +297,22 @@ if (typeof window.Echo !== 'undefined') {
     window.addEventListener('echo:ready', registerAttendanceWebSocket, { once: true });
 }
 
+let attendanceRefreshTimer;
+let attendanceRefreshController;
+
+function scheduleAttendanceRefresh() {
+    clearTimeout(attendanceRefreshTimer);
+    attendanceRefreshTimer = setTimeout(refreshAttendanceTable, 150);
+}
+
 async function refreshAttendanceTable() {
+    attendanceRefreshController?.abort();
+    attendanceRefreshController = new AbortController();
+
     try {
         const response = await fetch(window.location.href, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            signal: attendanceRefreshController.signal,
         });
         if (!response.ok) return;
 
@@ -319,6 +331,7 @@ async function refreshAttendanceTable() {
             currentFooter.replaceWith(nextFooter);
         }
     } catch (error) {
+        if (error.name === 'AbortError') return;
         console.error('Attendance table refresh failed:', error);
     }
 }
@@ -398,4 +411,3 @@ function showAttendanceToast(data) {
 @endpush
 
 @endsection
-

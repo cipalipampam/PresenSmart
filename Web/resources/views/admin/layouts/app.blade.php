@@ -53,10 +53,17 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.attendances.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.attendances.*') ? 'active' : '' }}" title="Attendances">
+                    <a href="{{ route('admin.attendances.students') }}"
+                        class="nav-link {{ request()->routeIs('admin.attendances.students') ? 'active' : '' }}" title="Student Attendance">
                         <i class="bi bi-calendar-check-fill"></i>
-                        <span class="link-text">Attendances</span>
+                        <span class="link-text">Student Attendance</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.attendances.employees') }}"
+                        class="nav-link {{ request()->routeIs('admin.attendances.employees') ? 'active' : '' }}" title="Employee Attendance">
+                        <i class="bi bi-calendar2-check-fill"></i>
+                        <span class="link-text">Employee Attendance</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -213,13 +220,14 @@
         }
 
         // ---- Global delete modal ----
-        document.querySelectorAll('[data-delete-url]').forEach(btn => {
-            btn.addEventListener('click', e => {
-                e.preventDefault();
-                document.getElementById('deleteForm').action = btn.dataset.deleteUrl;
-                document.getElementById('deleteTargetName').textContent = btn.dataset.deleteName || 'data ini';
-                new bootstrap.Modal(document.getElementById('deleteModal')).show();
-            });
+        document.addEventListener('click', event => {
+            const btn = event.target.closest('[data-delete-url]');
+            if (!btn) return;
+
+            event.preventDefault();
+            document.getElementById('deleteForm').action = btn.dataset.deleteUrl;
+            document.getElementById('deleteTargetName').textContent = btn.dataset.deleteName || 'data ini';
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
         });
 
         // ---- Copy to clipboard ----
@@ -236,6 +244,62 @@
 
         // ---- Tooltips ----
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+
+        // Live GET filters: replace only the results area without reloading the page.
+        document.querySelectorAll('form.js-live-filter').forEach(form => {
+            let filterTimer;
+            let requestController;
+
+            const loadResults = async () => {
+                requestController?.abort();
+                requestController = new AbortController();
+
+                const params = new URLSearchParams(new FormData(form));
+                const url = `${form.action}?${params.toString()}`;
+                const currentResults = document.querySelector('.js-live-results');
+                currentResults?.classList.add('is-loading');
+
+                try {
+                    const response = await fetch(url, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        signal: requestController.signal,
+                    });
+                    if (!response.ok) throw new Error(`Filter request failed: ${response.status}`);
+
+                    const html = await response.text();
+                    const nextDocument = new DOMParser().parseFromString(html, 'text/html');
+                    const nextResults = nextDocument.querySelector('.js-live-results');
+
+                    if (currentResults && nextResults) {
+                        nextResults.classList.add('is-entering');
+                        currentResults.replaceWith(nextResults);
+                        window.history.replaceState({}, '', url);
+                    }
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        currentResults?.classList.remove('is-loading');
+                        console.error(error);
+                    }
+                }
+            };
+
+            const submitFilter = () => {
+                clearTimeout(filterTimer);
+                filterTimer = setTimeout(loadResults, 400);
+            };
+
+            form.addEventListener('input', event => {
+                if (event.target.matches('input[type="text"], input[type="search"]')) {
+                    submitFilter();
+                }
+            });
+
+            form.addEventListener('change', event => {
+                if (event.target.matches('select, input[type="date"]')) {
+                    submitFilter();
+                }
+            });
+        });
     </script>
     @stack('scripts')
 </body>

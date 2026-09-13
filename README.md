@@ -303,10 +303,11 @@ REVERB_PORT=8080
 REVERB_SCHEME=http
 REVERB_SERVER_HOST=0.0.0.0
 REVERB_SERVER_PORT=8080
+VITE_REVERB_HOST=
 QUEUE_CONNECTION=sync
 ```
 
-`REVERB_HOST=127.0.0.1` digunakan Laravel untuk mengirim broadcast ke Reverb di laptop. Aplikasi mobile memakai IP laptop melalui `BACKEND_HOST`, dan key pada `--dart-define=REVERB_APP_KEY=...` harus sama dengan `REVERB_APP_KEY`. Simpan nilai asli hanya di file `.env` lokal atau secret manager.
+`REVERB_HOST=127.0.0.1` digunakan Laravel untuk mengirim broadcast ke Reverb di laptop, sedangkan `REVERB_SERVER_HOST=0.0.0.0` membuat server menerima koneksi dari jaringan. Jika `VITE_REVERB_HOST` kosong, browser memakai host halaman yang sedang dibuka; isi hanya bila Reverb berada di host berbeda. Aplikasi mobile memakai IP laptop melalui `BACKEND_HOST`, dan key pada `--dart-define=REVERB_APP_KEY=...` harus sama dengan `REVERB_APP_KEY`. Simpan nilai asli hanya di file `.env` lokal atau secret manager.
 
 ### 📍 Permission Perangkat
 

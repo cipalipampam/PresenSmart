@@ -57,6 +57,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
     Route::controller(AdminAttendanceController::class)->prefix('attendances')->name('attendances.')->group(function () {
         Route::get('/', 'index')->name('index');
+        Route::get('/students', 'students')->name('students');
+        Route::get('/employees', 'employees')->name('employees');
         Route::get('/create', 'create')->name('create');
         Route::get('/report/print', 'print')->name('print'); // ← harus sebelum {id}
         Route::post('/', 'store')->name('store');

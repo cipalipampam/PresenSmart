@@ -88,7 +88,7 @@ class AttendanceService
                 'recorded_at' => Carbon::now(),
             ]);
 
-            event(new \App\Events\AttendanceLogged($record));
+            event(new \App\Events\AttendanceLogged($record, 'check_in'));
             event(new \App\Events\DashboardStatsUpdated());
 
             return $record;
@@ -126,7 +126,7 @@ class AttendanceService
                 'recorded_at' => Carbon::now(),
             ]);
 
-            event(new \App\Events\AttendanceLogged($record));
+            event(new \App\Events\AttendanceLogged($record, 'permission_submitted'));
             event(new \App\Events\DashboardStatsUpdated());
 
             return $record;
@@ -168,7 +168,7 @@ class AttendanceService
         DB::transaction(function () use ($attendance, $currentTime) {
             $attendance->update(['check_out_time' => $currentTime]);
 
-            event(new \App\Events\AttendanceLogged($attendance));
+            event(new \App\Events\AttendanceLogged($attendance, 'check_out'));
             event(new \App\Events\DashboardStatsUpdated());
         });
 

@@ -356,20 +356,13 @@ function registerDashboardWebSocket() {
     if (typeof window.Echo === 'undefined') return;
 
     // ── Listener 1: New attendance logged ─────────────────────────────────
-    window.Echo.channel('attendance-channel')
+    window.Echo.private('admin.attendance')
         .listen('.AttendanceLogged', (data) => {
-            // 1a. Update "Present Today" stat card
-            const statEl = document.getElementById('ws-present-count');
-            if (statEl) {
-                const current = parseInt(statEl.textContent, 10) || 0;
-                if (data.status === 'present') {
-                    statEl.textContent = current + 1;
-                    statEl.closest('.card').classList.add('ws-flash');
-                    setTimeout(() => statEl.closest('.card').classList.remove('ws-flash'), 1200);
-                }
-            }
+            // Statistics are refreshed from DashboardStatsUpdated below. This
+            // avoids double-counting a checkout, which updates an existing row.
+            if (data.action === 'check_out') return;
 
-            // 1b. Prepend row to today's attendance log table
+            // Prepend a newly created attendance record to today's log table.
             const tbody = document.getElementById('ws-attendance-tbody');
             if (tbody) {
                 const statusMap = {
@@ -408,13 +401,13 @@ function registerDashboardWebSocket() {
                 tbody.prepend(row);
             }
 
-            // 1c. Live indicator pulse
+            // Live indicator pulse
             const dot = document.getElementById('ws-live-dot');
             if (dot) { dot.classList.add('ws-pulse'); setTimeout(() => dot.classList.remove('ws-pulse'), 1000); }
         });
 
     // ── Listener 2: Dashboard stats updated ───────────────────────────────
-    window.Echo.channel('dashboard-stats')
+    window.Echo.private('admin.dashboard')
         .listen('.DashboardStatsUpdated', (data) => {
             const map = {
                 'ws-present-count':    data.total_present,
@@ -459,4 +452,3 @@ if (typeof window.Echo !== 'undefined') {
 .ws-new-row { animation: wsSlide 0.4s ease; }
 </style>
 @endpush
-

@@ -12,10 +12,8 @@ class WebSocketService {
   // Callback functions for UI/Providers to listen to
   Function(Map<String, dynamic>)? onAnnouncementCreated;
   Function(Map<String, dynamic>)? onAnnouncementUpdated;
-  Function(Map<String, dynamic>)? onAttendanceLogged;
   Function(Map<String, dynamic>)? onAttendanceApproved;
   Function(Map<String, dynamic>)? onSettingsUpdated;
-  Function(Map<String, dynamic>)? onStatsUpdated;
 
   Future<void> init({required String token, int? userId}) async {
     debugPrint("WebSocket: Initializing for user $userId...");
@@ -41,9 +39,6 @@ class WebSocketService {
 
       // Subscribe to Public Channels
       _subscribeToPublicChannel("announcements");
-      _subscribeToPublicChannel("attendance-channel");
-      _subscribeToPublicChannel("system-settings");
-      _subscribeToPublicChannel("dashboard-stats");
 
       // Subscribe to Private User Channel for personal notifications
       if (userId != null) {
@@ -51,6 +46,7 @@ class WebSocketService {
           "private-App.Models.User.$userId",
           token: token,
         );
+        _subscribeToPrivateChannel("private-settings", token: token);
       }
 
       await _client!.connect();
@@ -124,17 +120,11 @@ class WebSocketService {
         case 'AnnouncementUpdated':
           onAnnouncementUpdated?.call(data);
           break;
-        case 'AttendanceLogged':
-          onAttendanceLogged?.call(data);
-          break;
         case 'AttendanceApproved':
           onAttendanceApproved?.call(data);
           break;
         case 'SystemSettingsUpdated':
           onSettingsUpdated?.call(data);
-          break;
-        case 'DashboardStatsUpdated':
-          onStatsUpdated?.call(data);
           break;
         default:
           debugPrint("WebSocket: Unhandled event: ${event.name}");

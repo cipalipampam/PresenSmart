@@ -9,17 +9,32 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 /**
- * Private channel for per-user notifications (e.g. AttendanceApproved).
- * Only the authenticated user whose ID matches can subscribe.
+ * Per-user notifications, such as an attendance approval decision.
  */
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
 /**
- * Public channels — no auth needed (admin dashboard, announcements).
- * Public Channel objects do not require registration here,
- * but we define them explicitly for clarity and future restrictions.
- *
- * Channels: 'attendance-channel', 'dashboard-stats', 'announcements', 'system-settings'
+ * School-wide attendance data and aggregate dashboard statistics are visible
+ * only to authenticated administrators.
+ */
+Broadcast::channel('admin.attendance', function ($user) {
+    return $user->hasRole('admin');
+});
+
+Broadcast::channel('admin.dashboard', function ($user) {
+    return $user->hasRole('admin');
+});
+
+/**
+ * Signed-in users may receive updated attendance settings and location data.
+ */
+Broadcast::channel('settings', function ($user) {
+    return $user !== null;
+});
+
+/**
+ * The sole public channel is 'announcements', which contains non-sensitive
+ * information intended for everyone.
  */

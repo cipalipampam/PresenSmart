@@ -19,7 +19,7 @@
     {{-- ===== SEARCH & FILTER ===== --}}
     <div class="card glass border-0 shadow-lg mb-4">
         <div class="card-body p-4">
-            <form action="{{ route('admin.students.index') }}" method="GET" class="row g-3 align-items-end">
+            <form action="{{ route('admin.students.index') }}" method="GET" class="row g-3 align-items-end js-live-filter">
                 <div class="col-lg-5 col-md-12">
                     <label for="search" class="form-label text-white-50 small fw-semibold">Search Student</label>
                     <div class="input-group">
@@ -39,23 +39,13 @@
                         @endif
                     </select>
                 </div>
-                <div class="col-lg-2 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <label for="per_page" class="form-label text-white-50 small fw-semibold">Show</label>
-                    <select name="per_page" id="per_page" class="form-select" onchange="this.form.submit()">
+                    <select name="per_page" id="per_page" class="form-select">
                         <option value="10"  {{ request('per_page', 10) == 10  ? 'selected' : '' }}>10 Rows</option>
                         <option value="25"  {{ request('per_page') == 25 ? 'selected' : '' }}>25 Rows</option>
                         <option value="50"  {{ request('per_page') == 50 ? 'selected' : '' }}>50 Rows</option>
                     </select>
-                </div>
-                <div class="col-lg-2 col-md-12">
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary flex-fill">
-                            <i class="bi bi-search me-1"></i>Apply
-                        </button>
-                        <a href="{{ route('admin.students.index') }}" class="btn border-0 bg-light-soft text-white flex-fill">
-                            Reset
-                        </a>
-                    </div>
                 </div>
             </form>
         </div>
@@ -71,6 +61,7 @@
     @endif
 
     {{-- ===== DATA TABLE ===== --}}
+    <div class="js-live-results">
     <div class="card border-0 shadow-lg overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -194,6 +185,7 @@
                 {{ $students->appends(request()->query())->links('pagination::bootstrap-5') }}
             </div>
         </div>
+    </div>
     </div>
 </div>
 @endsection

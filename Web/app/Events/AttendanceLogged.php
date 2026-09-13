@@ -3,8 +3,8 @@
 namespace App\Events;
 
 use App\Models\Attendance;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -15,13 +15,15 @@ class AttendanceLogged implements ShouldBroadcast, ShouldDispatchAfterCommit
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public Attendance $attendance;
+    public string $action;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(Attendance $attendance)
+    public function __construct(Attendance $attendance, string $action = 'created')
     {
         $this->attendance = $attendance->load('user');
+        $this->action = $action;
     }
 
     /**
@@ -32,7 +34,7 @@ class AttendanceLogged implements ShouldBroadcast, ShouldDispatchAfterCommit
     public function broadcastOn(): array
     {
         return [
-            new Channel('attendance-channel'),
+            new PrivateChannel('admin.attendance'),
         ];
     }
 
@@ -51,6 +53,7 @@ class AttendanceLogged implements ShouldBroadcast, ShouldDispatchAfterCommit
             'user_name' => $this->attendance->user->name ?? 'Unknown',
             'status' => $this->attendance->status,
             'time' => $this->attendance->recorded_at ? $this->attendance->recorded_at->format('H:i:s') : now()->format('H:i:s'),
+            'action' => $this->action,
         ];
     }
 }

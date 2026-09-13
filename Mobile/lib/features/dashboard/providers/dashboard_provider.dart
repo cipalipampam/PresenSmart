@@ -35,9 +35,6 @@ class DashboardProvider with ChangeNotifier {
     // This prevents callback overwrite and stale-closure bugs.
     WebSocketService().onAnnouncementCreated = (data) => fetchDashboardData();
     WebSocketService().onAnnouncementUpdated = (data) => fetchDashboardData();
-    // DashboardStatsUpdated is public because admin dashboards also consume it.
-    // Refreshing this user's aggregate dashboard keeps mobile stats current.
-    WebSocketService().onStatsUpdated = (data) => fetchDashboardData();
   }
 
   Future<void> fetchDashboardData() async {
