@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
+import '../storage/session_storage.dart';
 
 /// Singleton ApiClient — shared across all providers.
 /// Creates a single Dio instance with auth interceptor and 401 force-logout.
 class ApiClient {
+  final SessionStorage _sessionStorage = SessionStorage();
   // ─── Singleton ───────────────────────────────────────────────────────────
   static final ApiClient _instance = ApiClient._internal();
   factory ApiClient() => _instance;
@@ -26,8 +28,7 @@ class ApiClient {
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString(AppConstants.tokenKey);
+        final token = await _sessionStorage.readToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
@@ -36,9 +37,9 @@ class ApiClient {
       onError: (DioException e, handler) async {
         // Fix #4: Auto-logout when token is expired or revoked (401 Unauthorized)
         if (e.response?.statusCode == 401) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.remove(AppConstants.tokenKey);
-          await prefs.remove(AppConstants.userKey);
+          await _sessionStorage.deleteToken();
+          final preferences = await SharedPreferences.getInstance();
+          await preferences.remove(AppConstants.userKey);
 
           // Notify the app-level navigator to redirect to login.
           // We use the callback pattern so ApiClient stays framework-agnostic.

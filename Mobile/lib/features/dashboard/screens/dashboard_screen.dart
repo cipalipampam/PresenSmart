@@ -22,6 +22,29 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
+  final Set<int> _visitedTabs = {0};
+
+  void _selectTab(int index) {
+    setState(() {
+      _visitedTabs.add(index);
+      _selectedIndex = index;
+    });
+  }
+
+  Widget _buildTab(int index) {
+    if (!_visitedTabs.contains(index)) return const SizedBox.shrink();
+
+    return switch (index) {
+      0 => const DashboardHomeTab(key: PageStorageKey('dashboard-home')),
+      1 => AttendanceScreen(
+          key: const PageStorageKey('attendance'),
+          onNavigateToHistory: () => _selectTab(2),
+        ),
+      2 => const HistoryScreen(key: PageStorageKey('attendance-history')),
+      3 => const ProfileScreen(key: PageStorageKey('profile')),
+      _ => const SizedBox.shrink(),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,27 +61,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
         }
 
-        final List<Widget> screens = [
-          const DashboardHomeTab(),
-          AttendanceScreen(
-            onNavigateToHistory: () => setState(() => _selectedIndex = 2),
-          ),
-          HistoryScreen(),
-          ProfileScreen(),
-        ];
-
         return Scaffold(
           extendBody: true,
           body: Stack(
             children: [
-              screens[_selectedIndex],
+              IndexedStack(
+                index: _selectedIndex,
+                children: List.generate(4, _buildTab),
+              ),
               FloatingNavBar(
                 currentIndex: _selectedIndex,
-                onTap: (index) {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                },
+                onTap: _selectTab,
               ),
             ],
           ),

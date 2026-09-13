@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Shared\Settings;
 
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;

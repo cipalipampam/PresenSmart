@@ -7,6 +7,8 @@ use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Services\Api\Auth\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -31,14 +33,21 @@ class AuthController extends Controller
                 'data' => [
                     'token' => $data['token'],
                     'user' => $data['user'],
-                    'role'  => $data['role']
-                ]
+                    'role' => $data['role'],
+                ],
             ]);
-        } catch (\Exception $e) {
+        } catch (ValidationException $exception) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $exception->errors()['email'][0] ?? 'Kredensial tidak valid.',
             ], 401);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada server. Silakan coba lagi.',
+            ], 500);
         }
     }
 
@@ -51,7 +60,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Logout berhasil'
+            'message' => 'Logout berhasil',
         ]);
     }
 
@@ -65,7 +74,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Profil berhasil diambil',
-            'data' => $userData
+            'data' => $userData,
         ]);
     }
 }

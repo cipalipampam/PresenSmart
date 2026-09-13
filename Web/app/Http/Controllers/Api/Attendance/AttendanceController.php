@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Api\Attendance;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Attendance\CheckInRequest;
 use App\Http\Requests\Api\Attendance\PermissionRequest;
+use App\Models\Attendance;
 use App\Services\Api\Attendance\AttendanceService;
+use App\Services\Shared\Storage\AttendanceProofStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AttendanceController extends Controller
 {
@@ -26,18 +30,17 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Berhasil melakukan presensi.',
-                'data' => $attendance
+                'data' => $attendance,
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->validator->errors()->first()
+                'message' => $e->validator->errors()->first(),
             ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
-            ], 500);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $this->serverError();
         }
     }
 
@@ -49,18 +52,17 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Berhasil absen pulang.',
-                'data' => $attendance
+                'data' => $attendance,
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->validator->errors()->first()
+                'message' => $e->validator->errors()->first(),
             ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
-            ], 500);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $this->serverError();
         }
     }
 
@@ -72,18 +74,17 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Izin / Sakit berhasil dicatat.',
-                'data' => $attendance
+                'data' => $attendance,
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->validator->errors()->first()
+                'message' => $e->validator->errors()->first(),
             ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
-            ], 500);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $this->serverError();
         }
     }
 
@@ -91,13 +92,26 @@ class AttendanceController extends Controller
     {
         $month = $request->query('month');
         $year = $request->query('year');
-        
+
         $attendances = $this->attendanceService->history($request->user(), $month, $year);
 
         return response()->json([
             'success' => true,
             'message' => 'Riwayat presensi berhasil diambil.',
-            'data' => $attendances
+            'data' => $attendances,
         ]);
+    }
+
+    public function proof(Attendance $attendance, AttendanceProofStorage $proofStorage)
+    {
+        return $proofStorage->response($attendance);
+    }
+
+    private function serverError(): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'message' => 'Terjadi kesalahan pada server. Silakan coba lagi.',
+        ], 500);
     }
 }

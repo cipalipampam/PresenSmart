@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -24,6 +25,7 @@ class Attendance extends Model
 
     protected $casts = [
         'recorded_at' => 'datetime',
+        'attendance_date' => 'date',
         'check_out_time' => 'datetime',
         'is_approved' => 'boolean',
         'is_late' => 'boolean',
@@ -32,5 +34,14 @@ class Attendance extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Attendance $attendance) {
+            $attendance->attendance_date ??= Carbon::parse(
+                $attendance->recorded_at ?? now(),
+            )->toDateString();
+        });
     }
 }

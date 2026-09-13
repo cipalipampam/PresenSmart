@@ -2,16 +2,15 @@
 
 namespace App\Events;
 
-use App\Models\Attendance;
+use App\Services\Web\Dashboard\AdminDashboardStatsService;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\User;
 
-class DashboardStatsUpdated implements ShouldBroadcastNow, ShouldDispatchAfterCommit
+class DashboardStatsUpdated implements ShouldBroadcast, ShouldDispatchAfterCommit
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -37,16 +36,11 @@ class DashboardStatsUpdated implements ShouldBroadcastNow, ShouldDispatchAfterCo
     }
 
     /**
-     * Build the stats payload right before broadcasting (not in constructor).
-     * Using ShouldBroadcastNow so this runs inline without a queue.
+     * Build stats in the broadcast worker after the transaction commits so
+     * write requests do not wait for aggregate queries.
      */
     public function broadcastWith(): array
     {
-        return [
-            'total_students'   => User::role('siswa')->count(),
-            'total_present'    => Attendance::whereDate('recorded_at', today())->where('status', 'present')->count(),
-            'total_late'       => Attendance::whereDate('recorded_at', today())->where('is_late', true)->count(),
-            'total_permission' => Attendance::whereDate('recorded_at', today())->whereIn('status', ['permission', 'sick'])->count(),
-        ];
+        return app(AdminDashboardStatsService::class)->current();
     }
 }

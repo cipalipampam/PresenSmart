@@ -191,7 +191,7 @@
                             </td>
                             <td>
                                 @if($attendance->proof_image)
-                                    <a href="{{ Storage::url($attendance->proof_image) }}" target="_blank"
+                                    <a href="{{ route('admin.attendances.proof', $attendance) }}" target="_blank"
                                        class="btn btn-sm border-0 px-3 py-1 rounded-pill"
                                        style="background:rgba(6,182,212,0.1);color:#06b6d4;font-size:0.78rem;">
                                         <i class="bi bi-eye me-1"></i>View

@@ -14,8 +14,8 @@ class CheckInRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
             'proof_image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'notes' => 'nullable|string|max:255',
         ];

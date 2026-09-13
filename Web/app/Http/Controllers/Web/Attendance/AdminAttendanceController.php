@@ -3,20 +3,25 @@
 namespace App\Http\Controllers\Web\Attendance;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\Attendance\ResolveAttendanceRequest;
+use App\Http\Requests\Web\Attendance\StoreAttendanceRequest;
+use App\Http\Requests\Web\Attendance\UpdateAttendanceRequest;
 use App\Models\Attendance;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\Shared\Storage\AttendanceProofStorage;
+use App\Services\Web\Attendance\AdminAttendanceService;
 use App\Services\Web\Attendance\AttendanceExportService;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class AdminAttendanceController extends Controller
 {
-    public function __construct(private AttendanceExportService $exportService) {}
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Index — list with filters + export
-    // ─────────────────────────────────────────────────────────────────────────
+    public function __construct(
+        private readonly AttendanceExportService $exportService,
+        private readonly AdminAttendanceService $attendanceService,
+    ) {}
 
     public function index(Request $request)
     {
@@ -33,245 +38,140 @@ class AdminAttendanceController extends Controller
         return $this->renderIndex($request, 'employee');
     }
 
-    private function renderIndex(Request $request, ?string $attendanceType = null)
-    {
-        $filters = $this->getFilters($request);
-        $query   = $this->buildAttendanceQuery($filters, roleOverride: $attendanceType);
-
-        // Multi-format export
-        $exportType = $request->input('export');
-        if (in_array($exportType, ['excel', 'csv', 'pdf', 'zip'])) {
-            return $this->exportService->export($exportType, clone $query);
-        }
-
-        $perPage     = $request->input('per_page', 10);
-        $attendances = $query->orderBy('recorded_at', 'desc')->paginate($perPage);
-        $attendances->appends($filters + ['per_page' => $perPage]);
-
-        $grades = Student::distinct()->whereNotNull('grade')->pluck('grade')->sort();
-
-        return view('admin.attendances.index', array_merge(compact('attendances', 'grades'), $filters, [
-            'attendanceType' => $attendanceType,
-            'attendanceRouteName' => $attendanceType === 'siswa'
-                ? 'admin.attendances.students'
-                : ($attendanceType === 'employee' ? 'admin.attendances.employees' : 'admin.attendances.index'),
-        ]));
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // CRUD
-    // ─────────────────────────────────────────────────────────────────────────
-
-    public function show($id)
+    public function show(int $id)
     {
         $attendance = Attendance::with(['user.student', 'user.employee'])->findOrFail($id);
         $attendance->proof_url = $attendance->proof_image
-            ? url('storage/' . $attendance->proof_image)
+            ? route('admin.attendances.proof', $attendance)
             : null;
 
         return view('admin.attendances.detail', compact('attendance'));
     }
 
+    public function proof(int $id, AttendanceProofStorage $proofStorage)
+    {
+        return $proofStorage->response(Attendance::findOrFail($id));
+    }
+
     public function create(Request $request)
     {
-        $users   = User::with(['student', 'employee'])->orderBy('name')->get();
+        $users = User::with(['student', 'employee'])->orderBy('name')->get();
         $tanggal = $request->query('date', now()->toDateString());
+
         return view('admin.attendances.create', compact('users', 'tanggal'));
     }
 
-    public function store(Request $request)
+    public function store(StoreAttendanceRequest $request)
     {
-        $request->validate([
-            'user_id'     => 'required|exists:users,id',
-            'recorded_at' => 'required|date',
-            'status'      => 'required|in:present,absent,sick,permission',
-            'notes'       => 'nullable|string|max:500',
-            'proof_image' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
-        ]);
-
-        $proofPath = null;
-        if ($request->hasFile('proof_image')) {
-            $file      = $request->file('proof_image');
-            $fileName  = time() . '_' . $request->user_id . '.' . $file->getClientOriginalExtension();
-            $proofPath = $file->storeAs('attendances', $fileName, 'public'); // ← unified path
-        }
-
-        $attendance = Attendance::create([
-            'user_id'     => $request->user_id,
-            'recorded_at' => $request->recorded_at,
-            'status'      => $request->status,
-            'notes'       => $request->notes,
-            'proof_image' => $proofPath,
-        ]);
-
-        $this->broadcastAttendanceChange($attendance, 'created');
+        $this->attendanceService->create($request->validated());
 
         return redirect()->route('admin.attendances.index')->with('success', 'Attendance recorded successfully.');
     }
 
-    public function approve(Request $request, $id)
+    public function approve(ResolveAttendanceRequest $request, int $id)
     {
-        $attendance = Attendance::findOrFail($id);
+        $this->attendanceService->resolve(Attendance::findOrFail($id), $request->validated('action'));
 
-        $request->validate(['action' => 'required|in:approve,reject']);
+        $message = $request->action === 'approve'
+            ? 'Permohonan berhasil disetujui (Approved).'
+            : 'Permohonan ditolak. Status otomatis menjadi Absent (Alfa).';
 
-        if ($request->action === 'approve') {
-            $attendance->update(['is_approved' => true]);
-            event(new \App\Events\AttendanceApproved($attendance, 'Pengajuan absensi Anda telah disetujui.'));
-            $this->broadcastAttendanceChange($attendance, 'approved');
-            return redirect()->back()->with('success', 'Permohonan berhasil disetujui (Approved).');
-        }
-
-        $attendance->update([
-            'is_approved' => false,
-            'status'      => 'absent',
-        ]);
-        event(new \App\Events\AttendanceApproved($attendance, 'Pengajuan absensi Anda ditolak.'));
-        $this->broadcastAttendanceChange($attendance, 'rejected');
-        return redirect()->back()->with('success', 'Permohonan ditolak. Status otomatis menjadi Absent (Alfa).');
+        return redirect()->back()->with('success', $message);
     }
 
-    public function edit($id)
+    public function edit(int $id)
     {
         $attendance = Attendance::with('user')->findOrFail($id);
-        $users      = User::orderBy('name')->get();
+        $users = User::orderBy('name')->get();
+
         return view('admin.attendances.edit', compact('attendance', 'users'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateAttendanceRequest $request, int $id)
     {
-        $attendance = Attendance::findOrFail($id);
-
-        $request->validate([
-            'status'      => 'required|in:present,absent,sick,permission',
-            'notes'       => 'nullable|string|max:500',
-            'proof_image' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
-        ]);
-
-        if ($request->hasFile('proof_image')) {
-            if ($attendance->proof_image) {
-                Storage::disk('public')->delete($attendance->proof_image);
-            }
-            $file      = $request->file('proof_image');
-            $fileName  = time() . '_' . $attendance->user_id . '.' . $file->getClientOriginalExtension();
-            $attendance->proof_image = $file->storeAs('attendances', $fileName, 'public'); // ← unified path
-        }
-
-        $attendance->status = $request->status;
-        $attendance->notes  = $request->notes;
-        $attendance->save();
-
-        $this->broadcastAttendanceChange($attendance, 'updated');
+        $this->attendanceService->update(Attendance::findOrFail($id), $request->validated());
 
         return redirect()->route('admin.attendances.index')->with('success', 'Attendance updated successfully.');
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
-        $attendance = Attendance::findOrFail($id);
-
-        if ($attendance->proof_image) {
-            Storage::disk('public')->delete($attendance->proof_image);
-        }
-
-        $attendance->delete();
-        $this->broadcastAttendanceChange($attendance, 'deleted');
+        $this->attendanceService->delete(Attendance::findOrFail($id));
 
         return redirect()->route('admin.attendances.index')->with('success', 'Attendance deleted successfully.');
     }
 
     public function print(Request $request)
     {
-        $filters     = $this->getFilters($request);
-        $attendances = $this->buildAttendanceQuery($filters, defaultToday: true)
-            ->orderBy('recorded_at', 'desc')
-            ->get();
+        $filters = $this->filters($request);
+        $attendances = $this->attendanceQuery($filters)->orderByDesc('recorded_at')->get();
 
         return view('admin.attendances.print', array_merge(compact('attendances'), $filters));
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Shared helpers
-    // ─────────────────────────────────────────────────────────────────────────
+    private function renderIndex(Request $request, ?string $attendanceType = null)
+    {
+        $filters = $this->filters($request);
+        $query = $this->attendanceQuery($filters, $attendanceType);
 
-    /**
-     * Extract all filter parameters from the request into a consistent array.
-     */
-    private function getFilters(Request $request): array
+        if (in_array($request->input('export'), ['excel', 'csv', 'pdf', 'zip'], true)) {
+            return $this->exportService->export($request->input('export'), clone $query);
+        }
+
+        $perPage = min(max((int) $request->input('per_page', 10), 10), 100);
+        $attendances = $query->orderByDesc('recorded_at')->paginate($perPage);
+        $attendances->appends($filters + ['per_page' => $perPage]);
+        $grades = Student::query()->whereNotNull('grade')->distinct()->pluck('grade')->sort();
+
+        return view('admin.attendances.index', array_merge(compact('attendances', 'grades'), $filters, [
+            'attendanceType' => $attendanceType,
+            'attendanceRouteName' => match ($attendanceType) {
+                'siswa' => 'admin.attendances.students',
+                'employee' => 'admin.attendances.employees',
+                default => 'admin.attendances.index',
+            },
+        ]));
+    }
+
+    private function filters(Request $request): array
     {
         return [
-            'search' => $request->input('search', ''),
-            'date'   => $request->has('date')
-                ? $request->input('date')
-                : now()->toDateString(),
-            'month'  => $request->input('month'),
-            'year'   => $request->input('year', date('Y')),
-            'role'   => $request->input('role'),
-            'grade'  => $request->input('grade'),
+            'search' => $request->string('search')->trim()->toString(),
+            'date' => $request->has('date') ? $request->input('date') : now()->toDateString(),
+            'month' => $request->integer('month') ?: null,
+            'year' => $request->integer('year') ?: null,
+            'role' => $request->input('role'),
+            'grade' => $request->input('grade'),
         ];
     }
 
-    /**
-     * Build the Eloquent query applying all attendance filters.
-     * $defaultToday: when no date/month/year given, default to today instead of current month.
-     */
-    private function buildAttendanceQuery(array $filters, bool $defaultToday = false, ?string $roleOverride = null): \Illuminate\Database\Eloquent\Builder
+    private function attendanceQuery(array $filters, ?string $roleOverride = null): Builder
     {
         $query = Attendance::with(['user.student', 'user.employee']);
 
-        // Search by name
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->whereHas('user', fn($q) => $q->where('name', 'like', "%{$search}%"));
+        if ($filters['search'] !== '') {
+            $query->whereHas('user', fn (Builder $query) => $query->where('name', 'like', "%{$filters['search']}%"));
         }
 
-        // Date / month / year filter
-        if (!empty($filters['date'])) {
-            $query->whereDate('recorded_at', $filters['date']);
-        } else {
-            if (!empty($filters['month'])) {
-                $query->whereMonth('recorded_at', $filters['month']);
-            }
-            if (!empty($filters['year'])) {
-                $query->whereYear('recorded_at', $filters['year']);
-            }
-
-            // Default fallback when nothing is provided
-            if (empty($filters['date']) && empty($filters['month']) && empty($filters['year'])) {
-                if ($defaultToday) {
-                    $query->whereDate('recorded_at', now()->toDateString());
-                } else {
-                    $query->whereMonth('recorded_at', date('m'))
-                          ->whereYear('recorded_at', date('Y'));
-                }
-            }
+        if ($filters['date']) {
+            $date = Carbon::parse($filters['date'])->startOfDay();
+            $query->where('recorded_at', '>=', $date)->where('recorded_at', '<', $date->copy()->addDay());
+        } elseif ($filters['month'] || $filters['year']) {
+            $start = Carbon::create($filters['year'] ?: now()->year, $filters['month'] ?: now()->month)->startOfMonth();
+            $query->where('recorded_at', '>=', $start)->where('recorded_at', '<', $start->copy()->addMonth());
         }
 
-        // Role filter
         $role = $roleOverride ?: $filters['role'];
-        if (!empty($role)) {
-            $query->whereHas('user', function ($q) use ($role) {
-                $role === 'employee'
-                    ? $q->role(['guru', 'staff'])
-                    : $q->role($role);
-            });
+        if ($role) {
+            $query->whereHas('user', fn (Builder $query) => $role === 'employee'
+                ? $query->role(['guru', 'staff'])
+                : $query->role($role));
         }
 
-        // Grade filter (students only)
-        if (!empty($filters['grade'])) {
-            $grade = $filters['grade'];
-            $query->whereHas('user.student', fn($q) => $q->where('grade', $grade));
+        if ($filters['grade']) {
+            $query->whereHas('user.student', fn (Builder $query) => $query->where('grade', $filters['grade']));
         }
 
         return $query;
-    }
-
-    /**
-     * Notify every open administrator view after an attendance change.
-     */
-    private function broadcastAttendanceChange(Attendance $attendance, string $action): void
-    {
-        event(\App\Events\AdminAttendanceChanged::fromAttendance($attendance, $action));
-        event(new \App\Events\DashboardStatsUpdated());
     }
 }

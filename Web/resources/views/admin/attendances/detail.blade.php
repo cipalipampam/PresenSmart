@@ -110,7 +110,7 @@
             @endif
 
             {{-- ===== SUPPORTING DOCUMENTATION ===== --}}
-            @if(isset($attendance->proof_image) && \Illuminate\Support\Facades\Storage::disk('public')->exists($attendance->proof_image))
+            @if($attendance->proof_image)
                 <div class="card glass border-0 shadow-lg mb-4">
                     <div class="card-header border-0 py-3">
                         <h6 class="mb-0 text-white fw-bold">
@@ -118,7 +118,7 @@
                         </h6>
                     </div>
                     <div class="card-body p-4 text-center">
-                        <img src="{{ \Illuminate\Support\Facades\Storage::url($attendance->proof_image) }}"
+                        <img src="{{ $attendance->proof_url }}"
                              alt="Bukti" class="img-fluid rounded-3 shadow border border-white border-opacity-10"
                              style="max-height:400px;">
                     </div>

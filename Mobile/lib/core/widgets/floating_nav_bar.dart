@@ -23,6 +23,7 @@ class FloatingNavBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(36),
         backgroundColor: Colors.white.withValues(alpha: 0.05),
         blur: 25.0,
+        enableBlur: true,
         border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,

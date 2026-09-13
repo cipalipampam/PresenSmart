@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Web;
+namespace App\Services\Web\Student;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;

@@ -1,13 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Web\Auth\AuthController;
-use App\Http\Controllers\Web\Setting\SettingController;
-use App\Http\Controllers\Web\Dashboard\DashboardController;
-use App\Http\Controllers\Web\Attendance\AdminAttendanceController;
-use App\Http\Controllers\Web\Student\StudentController;
-use App\Http\Controllers\Web\Employee\EmployeeController;
 use App\Http\Controllers\Web\AnnouncementController;
+use App\Http\Controllers\Web\Attendance\AdminAttendanceController;
+use App\Http\Controllers\Web\Auth\AuthController;
+use App\Http\Controllers\Web\Dashboard\DashboardController;
+use App\Http\Controllers\Web\Employee\EmployeeController;
+use App\Http\Controllers\Web\Setting\SettingController;
+use App\Http\Controllers\Web\Student\StudentController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -24,9 +24,9 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
-    
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
+
     Route::controller(SettingController::class)->prefix('settings')->group(function () {
         Route::get('/', 'index')->name('settings.index');
         Route::post('/location', 'updateLocation')->name('update_location');
@@ -63,6 +63,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
         Route::get('/report/print', 'print')->name('print'); // ← harus sebelum {id}
         Route::post('/', 'store')->name('store');
         Route::post('/{id}/approve', 'approve')->name('approve');
+        Route::get('/{id}/proof', 'proof')->name('proof');
         Route::get('/{id}', 'show')->name('show');
         Route::get('/{id}/edit', 'edit')->name('edit');
         Route::put('/{id}', 'update')->name('update');

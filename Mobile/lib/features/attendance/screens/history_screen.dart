@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
@@ -263,7 +264,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                                     ),
                                     if (data.proofImage != null)
                                       GestureDetector(
-                                        onTap: () => _showProofImage(context, data.proofImage!),
+                                        onTap: () => _showProofImage(context, _proofUrl(data)),
                                         child: Container(
                                           width: 60,
                                           height: 60,
@@ -272,7 +273,9 @@ class _HistoryScreenState extends State<HistoryScreen>
                                             color: Colors.white10,
                                             borderRadius: BorderRadius.circular(12),
                                             image: DecorationImage(
-                                                image: NetworkImage('${AppConstants.storageBaseUrl}/${data.proofImage!}'),
+                                                image: CachedNetworkImageProvider(
+                                                  _proofUrl(data),
+                                                ),
                                                 fit: BoxFit.cover,
                                             ),
                                           ),
@@ -307,9 +310,13 @@ class _HistoryScreenState extends State<HistoryScreen>
     );
   }
 
-  void _showProofImage(BuildContext context, String proofImage) {
+  String _proofUrl(AttendanceModel attendance) {
+    return attendance.proofUrl ??
+        '${AppConstants.storageBaseUrl}/${attendance.proofImage!}';
+  }
+
+  void _showProofImage(BuildContext context, String url) {
     // Fix storage URL — now uses AppConstants.storageBaseUrl
-    final url = '${AppConstants.storageBaseUrl}/$proofImage';
     showDialog(
       context: context,
       builder: (_) => Dialog(
@@ -320,10 +327,10 @@ class _HistoryScreenState extends State<HistoryScreen>
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                url,
+              child: CachedNetworkImage(
+                imageUrl: url,
                 fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => Container(
+                errorWidget: (context, error, stackTrace) => Container(
                   color: AppConstants.colorCardDark,
                   padding: const EdgeInsets.all(32),
                   child: const Text('Gagal memuat gambar',

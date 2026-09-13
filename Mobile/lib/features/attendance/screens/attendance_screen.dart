@@ -60,7 +60,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       }
 
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best,
+        desiredAccuracy: LocationAccuracy.high,
       );
 
       if (!mounted) return;
@@ -75,8 +75,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Future<void> _pickBukti() async {
     final XFile? pickedFile = await _picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 1800,
-      maxHeight: 1800,
+      maxWidth: 1280,
+      maxHeight: 1280,
+      imageQuality: 75,
     );
     if (pickedFile != null) {
       setState(() {

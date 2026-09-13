@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Web\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\Web\StudentService;
+use App\Services\Web\Student\StudentService;
 use App\Http\Requests\Web\Student\StoreStudentRequest;
 use App\Http\Requests\Web\Student\UpdateStudentRequest;
 use Illuminate\Http\Request;

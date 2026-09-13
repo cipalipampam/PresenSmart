@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Web\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\Web\EmployeeService;
+use App\Services\Web\Employee\EmployeeService;
 use App\Http\Requests\Web\Employee\StoreEmployeeRequest;
 use App\Http\Requests\Web\Employee\UpdateEmployeeRequest;
 use Illuminate\Http\Request;

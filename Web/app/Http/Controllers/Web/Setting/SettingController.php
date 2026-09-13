@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Web\Setting;
 
 use App\Http\Controllers\Controller;
-use App\Services\SettingCache;
+use App\Services\Shared\Settings\SettingCache;
 use Illuminate\Http\Request;
 use App\Models\Setting;
 

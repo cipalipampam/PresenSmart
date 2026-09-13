@@ -5,10 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/services/websocket_service.dart';
+import '../../../core/storage/session_storage.dart';
 import '../models/user_model.dart';
 
 class AuthProvider with ChangeNotifier {
   final ApiClient _apiClient = ApiClient();
+  final SessionStorage _sessionStorage = SessionStorage();
   
   UserModel? _currentUser;
   bool _isLoading = false;
@@ -20,7 +22,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> initializeAuth() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString(AppConstants.tokenKey);
+    final token = await _sessionStorage.readToken();
     final userJson = prefs.getString(AppConstants.userKey);
 
     if (token != null && userJson != null) {
@@ -60,7 +62,7 @@ class AuthProvider with ChangeNotifier {
 
         // Store into preferences
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(AppConstants.tokenKey, token);
+        await _sessionStorage.writeToken(token);
         await prefs.setString(AppConstants.userKey, json.encode(userMap));
 
         _setLoading(false);
@@ -90,7 +92,7 @@ class AuthProvider with ChangeNotifier {
       // Ignored: Force kill local session anyway even if server errors out
     } finally {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(AppConstants.tokenKey);
+      await _sessionStorage.deleteToken();
       await prefs.remove(AppConstants.userKey);
       
       _currentUser = null;

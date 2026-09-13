@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Setting;
 
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
+use App\Services\Shared\Settings\SettingCache;
 use Illuminate\Http\JsonResponse;
 
 class SettingController extends Controller
@@ -13,15 +13,16 @@ class SettingController extends Controller
      */
     public function location(): JsonResponse
     {
-        $lat = Setting::where('key', 'school_lat')->first()?->value;
-        $long = Setting::where('key', 'school_long')->first()?->value;
-        $radius = Setting::where('key', 'school_radius')->first()?->value;
+        $settings = SettingCache::all();
+        $lat = $settings->get('school_lat');
+        $long = $settings->get('school_long');
+        $radius = $settings->get('school_radius');
 
-        if (!$lat || !$long || !$radius) {
+        if (! $lat || ! $long || ! $radius) {
             return response()->json([
                 'success' => false,
                 'message' => 'Konfigurasi lokasi sekolah belum diatur oleh admin.',
-                'data' => null
+                'data' => null,
             ], 404);
         }
 
@@ -31,8 +32,8 @@ class SettingController extends Controller
             'data' => [
                 'latitude' => (float) $lat,
                 'longitude' => (float) $long,
-                'radius_meters' => (int) $radius
-            ]
+                'radius_meters' => (int) $radius,
+            ],
         ]);
     }
 }

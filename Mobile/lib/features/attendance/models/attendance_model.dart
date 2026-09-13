@@ -6,6 +6,7 @@ class AttendanceModel {
   final String status; // 'present', 'sakit', 'izin'
   final String? notes;
   final String? proofImage;
+  final String? proofUrl;
   final bool isLate;
   final DateTime? checkOutTime;
   final bool? isApproved;
@@ -18,6 +19,7 @@ class AttendanceModel {
     required this.status,
     this.notes,
     this.proofImage,
+    this.proofUrl,
     this.isLate = false,
     this.checkOutTime,
     this.isApproved,
@@ -37,6 +39,7 @@ class AttendanceModel {
       status: json['status'] ?? 'unknown',
       notes: json['notes'],
       proofImage: json['proof_image'],
+      proofUrl: json['proof_url'],
       isLate: (json['is_late'] == 1 || json['is_late'] == true),
       checkOutTime: json['check_out_time'] != null ? DateTime.parse(json['check_out_time']).toLocal() : null,
       isApproved: approvedState,

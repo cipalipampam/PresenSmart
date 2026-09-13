@@ -91,7 +91,7 @@
                                         <i class="bi bi-file-earmark-image text-info fs-4"></i>
                                         <span class="text-white-50 small">Documentation File</span>
                                     </div>
-                                    <a href="{{ \Illuminate\Support\Facades\Storage::url($attendance->proof_image) }}" target="_blank" class="btn btn-sm btn-info text-white rounded-pill px-3">
+                                    <a href="{{ route('admin.attendances.proof', $attendance) }}" target="_blank" class="btn btn-sm btn-info text-white rounded-pill px-3">
                                         Review
                                     </a>
                                 </div>

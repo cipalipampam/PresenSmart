@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\User;
-use App\Models\Attendance;
+use App\Services\Console\Attendance\AbsentAttendanceService;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class CheckAbsentUsers extends Command
 {
@@ -26,30 +25,12 @@ class CheckAbsentUsers extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(AbsentAttendanceService $absentAttendanceService): int
     {
-        $today = Carbon::today();
-        
-        // Ambil SEMUA user yang wajib absen (Siswa, Guru, Staff)
-        $users = User::role(['guru', 'staff', 'siswa'])->get();
-        $absentCount = 0;
-
-        foreach ($users as $user) {
-            $hasAttendance = Attendance::where('user_id', $user->id)
-                ->whereDate('recorded_at', $today)
-                ->exists();
-
-            if (!$hasAttendance) {
-                Attendance::create([
-                    'user_id' => $user->id,
-                    'status' => 'alfa',
-                    'is_late' => false,
-                    'recorded_at' => Carbon::now(),
-                ]);
-                $absentCount++;
-            }
-        }
+        $absentCount = $absentAttendanceService->recordForDate(Carbon::today());
 
         $this->info("Operasi Razia Alfa Selesai: Menambahkan {$absentCount} data Alfa ke database untuk hari ini.");
+
+        return self::SUCCESS;
     }
 }

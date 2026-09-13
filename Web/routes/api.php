@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\Auth\AuthController;
-use App\Http\Controllers\Api\Setting\SettingController;
-use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\Attendance\AttendanceController;
+use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\Setting\SettingController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,9 +15,12 @@ use App\Http\Controllers\Api\Attendance\AttendanceController;
 Route::prefix('v1')->group(function () {
 
     // Authentication (public)
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::get('/attendances/{attendance}/proof', [AttendanceController::class, 'proof'])
+        ->middleware(['signed', 'throttle:60,1'])
+        ->name('api.attendances.proof');
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
 

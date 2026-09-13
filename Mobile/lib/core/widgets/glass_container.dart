@@ -10,6 +10,7 @@ class GlassContainer extends StatelessWidget {
   final BorderRadiusGeometry? borderRadius;
   final Color backgroundColor;
   final double blur;
+  final bool enableBlur;
   final Border? border;
   final List<BoxShadow>? boxShadow;
 
@@ -23,6 +24,7 @@ class GlassContainer extends StatelessWidget {
     this.borderRadius,
     this.backgroundColor = const Color(0x1AFFFFFF), // 10% white by default
     this.blur = 15.0,
+    this.enableBlur = false,
     this.border,
     this.boxShadow,
   });
@@ -46,18 +48,22 @@ class GlassContainer extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: defaultRadius,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Container(
-            padding: padding,
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: defaultRadius,
-            ),
-            child: child,
-          ),
-        ),
+        child: enableBlur
+            ? BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                child: _content(defaultRadius),
+              )
+            : _content(defaultRadius),
       ),
     );
   }
+
+  Widget _content(BorderRadiusGeometry borderRadius) => Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: borderRadius,
+        ),
+        child: child,
+      );
 }
