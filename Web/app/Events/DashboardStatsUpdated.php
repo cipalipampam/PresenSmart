@@ -6,11 +6,12 @@ use App\Models\Attendance;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
 
-class DashboardStatsUpdated implements ShouldBroadcastNow
+class DashboardStatsUpdated implements ShouldBroadcastNow, ShouldDispatchAfterCommit
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -28,6 +29,11 @@ class DashboardStatsUpdated implements ShouldBroadcastNow
         return [
             new Channel('dashboard-stats'),
         ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'DashboardStatsUpdated';
     }
 
     /**

@@ -7,7 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/glass_container.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +39,8 @@ class ProfileScreen extends StatelessWidget {
                     height: 250,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppConstants.colorSecondaryBase.withOpacity(0.15),
-                      boxShadow: [BoxShadow(color: AppConstants.colorSecondaryBase.withOpacity(0.2), blurRadius: 100)],
+                      color: AppConstants.colorSecondaryBase.withValues(alpha: 0.15),
+                      boxShadow: [BoxShadow(color: AppConstants.colorSecondaryBase.withValues(alpha: 0.2), blurRadius: 100)],
                     ),
                   ),
                 ),
@@ -70,8 +70,8 @@ class ProfileScreen extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                               decoration: BoxDecoration(
-                                color: AppConstants.colorPrimaryBase.withOpacity(0.2),
-                                border: Border.all(color: AppConstants.colorPrimaryBase.withOpacity(0.5)),
+                                color: AppConstants.colorPrimaryBase.withValues(alpha: 0.2),
+                                border: Border.all(color: AppConstants.colorPrimaryBase.withValues(alpha: 0.5)),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -129,10 +129,10 @@ class ProfileScreen extends StatelessWidget {
                         height: 56,
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.redAccent.withOpacity(0.1),
+                            backgroundColor: Colors.redAccent.withValues(alpha: 0.1),
                             foregroundColor: Colors.redAccent,
                             elevation: 0,
-                            side: BorderSide(color: Colors.redAccent.withOpacity(0.5)),
+                            side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.5)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -231,9 +231,9 @@ class ProfileScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppConstants.colorSecondaryBase.withOpacity(0.1),
+            color: AppConstants.colorSecondaryBase.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppConstants.colorSecondaryBase.withOpacity(0.3)),
+            border: Border.all(color: AppConstants.colorSecondaryBase.withValues(alpha: 0.3)),
           ),
           child: Icon(icon, color: AppConstants.colorSecondaryBase, size: 24),
         ),

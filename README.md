@@ -156,7 +156,18 @@ Copy-Item .env.example .env
 
 ### 🗄️ Database
 
-Konfigurasi default memakai SQLite. Buat file database jika belum tersedia:
+Konfigurasi yang digunakan pada environment ini adalah MySQL:
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_database
+DB_USERNAME=your_database_user
+DB_PASSWORD=your_database_password
+```
+
+Buat database sesuai nama yang Anda pilih di MySQL. Jangan masukkan password database asli ke README atau repository. Jika ingin memakai SQLite, gunakan konfigurasi alternatif berikut:
 
 ```powershell
 New-Item database/database.sqlite -ItemType File
@@ -171,7 +182,7 @@ php artisan storage:link
 
 Seeder membuat role, akun demo, data siswa/guru/staff, pengumuman, riwayat presensi, dan konfigurasi sekolah awal.
 
-Untuk MySQL atau PostgreSQL, ubah `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` pada `Web/.env` sebelum menjalankan migration.
+Untuk database lain, ubah `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` pada `Web/.env` sebelum menjalankan migration.
 
 ### ▶️ Menjalankan Layanan
 
@@ -179,16 +190,17 @@ Buka terminal terpisah dari direktori `Web/`:
 
 ```bash
 # Terminal 1: Laravel API dan panel admin
-php artisan serve
+# 0.0.0.0 diperlukan agar emulator/perangkat eksternal dapat mengakses laptop.
+php artisan serve --host=0.0.0.0 --port=8000
 
 # Terminal 2: Vite untuk asset frontend
 npm run dev
 
-# Terminal 3: WebSocket, jika real-time diaktifkan
-php artisan reverb:start
+# Terminal 3: Laravel Reverb WebSocket
+php artisan reverb:start --host=0.0.0.0 --port=8080
 ```
 
-Panel admin tersedia di `http://127.0.0.1:8000/admin/login`, sedangkan API tersedia di `http://127.0.0.1:8000/api/v1`.
+Untuk laptop lokal, panel admin tersedia di `http://127.0.0.1:8000/admin/login`. Dari emulator/perangkat eksternal, gunakan `http://YOUR_LAN_IP:8000/admin/login`.
 
 Untuk workflow pengembangan Laravel yang sudah didefinisikan di `composer.json`, perintah berikut menjalankan server, queue listener, log viewer, dan Vite secara bersamaan:
 
@@ -204,40 +216,34 @@ Jalankan dari direktori `Mobile/`:
 flutter pub get
 flutter doctor
 flutter devices
-flutter run
+flutter run --dart-define=BACKEND_HOST=YOUR_LAN_IP --dart-define=REVERB_APP_KEY=YOUR_REVERB_KEY
 ```
 
-Sebelum menjalankan aplikasi, sesuaikan `Mobile/lib/core/constants/app_constants.dart`:
+`BACKEND_HOST` adalah alamat IPv4 laptop yang menjalankan Laravel. Laptop dan emulator eksternal harus berada pada jaringan yang sama. Nilai default di aplikasi adalah `10.0.2.2`, khusus Android Studio Emulator. Untuk Genymotion gunakan `10.0.3.2`; untuk emulator eksternal atau perangkat fisik gunakan IPv4 laptop Anda.
 
-```dart
-static const String baseUrl = 'http://ALAMAT_BACKEND:8000/api/v1';
-static const String reverbHost = 'ALAMAT_BACKEND';
-static const int reverbPort = 8080;
+Konfigurasi host dapat diberikan melalui `--dart-define`, sehingga tidak perlu mengubah source code:
+
+```powershell
+flutter run `
+    --dart-define=BACKEND_HOST=YOUR_LAN_IP `
+    --dart-define=REVERB_APP_KEY=YOUR_REVERB_KEY
 ```
 
 Gunakan nilai berikut sesuai target:
 
 | Target | `baseUrl` host |
 | --- | --- |
-| Android Emulator | `10.0.2.2` |
+| Android Studio Emulator | `10.0.2.2` |
+| Genymotion | `10.0.3.2` |
+| Emulator eksternal/perangkat fisik | IPv4 komputer, misalnya `YOUR_LAN_IP` |
 | iOS Simulator | `127.0.0.1` |
-| Perangkat fisik | IPv4 komputer, misalnya `192.168.1.10` |
 | Server production | Domain atau IP publik dengan HTTPS/WSS |
 
-Perangkat fisik dan komputer harus berada pada jaringan yang sama. Android development saat ini mengizinkan HTTP cleartext, tetapi production sebaiknya memakai HTTPS dan WSS.
+Windows Firewall harus mengizinkan port `8000` dan `8080`. Android development saat ini mengizinkan HTTP cleartext, tetapi production sebaiknya memakai HTTPS dan WSS.
 
-## 👤 Akun Demo
+## 👤 Data Demo
 
-Akun berikut dibuat oleh `DatabaseSeeder`:
-
-| Role | Email | Password |
-| --- | --- | --- |
-| Admin | `admin@sekolah.com` | `admin123` |
-| Siswa | `ahmad.rizki@siswa.sch.id` | `password123` |
-| Guru | `hendra.kusuma@sekolah.sch.id` | `password123` |
-| Staff | `agus.triyono@sekolah.sch.id` | `password123` |
-
-Ganti seluruh password demo sebelum deployment atau penggunaan nyata.
+`DatabaseSeeder` dapat membuat data awal untuk development. Kredensial akun tidak dicantumkan di dokumentasi publik; gunakan akun lokal Anda sendiri dan jangan memakai data demo untuk deployment.
 
 ## 🔌 API Mobile
 
@@ -282,19 +288,25 @@ Nilai penting pada `Web/.env` meliputi:
 
 ```dotenv
 APP_URL=http://127.0.0.1:8000
-DB_CONNECTION=sqlite
-DB_DATABASE=database/database.sqlite
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_database
+DB_USERNAME=your_database_user
+DB_PASSWORD=your_database_password
 BROADCAST_CONNECTION=reverb
-REVERB_APP_ID=local-app
-REVERB_APP_KEY=local-key
-REVERB_APP_SECRET=local-secret
+REVERB_APP_ID=your-reverb-app-id
+REVERB_APP_KEY=your-reverb-key
+REVERB_APP_SECRET=your-reverb-secret
 REVERB_HOST=127.0.0.1
 REVERB_PORT=8080
 REVERB_SCHEME=http
+REVERB_SERVER_HOST=0.0.0.0
+REVERB_SERVER_PORT=8080
 QUEUE_CONNECTION=sync
 ```
 
-Nama variable Reverb dapat disesuaikan dengan konfigurasi Laravel Reverb yang digunakan. Pastikan key dan host yang dipakai backend sama dengan `reverbKey`, `reverbHost`, dan `reverbPort` pada aplikasi mobile.
+`REVERB_HOST=127.0.0.1` digunakan Laravel untuk mengirim broadcast ke Reverb di laptop. Aplikasi mobile memakai IP laptop melalui `BACKEND_HOST`, dan key pada `--dart-define=REVERB_APP_KEY=...` harus sama dengan `REVERB_APP_KEY`. Simpan nilai asli hanya di file `.env` lokal atau secret manager.
 
 ### 📍 Permission Perangkat
 
@@ -323,22 +335,26 @@ flutter analyze
 flutter test
 ```
 
-Test Flutter bawaan saat ini masih berupa smoke test template, sehingga skenario login, geolocation, upload bukti, dan WebSocket tetap perlu diuji pada emulator/perangkat nyata.
+Widget test saat ini memverifikasi splash screen. Skenario login, geolocation, upload bukti, dan WebSocket tetap perlu diuji pada emulator/perangkat nyata.
 
 ## 🩹 Troubleshooting
 
 ### 📡 Mobile Tidak Dapat Terhubung ke Backend
 
-- Jangan memakai `127.0.0.1` dari perangkat fisik; gunakan IPv4 komputer.
-- Untuk Android Emulator gunakan `10.0.2.2`.
-- Pastikan `php artisan serve` aktif dan firewall mengizinkan port `8000`.
+- Jangan memakai `127.0.0.1` dari emulator eksternal atau perangkat fisik; gunakan IPv4 komputer.
+- Android Studio Emulator memakai `10.0.2.2`; Genymotion memakai `10.0.3.2`.
+- Jalankan Laravel dengan `php artisan serve --host=0.0.0.0 --port=8000`.
+- Pastikan firewall mengizinkan port `8000`.
 - Pastikan perangkat dan komputer berada pada jaringan yang sama.
 
 ### 🔌 WebSocket Tidak Tersambung
 
-- Jalankan `php artisan reverb:start`.
+- Jalankan `php artisan reverb:start --host=0.0.0.0 --port=8080`.
 - Pastikan `BROADCAST_CONNECTION` backend menggunakan `reverb`.
-- Samakan host, port, dan key Reverb pada backend dan `app_constants.dart`.
+- Samakan `REVERB_APP_KEY` backend dengan `--dart-define=REVERB_APP_KEY=...` pada Flutter.
+- Gunakan IP laptop sebagai `BACKEND_HOST` pada emulator eksternal.
+- Private channel broadcast menggunakan middleware `auth:sanctum`; login harus berhasil terlebih dahulu agar token tersedia.
+- Pastikan firewall mengizinkan port `8080`.
 - Untuk production, gunakan konfigurasi TLS/WSS dan reverse proxy yang benar.
 
 ### 🖼️ Foto atau Bukti Tidak Tampil

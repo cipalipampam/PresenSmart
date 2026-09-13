@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AppConstants {
-  // Ganti IP ini sesuaikan dengan IPv4 Local Anda atau Tautan Ngrok / VPS Production Anda
+  // Android Studio Emulator reaches the host machine through 10.0.2.2.
   // - Android Emulator  : gunakan 10.0.2.2 (alias loopback ke host PC)
   // - Device Fisik      : gunakan IPv4 komputer (cek via `ipconfig`), contoh: 192.168.1.x
-  static const String baseUrl = 'http://127.0.0.1:8000/api/v1';
+  static const String backendHost = String.fromEnvironment(
+    'BACKEND_HOST',
+    defaultValue: '10.0.2.2',
+  );
+  static const String baseUrl = 'http://$backendHost:8000/api/v1';
 
   /// Root URL (without /api/v1) — used for storage URLs and broadcasting auth.
   static String get rootUrl =>
@@ -14,8 +18,11 @@ class AppConstants {
   static String get storageBaseUrl => '$rootUrl/storage';
 
   // Broadcasting (Reverb) config
-  static const String reverbKey = 'jcmmlbeczzzo8yfemdvf';
-  static const String reverbHost = '127.0.0.1';
+  static const String reverbKey = String.fromEnvironment(
+    'REVERB_APP_KEY',
+    defaultValue: 'local-key',
+  );
+  static const String reverbHost = backendHost;
   static const int reverbPort = 8080;
 
   // SharedPreferences keys

@@ -7,10 +7,10 @@ class FloatingNavBar extends StatelessWidget {
   final Function(int) onTap;
 
   const FloatingNavBar({
-    Key? key,
+    super.key,
     required this.currentIndex,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +21,9 @@ class FloatingNavBar extends StatelessWidget {
       child: GlassContainer(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         borderRadius: BorderRadius.circular(36),
-        backgroundColor: Colors.white.withOpacity(0.05),
+        backgroundColor: Colors.white.withValues(alpha: 0.05),
         blur: 25.0,
-        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -52,19 +52,19 @@ class FloatingNavBar extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppConstants.colorPrimaryBase.withOpacity(0.15)
+              ? AppConstants.colorPrimaryBase.withValues(alpha: 0.15)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(24),
           border: isSelected
               ? Border.all(
-                  color: AppConstants.colorPrimaryBase.withOpacity(0.5),
+                  color: AppConstants.colorPrimaryBase.withValues(alpha: 0.5),
                   width: 1,
                 )
               : Border.all(color: Colors.transparent, width: 1),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppConstants.colorPrimaryBase.withOpacity(0.3),
+                    color: AppConstants.colorPrimaryBase.withValues(alpha: 0.3),
                     blurRadius: 16,
                     spreadRadius: 1,
                   )

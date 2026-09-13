@@ -3,10 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/dashboard_provider.dart';
-import '../models/announcement_model.dart';
 
 import '../../attendance/screens/attendance_screen.dart';
-import '../../attendance/screens/history_screen.dart';
 import '../../attendance/screens/history_screen.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../../core/widgets/floating_nav_bar.dart';
@@ -16,7 +14,7 @@ import 'package:intl/intl.dart';
 
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -71,7 +69,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 }
 
 class DashboardHomeTab extends StatefulWidget {
-  const DashboardHomeTab({Key? key}) : super(key: key);
+  const DashboardHomeTab({super.key});
 
   @override
   State<DashboardHomeTab> createState() => _DashboardHomeTabState();
@@ -97,7 +95,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 24),
@@ -119,7 +117,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.15),
+            color: iconColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: iconColor, size: 20),
@@ -154,9 +152,9 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
             height: 300,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppConstants.colorSecondaryBase.withOpacity(0.15),
+              color: AppConstants.colorSecondaryBase.withValues(alpha: 0.15),
               boxShadow: [
-                BoxShadow(color: AppConstants.colorSecondaryBase.withOpacity(0.2), blurRadius: 100),
+                BoxShadow(color: AppConstants.colorSecondaryBase.withValues(alpha: 0.2), blurRadius: 100),
               ],
             ),
           ),
@@ -169,9 +167,9 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
             height: 200,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppConstants.colorPrimaryBase.withOpacity(0.1),
+              color: AppConstants.colorPrimaryBase.withValues(alpha: 0.1),
               boxShadow: [
-                BoxShadow(color: AppConstants.colorPrimaryBase.withOpacity(0.2), blurRadius: 80),
+                BoxShadow(color: AppConstants.colorPrimaryBase.withValues(alpha: 0.2), blurRadius: 80),
               ],
             ),
           ),
@@ -222,7 +220,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
                             decoration: BoxDecoration(
                               color: AppConstants.colorCardDark,
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white.withOpacity(0.1)),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                             ),
                             child: const Icon(
                               Icons.notifications_none_rounded,
@@ -246,7 +244,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF00D9B5).withOpacity(0.3),
+                              color: const Color(0xFF00D9B5).withValues(alpha: 0.3),
                               blurRadius: 20,
                               spreadRadius: -5,
                               offset: const Offset(0, 10),
@@ -384,7 +382,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
                       else if (dashboard.announcements.isEmpty)
                         GlassContainer(
                           padding: const EdgeInsets.all(20),
-                          backgroundColor: Colors.white.withOpacity(0.02),
+                          backgroundColor: Colors.white.withValues(alpha: 0.02),
                           child: const Center(
                             child: Text(
                               'Belum ada pengumuman',
@@ -440,7 +438,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab> {
                               ),
                             ),
                           ).animate().fadeIn(duration: 500.ms).slideX(begin: 0.2);
-                        }).toList(),
+                        }),
                     ],
                   ),
                 ),

@@ -13,10 +13,10 @@ enum PresensiType { hadir, izin, sakit }
 
 class AttendanceScreen extends StatefulWidget {
   final VoidCallback? onNavigateToHistory;
-  const AttendanceScreen({Key? key, this.onNavigateToHistory}) : super(key: key);
+  const AttendanceScreen({super.key, this.onNavigateToHistory});
 
   @override
-  _AttendanceScreenState createState() => _AttendanceScreenState();
+  State<AttendanceScreen> createState() => _AttendanceScreenState();
 }
 
 class _AttendanceScreenState extends State<AttendanceScreen> {
@@ -142,8 +142,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget _buildBannerBlock({required IconData icon, required Color color, required String text}) {
     return GlassContainer(
       padding: const EdgeInsets.all(16),
-      backgroundColor: color.withOpacity(0.1),
-      border: Border.all(color: color.withOpacity(0.3)),
+      backgroundColor: color.withValues(alpha: 0.1),
+      border: Border.all(color: color.withValues(alpha: 0.3)),
       child: Row(
         children: [
           Icon(icon, color: color, size: 30),
@@ -193,8 +193,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppConstants.colorPrimaryBase.withOpacity(0.05),
-                boxShadow: [BoxShadow(color: AppConstants.colorPrimaryBase.withOpacity(0.1), blurRadius: 100)],
+                color: AppConstants.colorPrimaryBase.withValues(alpha: 0.05),
+                boxShadow: [BoxShadow(color: AppConstants.colorPrimaryBase.withValues(alpha: 0.1), blurRadius: 100)],
               ),
             ),
           ),
@@ -206,7 +206,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 GlassContainer(
                   padding: const EdgeInsets.all(6),
                   borderRadius: BorderRadius.circular(32),
-                  backgroundColor: AppConstants.colorCardDark.withOpacity(0.5),
+                  backgroundColor: AppConstants.colorCardDark.withValues(alpha: 0.5),
                   child: Row(
                     children: PresensiType.values.map((type) {
                       final isSelected = _selectedPresensiType == type;
@@ -230,7 +230,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
-                                        color: AppConstants.colorPrimaryBase.withOpacity(0.4),
+                                        color: AppConstants.colorPrimaryBase.withValues(alpha: 0.4),
                                         blurRadius: 12,
                                         offset: const Offset(0, 4),
                                       )
@@ -286,7 +286,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       circles: [
                                         CircleMarker(
                                           point: latlong.LatLng(provider.officeLat!, provider.officeLng!),
-                                          color: AppConstants.colorSecondaryBase.withOpacity(0.2),
+                                          color: AppConstants.colorSecondaryBase.withValues(alpha: 0.2),
                                           borderStrokeWidth: 2,
                                           borderColor: AppConstants.colorSecondaryBase,
                                           useRadiusInMeter: true,
@@ -332,8 +332,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     const SizedBox(height: 16),
                     GlassContainer(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      backgroundColor: Colors.greenAccent.withOpacity(0.1),
-                      border: Border.all(color: Colors.greenAccent.withOpacity(0.3)),
+                      backgroundColor: Colors.greenAccent.withValues(alpha: 0.1),
+                      border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.3)),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: const [
@@ -347,8 +347,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     GlassContainer(
                       height: 220,
                       width: double.infinity,
-                      backgroundColor: Colors.redAccent.withOpacity(0.1),
-                      border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+                      backgroundColor: Colors.redAccent.withValues(alpha: 0.1),
+                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -379,7 +379,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     labelStyle: const TextStyle(color: AppConstants.colorTextSecondary),
                     prefixIcon: const Icon(Icons.edit_note, color: AppConstants.colorTextSecondary),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.03),
+                    fillColor: Colors.white.withValues(alpha: 0.03),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -399,9 +399,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         borderRadius: BorderRadius.circular(16),
                         child: GlassContainer(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: _buktiFile != null ? Colors.green.withOpacity(0.1) : AppConstants.colorCardDark,
+                          backgroundColor: _buktiFile != null ? Colors.green.withValues(alpha: 0.1) : AppConstants.colorCardDark,
                           border: Border.all(
-                            color: _buktiFile != null ? Colors.green : AppConstants.colorTextSecondary.withOpacity(0.2)
+                            color: _buktiFile != null ? Colors.green : AppConstants.colorTextSecondary.withValues(alpha: 0.2)
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -431,8 +431,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         borderRadius: BorderRadius.circular(16),
                         child: GlassContainer(
                           padding: const EdgeInsets.all(16),
-                          backgroundColor: Colors.redAccent.withOpacity(0.1),
-                          border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+                          backgroundColor: Colors.redAccent.withValues(alpha: 0.1),
+                          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
                           child: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
                         ),
                       )
@@ -501,19 +501,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           ),
                           onPressed: provider.isLoading ? null : () async {
                             final success = await provider.checkOut();
+                            if (!context.mounted) return;
+
                             if (success) {
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Berhasil absen pulang!'), backgroundColor: Colors.green),
-                                );
-                                widget.onNavigateToHistory?.call();
-                              }
-                            } else {
-                              if (mounted && provider.errorMessage != null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(provider.errorMessage!), backgroundColor: Colors.red),
-                                );
-                              }
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Berhasil absen pulang!'), backgroundColor: Colors.green),
+                              );
+                              widget.onNavigateToHistory?.call();
+                            } else if (provider.errorMessage != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(provider.errorMessage!), backgroundColor: Colors.red),
+                              );
                             }
                           },
                           child: Ink(

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
 import '../constants/app_constants.dart';
 
@@ -17,7 +18,7 @@ class WebSocketService {
   Function(Map<String, dynamic>)? onStatsUpdated;
 
   Future<void> init({required String token, int? userId}) async {
-    print("WebSocket: Initializing for user $userId...");
+    debugPrint("WebSocket: Initializing for user $userId...");
 
     try {
       final hostOptions = PusherChannelsOptions.fromHost(
@@ -30,12 +31,12 @@ class WebSocketService {
       _client = PusherChannelsClient.websocket(
         options: hostOptions,
         connectionErrorHandler: (exception, trace, client) {
-          print("WebSocket Connection Error: $exception");
+          debugPrint("WebSocket Connection Error: $exception");
         },
       );
 
       _client!.lifecycleStream.listen((state) {
-        print("WebSocket Connection State: $state");
+        debugPrint("WebSocket Connection State: $state");
       });
 
       // Subscribe to Public Channels
@@ -53,9 +54,9 @@ class WebSocketService {
       }
 
       await _client!.connect();
-      print("WebSocket: Connect request sent!");
+      debugPrint("WebSocket: Connect request sent!");
     } catch (e) {
-      print("WebSocket Init Error: $e");
+      debugPrint("WebSocket Init Error: $e");
     }
   }
 
@@ -94,7 +95,7 @@ class WebSocketService {
 
   void _bindEvents(Channel channel) {
     channel.bindToAll().listen((event) {
-      print("WebSocket Raw Event: ${event.name} on ${event.channelName}");
+      debugPrint("WebSocket Raw Event: ${event.name} on ${event.channelName}");
       _handleEvent(event);
     });
   }
@@ -136,10 +137,10 @@ class WebSocketService {
           onStatsUpdated?.call(data);
           break;
         default:
-          print("WebSocket: Unhandled event: ${event.name}");
+          debugPrint("WebSocket: Unhandled event: ${event.name}");
       }
     } catch (e) {
-      print("Error parsing WebSocket event: $e");
+      debugPrint("Error parsing WebSocket event: $e");
     }
   }
 

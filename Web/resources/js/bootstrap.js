@@ -19,3 +19,6 @@ window.Echo = new Echo({
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'http') === 'https',
     enabledTransports: ['ws', 'wss'],
 });
+
+// Blade page scripts can execute before this deferred module is evaluated.
+window.dispatchEvent(new Event('echo:ready'));

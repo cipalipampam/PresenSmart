@@ -281,11 +281,46 @@ function toggleGradeFilter() {
 @push('scripts')
 <script>
 // ─── WebSocket: Toast notification on new attendance ─────────────────────────
-if (typeof window.Echo !== 'undefined') {
+function registerAttendanceWebSocket() {
+    if (typeof window.Echo === 'undefined') return;
+
     window.Echo.channel('attendance-channel')
         .listen('.AttendanceLogged', (data) => {
             showAttendanceToast(data);
+            refreshAttendanceTable();
         });
+}
+
+if (typeof window.Echo !== 'undefined') {
+    registerAttendanceWebSocket();
+} else {
+    window.addEventListener('echo:ready', registerAttendanceWebSocket, { once: true });
+}
+
+async function refreshAttendanceTable() {
+    try {
+        const response = await fetch(window.location.href, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        if (!response.ok) return;
+
+        const html = await response.text();
+        const documentParser = new DOMParser();
+        const nextDocument = documentParser.parseFromString(html, 'text/html');
+        const currentTable = document.querySelector('.table-responsive table');
+        const nextTable = nextDocument.querySelector('.table-responsive table');
+        const currentFooter = document.querySelector('.card-footer');
+        const nextFooter = nextDocument.querySelector('.card-footer');
+
+        if (currentTable && nextTable) {
+            currentTable.querySelector('tbody').replaceWith(nextTable.querySelector('tbody'));
+        }
+        if (currentFooter && nextFooter) {
+            currentFooter.replaceWith(nextFooter);
+        }
+    } catch (error) {
+        console.error('Attendance table refresh failed:', error);
+    }
 }
 
 function showAttendanceToast(data) {

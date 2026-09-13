@@ -6,7 +6,7 @@ import '../../../core/widgets/glass_container.dart';
 import '../providers/attendance_provider.dart';
 
 class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({Key? key}) : super(key: key);
+  const HistoryScreen({super.key});
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
@@ -92,8 +92,8 @@ class _HistoryScreenState extends State<HistoryScreen>
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppConstants.colorSecondaryBase.withOpacity(0.1),
-                boxShadow: [BoxShadow(color: AppConstants.colorSecondaryBase.withOpacity(0.2), blurRadius: 100)],
+                color: AppConstants.colorSecondaryBase.withValues(alpha: 0.1),
+                boxShadow: [BoxShadow(color: AppConstants.colorSecondaryBase.withValues(alpha: 0.2), blurRadius: 100)],
               ),
             ),
           ),

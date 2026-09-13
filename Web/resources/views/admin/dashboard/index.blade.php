@@ -49,7 +49,7 @@
                             </span>
                         </div>
                     </div>
-                    <div class="opacity-10 fs-1 text-cyan position-absolute end-0 bottom-0 mb-n1 me-n1">
+                    <div class="opacity-10 fs-1 text-cyan position-absolute inset-e-0 bottom-0 mb-n1 me-n1">
                         <i class="bi bi-people"></i>
                     </div>
                 </div>
@@ -74,7 +74,7 @@
                             </span>
                         </div>
                     </div>
-                    <div class="opacity-10 fs-1 text-emerald position-absolute end-0 bottom-0 mb-n1 me-n1">
+                    <div class="opacity-10 fs-1 text-emerald position-absolute inset-e-0 bottom-0 mb-n1 me-n1">
                         <i class="bi bi-shield-check"></i>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
                             <span class="text-emerald" style="font-size:0.78rem;font-weight:600;">GPS Active</span>
                         </span>
                     </div>
-                    <div class="opacity-10 fs-1 text-amber position-absolute end-0 bottom-0 mb-n1 me-n1">
+                    <div class="opacity-10 fs-1 text-amber position-absolute inset-e-0 bottom-0 mb-n1 me-n1">
                         <i class="bi bi-geo"></i>
                     </div>
                 </div>
@@ -352,7 +352,8 @@
 })();
 
 // ─── WebSocket Listeners ─────────────────────────────────────────────────────
-if (typeof window.Echo !== 'undefined') {
+function registerDashboardWebSocket() {
+    if (typeof window.Echo === 'undefined') return;
 
     // ── Listener 1: New attendance logged ─────────────────────────────────
     window.Echo.channel('attendance-channel')
@@ -429,6 +430,12 @@ if (typeof window.Echo !== 'undefined') {
                 }
             });
         });
+}
+
+if (typeof window.Echo !== 'undefined') {
+    registerDashboardWebSocket();
+} else {
+    window.addEventListener('echo:ready', registerDashboardWebSocket, { once: true });
 }
 </script>
 

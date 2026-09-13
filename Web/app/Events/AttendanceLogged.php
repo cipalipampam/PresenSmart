@@ -5,17 +5,16 @@ namespace App\Events;
 use App\Models\Attendance;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AttendanceLogged implements ShouldBroadcast
+class AttendanceLogged implements ShouldBroadcast, ShouldDispatchAfterCommit
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $attendance;
+    public Attendance $attendance;
 
     /**
      * Create a new event instance.
@@ -35,6 +34,11 @@ class AttendanceLogged implements ShouldBroadcast
         return [
             new Channel('attendance-channel'),
         ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'AttendanceLogged';
     }
 
     /**

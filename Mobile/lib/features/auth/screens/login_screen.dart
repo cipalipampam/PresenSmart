@@ -6,7 +6,7 @@ import '../../../core/widgets/glass_container.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -57,9 +57,9 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppConstants.colorSecondaryBase.withOpacity(0.15),
+                color: AppConstants.colorSecondaryBase.withValues(alpha: 0.15),
                 boxShadow: [
-                  BoxShadow(color: AppConstants.colorSecondaryBase.withOpacity(0.2), blurRadius: 100),
+                  BoxShadow(color: AppConstants.colorSecondaryBase.withValues(alpha: 0.2), blurRadius: 100),
                 ],
               ),
             ),
@@ -72,9 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppConstants.colorPrimaryBase.withOpacity(0.1),
+                color: AppConstants.colorPrimaryBase.withValues(alpha: 0.1),
                 boxShadow: [
-                  BoxShadow(color: AppConstants.colorPrimaryBase.withOpacity(0.2), blurRadius: 100),
+                  BoxShadow(color: AppConstants.colorPrimaryBase.withValues(alpha: 0.2), blurRadius: 100),
                 ],
               ),
             ),
@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               height: 80,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: AppConstants.colorPrimaryBase.withOpacity(0.1),
+                                color: AppConstants.colorPrimaryBase.withValues(alpha: 0.1),
                               ),
                               child: const Icon(
                                 Icons.fingerprint_rounded,
@@ -131,14 +131,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             labelStyle: const TextStyle(color: AppConstants.colorTextSecondary),
                             prefixIcon: const Icon(Icons.email_outlined, color: AppConstants.colorTextSecondary),
                             filled: true,
-                            fillColor: Colors.white.withOpacity(0.03),
+                            fillColor: Colors.white.withValues(alpha: 0.03),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -168,14 +168,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                             ),
                             filled: true,
-                            fillColor: Colors.white.withOpacity(0.03),
+                            fillColor: Colors.white.withValues(alpha: 0.03),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),

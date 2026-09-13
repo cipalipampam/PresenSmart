@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
@@ -70,11 +70,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   width: 140,
                   height: 140,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00D9B5).withOpacity(0.1),
+                    color: const Color(0xFF00D9B5).withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF00D9B5).withOpacity(0.3),
+                        color: const Color(0xFF00D9B5).withValues(alpha: 0.3),
                         spreadRadius: 10,
                         blurRadius: 30,
                       ),
