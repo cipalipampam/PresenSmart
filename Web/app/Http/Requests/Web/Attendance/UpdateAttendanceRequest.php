@@ -14,6 +14,8 @@ class UpdateAttendanceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'recorded_at' => ['required', 'date'],
+            'check_out_time' => ['nullable', 'date', 'after_or_equal:recorded_at'],
             'status' => ['required', 'in:present,absent,sick,permission'],
             'notes' => ['nullable', 'string', 'max:500'],
             'proof_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],

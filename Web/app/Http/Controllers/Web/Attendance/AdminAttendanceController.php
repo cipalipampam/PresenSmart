@@ -7,7 +7,6 @@ use App\Http\Requests\Web\Attendance\ResolveAttendanceRequest;
 use App\Http\Requests\Web\Attendance\StoreAttendanceRequest;
 use App\Http\Requests\Web\Attendance\UpdateAttendanceRequest;
 use App\Models\Attendance;
-use App\Models\Student;
 use App\Models\User;
 use App\Services\Shared\Storage\AttendanceProofStorage;
 use App\Services\Web\Attendance\AdminAttendanceService;
@@ -137,7 +136,7 @@ class AdminAttendanceController extends Controller
         $perPage = min(max((int) $request->input('per_page', 10), 10), 100);
         $attendances = $query->orderByDesc('recorded_at')->paginate($perPage);
         $attendances->appends($filters + ['per_page' => $perPage]);
-        $grades = Student::query()->whereNotNull('grade')->distinct()->pluck('grade')->sort();
+        $grades = collect(config('student.grades'));
 
         return view('admin.attendances.index', array_merge(compact('attendances', 'grades'), $filters, [
             'attendanceType' => $attendanceType,

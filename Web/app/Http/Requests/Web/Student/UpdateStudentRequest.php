@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Web\Student;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Models\User;
 
 class UpdateStudentRequest extends FormRequest
 {
@@ -15,7 +15,7 @@ class UpdateStudentRequest extends FormRequest
 
     public function rules()
     {
-        $userId = $this->route('student'); 
+        $userId = $this->route('student');
         $user = User::with('student')->findOrFail($userId);
         $studentId = $user->student ? $user->student->id : null;
 
@@ -25,14 +25,14 @@ class UpdateStudentRequest extends FormRequest
             'password' => 'nullable|min:6',
             'nis' => ['nullable', Rule::unique('students', 'nis')->ignore($studentId)],
             'nisn' => ['nullable', Rule::unique('students', 'nisn')->ignore($studentId)],
-            'grade' => 'nullable|string|max:20',
+            'grade' => ['required', Rule::in(config('student.grades'))],
             'gender' => 'nullable|in:male,female',
             'place_of_birth' => 'nullable|string|max:100',
             'date_of_birth' => 'nullable|date',
             'religion' => 'nullable|string',
             'address' => 'nullable|string',
             'phone_number' => 'nullable|string',
-            'profile_picture' => 'nullable|image|max:2048', 
+            'profile_picture' => 'nullable|image|max:2048',
         ];
     }
 }

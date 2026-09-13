@@ -59,9 +59,15 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-white-50 small fw-semibold">Attendance Time</label>
+                            <label class="form-label text-white-50 small fw-semibold">Check-in Time</label>
                             <div class="p-3 rounded-2 bg-light-soft border border-white border-opacity-10 text-white">
                                 {{ \Carbon\Carbon::parse($attendance->recorded_at)->format('d F Y, H:i:s') }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-white-50 small fw-semibold">Check-out Time</label>
+                            <div class="p-3 rounded-2 bg-light-soft border border-white border-opacity-10 text-white">
+                                {{ $attendance->check_out_time?->format('d F Y, H:i:s') ?? 'Not recorded' }}
                             </div>
                         </div>
                         <div class="col-md-6">

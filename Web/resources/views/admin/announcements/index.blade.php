@@ -50,12 +50,12 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 text-end">
-                            <button class="btn btn-sm btn-outline-info border-0 rounded-circle me-1" 
+                            <button class="btn btn-action btn-action-edit me-1"
                                 data-bs-toggle="modal" data-bs-target="#editModal{{ $announcement->id }}" title="Edit">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger border-0 rounded-circle" 
-                                data-delete-url="{{ route('admin.announcements.destroy', $announcement->id) }}"
+                            <button class="btn btn-action btn-action-delete"
+                               data-delete-url="{{ route('admin.announcements.destroy', $announcement->id) }}"
                                 data-delete-name="{{ $announcement->title }}" title="Hapus">
                                 <i class="bi bi-trash3"></i>
                             </button>

@@ -13,6 +13,8 @@ class AttendanceProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   List<AttendanceModel> _historyList = [];
+  int? _lastHistoryMonth;
+  int? _lastHistoryYear;
 
   double? _officeLat;
   double? _officeLng;
@@ -32,10 +34,12 @@ class AttendanceProvider with ChangeNotifier {
     // which caused the month/year filter value to be captured stale
     // in the closure from the last call's parameters.
     WebSocketService().addAttendanceApprovalListener((data) {
-      // Refresh with no filter params to get the latest full history.
-      // The UI can re-apply its own filter on the updated list.
       debugPrint('Attendance: approval received; refreshing history.');
-      unawaited(fetchHistory(showLoading: false));
+      unawaited(fetchHistory(
+        month: _lastHistoryMonth,
+        year: _lastHistoryYear,
+        showLoading: false,
+      ));
     });
     WebSocketService().addSettingsListener((data) {
       debugPrint('Attendance: settings changed; refreshing location.');
@@ -211,6 +215,8 @@ class AttendanceProvider with ChangeNotifier {
   }
 
   Future<void> fetchHistory({int? month, int? year, bool showLoading = true}) async {
+    _lastHistoryMonth = month;
+    _lastHistoryYear = year;
     if (showLoading) _setLoading(true);
     _errorMessage = null;
 

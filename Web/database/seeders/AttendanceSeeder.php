@@ -45,39 +45,39 @@ class AttendanceSeeder extends Seeder
                     // HADIR — jam masuk acak antara 06:30–07:20
                     $checkInMinutes = rand(0, 50); // 0 = jam 06:30
                     $checkIn = $date->copy()->setHour(6)->setMinute(30)->addMinutes($checkInMinutes);
-                    $isLate  = $checkIn->greaterThan($date->copy()->setHour(7)->setMinute(0));
+                    $isLate = $checkIn->greaterThan($date->copy()->setHour(7)->setMinute(0));
 
                     // Jam pulang acak antara 15:00–16:00
                     $checkOut = $date->copy()->setHour(15)->addMinutes(rand(0, 60));
 
                     Attendance::create([
-                        'user_id'        => $user->id,
-                        'status'         => 'present',
-                        'is_late'        => $isLate,
-                        'is_approved'    => true,
-                        'latitude'       => -6.200000 + (rand(-10, 10) / 10000),
-                        'longitude'      => 106.816666 + (rand(-10, 10) / 10000),
-                        'recorded_at'    => $checkIn,
+                        'user_id' => $user->id,
+                        'status' => 'present',
+                        'is_late' => $isLate,
+                        'is_approved' => true,
+                        'latitude' => -6.200000 + (rand(-10, 10) / 10000),
+                        'longitude' => 106.816666 + (rand(-10, 10) / 10000),
+                        'recorded_at' => $checkIn,
                         'check_out_time' => $checkOut,
                     ]);
                 } elseif ($roll === 9) {
                     // IZIN
                     Attendance::create([
-                        'user_id'     => $user->id,
-                        'status'      => 'permission',
-                        'is_late'     => false,
+                        'user_id' => $user->id,
+                        'status' => 'permission',
+                        'is_late' => false,
                         'is_approved' => (rand(0, 1) === 1) ? true : null, // setengah sudah di-approve
-                        'notes'       => 'Keperluan keluarga.',
+                        'notes' => 'Keperluan keluarga.',
                         'recorded_at' => $date->copy()->setHour(7)->setMinute(0),
                     ]);
                 } else {
                     // SAKIT
                     Attendance::create([
-                        'user_id'     => $user->id,
-                        'status'      => 'sick',
-                        'is_late'     => false,
+                        'user_id' => $user->id,
+                        'status' => 'sick',
+                        'is_late' => false,
                         'is_approved' => (rand(0, 1) === 1) ? true : null,
-                        'notes'       => 'Demam dan flu.',
+                        'notes' => 'Demam dan flu.',
                         'recorded_at' => $date->copy()->setHour(7)->setMinute(0),
                     ]);
                 }

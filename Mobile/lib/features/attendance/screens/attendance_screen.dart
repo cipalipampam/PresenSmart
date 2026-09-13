@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart' as latlong;
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/glass_container.dart';
+import '../../../core/widgets/app_notice.dart';
 import '../providers/attendance_provider.dart';
 
 enum PresensiType { hadir, izin, sakit }
@@ -105,9 +106,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
 
     if (_selectedPresensiType == PresensiType.hadir) {
       if (_currentPosition == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Lokasi tidak valid, harap nyalakan GPS')),
-        );
+        AppNotice.show(context, 'Lokasi tidak valid, harap nyalakan GPS', type: AppNoticeType.error);
         return;
       }
 
@@ -119,16 +118,12 @@ class _AttendanceScreenState extends State<AttendanceScreen>
       );
     } else {
       if (_keteranganController.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Harap masukkan alasan Izin/Sakit')),
-        );
+        AppNotice.show(context, 'Harap masukkan alasan izin atau sakit', type: AppNoticeType.info);
         return;
       }
 
       if (_buktiFile == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Harap unggah bukti foto surat dokter/izin')),
-        );
+        AppNotice.show(context, 'Harap unggah bukti foto surat dokter atau izin', type: AppNoticeType.info);
         return;
       }
 
@@ -140,14 +135,14 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     }
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data Presensi Berhasil Dikirim!'), backgroundColor: Colors.green),
-      );
+      AppNotice.show(context, 'Data presensi berhasil dikirim', type: AppNoticeType.success);
       _keteranganController.clear();
       setState(() => _buktiFile = null);
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(attendanceProvider.errorMessage ?? 'Terjadi kesalahan sistem'), backgroundColor: Colors.red),
+      AppNotice.show(
+        context,
+        attendanceProvider.errorMessage ?? 'Terjadi kesalahan sistem',
+        type: AppNoticeType.error,
       );
     }
   }
@@ -518,14 +513,10 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                             if (!context.mounted) return;
 
                             if (success) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Berhasil absen pulang!'), backgroundColor: Colors.green),
-                              );
+                              AppNotice.show(context, 'Berhasil absen pulang', type: AppNoticeType.success);
                               widget.onNavigateToHistory?.call();
                             } else if (provider.errorMessage != null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(provider.errorMessage!), backgroundColor: Colors.red),
-                              );
+                              AppNotice.show(context, provider.errorMessage!, type: AppNoticeType.error);
                             }
                           },
                           child: Ink(

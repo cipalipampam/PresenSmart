@@ -130,7 +130,8 @@
                         <th>Member Name</th>
                         <th>Role</th>
                         <th>Attendance Status</th>
-                        <th>Time</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
                         <th>Proof</th>
                         <th class="text-end pe-4">Actions</th>
                     </tr>
@@ -190,7 +191,16 @@
                                 @endif
                             </td>
                             <td class="text-white-50 small">
+                                <i class="bi bi-box-arrow-in-right me-1 text-emerald"></i>
                                 {{ \Carbon\Carbon::parse($attendance->recorded_at)->format('d M, H:i') }}
+                            </td>
+                            <td class="text-white-50 small">
+                                @if($attendance->check_out_time)
+                                    <i class="bi bi-box-arrow-right me-1 text-amber"></i>
+                                    {{ $attendance->check_out_time->format('d M, H:i') }}
+                                @else
+                                    <span class="text-white-25">—</span>
+                                @endif
                             </td>
                             <td>
                                 @if($attendance->proof_image)
@@ -238,7 +248,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5">
+                            <td colspan="8" class="text-center py-5">
                                 <div class="mb-3"><i class="bi bi-calendar-x fs-1 text-white-25"></i></div>
                                 <h6 class="text-white-50 fw-medium">No attendance records found</h6>
                                 <p class="text-muted small mb-0">Try adjusting filters to broaden your search.</p>
@@ -338,8 +348,11 @@ async function refreshAttendanceTable() {
         const currentFooter = document.querySelector('.card-footer');
         const nextFooter = nextDocument.querySelector('.card-footer');
 
-        if (currentTable && nextTable) {
-            currentTable.querySelector('tbody').replaceWith(nextTable.querySelector('tbody'));
+        const currentBody = currentTable?.querySelector('tbody');
+        const nextBody = nextTable?.querySelector('tbody');
+        if (currentBody && nextBody) {
+            nextBody.classList.add('ws-table-entering');
+            currentBody.replaceWith(nextBody);
         }
         if (currentFooter && nextFooter) {
             currentFooter.replaceWith(nextFooter);
@@ -420,6 +433,15 @@ function showAttendanceToast(data) {
 @keyframes wsToastOut {
     from { opacity:1; transform:translateX(0); }
     to   { opacity:0; transform:translateX(40px); }
+}
+
+.ws-table-entering {
+    animation: wsTableEnter 0.28s ease-out both;
+}
+
+@keyframes wsTableEnter {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
 @endpush

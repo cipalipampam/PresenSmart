@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Enums\UserRole;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class datasiswa extends Seeder
@@ -183,4 +183,4 @@ class datasiswa extends Seeder
             ], $data);
         }
     }
-} 
+}

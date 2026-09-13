@@ -74,6 +74,13 @@
                                     <input type="datetime-local" class="form-control" id="recorded_at" name="recorded_at" value="{{ old('recorded_at', \Carbon\Carbon::parse($attendance->recorded_at)->format('Y-m-d\TH:i')) }}">
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <label for="check_out_time" class="form-label text-white-50 small fw-semibold">Check-out Time</label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-0 bg-light-soft text-white-50"><i class="bi bi-box-arrow-right"></i></span>
+                                    <input type="datetime-local" class="form-control @error('check_out_time') is-invalid @enderror" id="check_out_time" name="check_out_time" value="{{ old('check_out_time', $attendance->check_out_time?->format('Y-m-d\\TH:i')) }}">
+                                </div>
+                            </div>
                             <div class="col-12">
                                 <label for="notes" class="form-label text-white-50 small fw-semibold">Entry Notes</label>
                                 <textarea class="form-control @error('notes') is-invalid @enderror" id="notes" name="notes" rows="3">{{ old('notes', $attendance->notes) }}</textarea>

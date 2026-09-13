@@ -11,16 +11,16 @@ class Attendance extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 
-        'recorded_at', 
-        'latitude', 
-        'longitude', 
-        'status', 
-        'notes', 
+        'user_id',
+        'recorded_at',
+        'latitude',
+        'longitude',
+        'status',
+        'notes',
         'proof_image',
         'is_approved',
         'is_late',
-        'check_out_time'
+        'check_out_time',
     ];
 
     protected $casts = [
@@ -38,8 +38,8 @@ class Attendance extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (Attendance $attendance) {
-            $attendance->attendance_date ??= Carbon::parse(
+        static::saving(function (Attendance $attendance) {
+            $attendance->attendance_date = Carbon::parse(
                 $attendance->recorded_at ?? now(),
             )->toDateString();
         });

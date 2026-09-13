@@ -80,6 +80,14 @@
                                 </div>
                                 <div class="form-text text-white-25 small mt-2">Leave default for real-time synchronization.</div>
                             </div>
+                            <div class="col-md-6">
+                                <label for="check_out_time" class="form-label text-white-50 small fw-semibold">Check-out Time</label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-0 bg-light-soft text-white-50"><i class="bi bi-box-arrow-right"></i></span>
+                                    <input type="datetime-local" class="form-control @error('check_out_time') is-invalid @enderror" id="check_out_time" name="check_out_time" value="{{ old('check_out_time') }}">
+                                </div>
+                                <div class="form-text text-white-25 small mt-2">Optional. Use only for a completed present attendance.</div>
+                            </div>
                             <div class="col-12">
                                 <label for="notes" class="form-label text-white-50 small fw-semibold">Observation / Notes</label>
                                 <textarea class="form-control @error('notes') is-invalid @enderror" id="notes" name="notes" rows="3" placeholder="Additional context regarding this entry">{{ old('notes') }}</textarea>

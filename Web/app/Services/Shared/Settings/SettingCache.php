@@ -3,6 +3,7 @@
 namespace App\Services\Shared\Settings;
 
 use App\Models\Setting;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class SettingCache
@@ -23,7 +24,7 @@ class SettingCache
     /**
      * Return all settings as a key→value Collection (cached for TTL seconds).
      */
-    public static function all(): \Illuminate\Support\Collection
+    public static function all(): Collection
     {
         return Cache::remember(static::CACHE_KEY, static::TTL, function () {
             return Setting::pluck('value', 'key');

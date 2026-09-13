@@ -83,7 +83,12 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="grade" class="form-label text-white-50 small fw-semibold">Grade Assignment</label>
-                                <input type="text" class="form-control" id="grade" name="grade" value="{{ old('grade', $student->student->grade ?? '') }}">
+                                <select class="form-select @error('grade') is-invalid @enderror" id="grade" name="grade" required>
+                                    <option value="">Select class</option>
+                                    @foreach(config('student.grades') as $grade)
+                                        <option value="{{ $grade }}" @selected(old('grade', $student->student->grade ?? '') === $grade)>{{ $grade }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label for="gender" class="form-label text-white-50 small fw-semibold">Gender</label>

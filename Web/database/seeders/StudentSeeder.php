@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -28,27 +28,27 @@ class StudentSeeder extends Seeder
             $user = User::firstOrCreate(
                 ['email' => $data['email']],
                 [
-                    'name'     => $data['name'],
+                    'name' => $data['name'],
                     'password' => Hash::make('password123'),
                 ]
             );
 
-            if (!$user->hasRole('siswa')) {
+            if (! $user->hasRole('siswa')) {
                 $user->assignRole('siswa');
             }
 
             Student::firstOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'nis'            => $data['nis'],
-                    'nisn'           => $data['nisn'],
-                    'grade'          => $data['grade'],
-                    'gender'         => $data['gender'],
+                    'nis' => $data['nis'],
+                    'nisn' => $data['nisn'],
+                    'grade' => $data['grade'],
+                    'gender' => $data['gender'],
                     'place_of_birth' => $data['place_of_birth'],
-                    'date_of_birth'  => $data['date_of_birth'],
-                    'religion'       => $data['religion'],
-                    'phone_number'   => $data['phone'],
-                    'address'        => $data['address'],
+                    'date_of_birth' => $data['date_of_birth'],
+                    'religion' => $data['religion'],
+                    'phone_number' => $data['phone'],
+                    'address' => $data['address'],
                 ]
             );
         }

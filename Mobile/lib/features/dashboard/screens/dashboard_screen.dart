@@ -10,6 +10,7 @@ import '../../profile/screens/profile_screen.dart';
 import '../../../core/widgets/floating_nav_bar.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/glass_container.dart';
+import '../../../core/widgets/app_notice.dart';
 import 'package:intl/intl.dart';
 
 
@@ -215,15 +216,11 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
 
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (!mounted) return;
-                ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(
-                    SnackBar(
-                      content: Text(message),
-                      backgroundColor: approved ? Colors.green.shade700 : Colors.red.shade700,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
+                AppNotice.show(
+                  context,
+                  message,
+                  type: approved ? AppNoticeType.success : AppNoticeType.error,
+                );
               });
             }
 
@@ -447,7 +444,9 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
                           switchOutCurve: Curves.easeIn,
                           child: Column(
                             key: ValueKey(
-                              dashboard.announcements.map((item) => item.id).join(','),
+                              dashboard.announcements
+                                  .map((item) => '${item.id}:${item.title}:${item.content}')
+                                  .join(','),
                             ),
                             children: dashboard.announcements.map((item) {
                               return Padding(

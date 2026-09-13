@@ -13,6 +13,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('admin.dashboard');
         }
+
         return view('admin.auth.login');
     }
 
@@ -22,9 +23,10 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
-            
-            if (!$user->hasRole('admin')) {
+
+            if (! $user->hasRole('admin')) {
                 Auth::logout();
+
                 return back()->withErrors(['email' => 'Anda tidak memiliki akses admin']);
             }
 

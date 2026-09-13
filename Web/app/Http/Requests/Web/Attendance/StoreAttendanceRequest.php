@@ -16,6 +16,7 @@ class StoreAttendanceRequest extends FormRequest
         return [
             'user_id' => ['required', 'exists:users,id'],
             'recorded_at' => ['required', 'date'],
+            'check_out_time' => ['nullable', 'date', 'after_or_equal:recorded_at'],
             'status' => ['required', 'in:present,absent,sick,permission'],
             'notes' => ['nullable', 'string', 'max:500'],
             'proof_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],

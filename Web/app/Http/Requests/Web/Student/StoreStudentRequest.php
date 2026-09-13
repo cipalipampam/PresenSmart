@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Web\Student;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreStudentRequest extends FormRequest
 {
@@ -19,14 +20,14 @@ class StoreStudentRequest extends FormRequest
             'password' => 'required|min:6',
             'nis' => 'nullable|unique:students,nis',
             'nisn' => 'nullable|unique:students,nisn',
-            'grade' => 'nullable|string|max:20',
+            'grade' => ['required', Rule::in(config('student.grades'))],
             'gender' => 'nullable|in:male,female',
             'place_of_birth' => 'nullable|string|max:100',
             'date_of_birth' => 'nullable|date',
             'religion' => 'nullable|string',
             'address' => 'nullable|string',
             'phone_number' => 'nullable|string',
-            'profile_picture' => 'nullable|image|max:2048', 
+            'profile_picture' => 'nullable|image|max:2048',
         ];
     }
 }

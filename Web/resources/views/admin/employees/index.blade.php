@@ -105,20 +105,18 @@
                                 <div class="text-white-50 small"><i class="bi bi-envelope me-1"></i>{{ $user->email }}</div>
                             </td>
                             <td class="text-end pe-4">
-                                <div class="d-flex align-items-center justify-content-end gap-2">
-                                    <a href="{{ route('admin.employees.show', $user->id) }}" class="btn btn-sm btn-info rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0; background: #06b6d4; border: none; color: white;" title="View Profile">
+                                <div class="d-flex align-items-center justify-content-end gap-1">
+                                    <a href="{{ route('admin.employees.show', $user->id) }}" class="btn btn-action btn-action-view" title="View Details" data-bs-toggle="tooltip">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="{{ route('admin.employees.edit', $user->id) }}" class="btn btn-sm btn-warning rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0; background: #f59e0b; border: none; color: white;" title="Edit">
+                                    <a href="{{ route('admin.employees.edit', $user->id) }}" class="btn btn-action btn-action-edit" title="Edit" data-bs-toggle="tooltip">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    <form action="{{ route('admin.employees.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Confirm deletion of this personnel profile?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0; background: #ef4444; border: none;" title="Delete">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-action btn-action-delete" title="Delete" data-bs-toggle="tooltip"
+                                        data-delete-url="{{ route('admin.employees.destroy', $user->id) }}"
+                                        data-delete-name="{{ $user->name }}">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>

@@ -3,10 +3,10 @@
 namespace App\Services\Web\Attendance;
 
 use App\Models\Attendance;
-use Illuminate\Database\Eloquent\Builder;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Shuchkin\SimpleXLSXGen;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Shuchkin\SimpleXLSXGen;
 
 class AttendanceExportService
 {
@@ -22,9 +22,9 @@ class AttendanceExportService
 
         return match ($type) {
             'excel' => $this->toExcel($dataArray),
-            'csv'   => $this->toCsv($csvArray),
-            'pdf'   => $this->toPdf($data),
-            'zip'   => $this->toZip($dataArray, $csvArray, $data),
+            'csv' => $this->toCsv($csvArray),
+            'pdf' => $this->toPdf($data),
+            'zip' => $this->toZip($dataArray, $csvArray, $data),
             default => abort(400, 'Unsupported export type'),
         };
     }
@@ -40,19 +40,24 @@ class AttendanceExportService
             '<center><b>Name</b></center>',
             '<center><b>Role</b></center>',
             '<center><b>Status</b></center>',
-            '<center><b>Time</b></center>',
+            '<center><b>Check-in</b></center>',
+            '<center><b>Check-out</b></center>',
             '<center><b>Notes</b></center>',
             '<center><b>Approved</b></center>',
         ];
 
         $dataArray = [$header];
-        $csvArray  = [['No', 'Name', 'Role', 'Status', 'Time', 'Notes', 'Approved']];
+        $csvArray = [['No', 'Name', 'Role', 'Status', 'Check-in', 'Check-out', 'Notes', 'Approved']];
 
         foreach ($records as $index => $row) {
             $roleStr = '';
-            if ($row->user->hasRole('siswa'))  $roleStr = 'Student';
-            elseif ($row->user->hasRole('guru'))  $roleStr = 'Teacher';
-            elseif ($row->user->hasRole('staff')) $roleStr = 'Staff';
+            if ($row->user->hasRole('siswa')) {
+                $roleStr = 'Student';
+            } elseif ($row->user->hasRole('guru')) {
+                $roleStr = 'Teacher';
+            } elseif ($row->user->hasRole('staff')) {
+                $roleStr = 'Staff';
+            }
 
             $item = [
                 $index + 1,
@@ -60,12 +65,13 @@ class AttendanceExportService
                 $roleStr,
                 ucfirst($row->status),
                 Carbon::parse($row->recorded_at)->format('d M Y, H:i'),
+                $row->check_out_time?->format('d M Y, H:i') ?? '-',
                 $row->notes ?? '-',
                 $row->is_approved === null ? 'N/A' : ($row->is_approved ? 'Yes' : 'No'),
             ];
 
             $dataArray[] = $item;
-            $csvArray[]  = $item;
+            $csvArray[] = $item;
         }
 
         return [$dataArray, $csvArray];
@@ -74,8 +80,9 @@ class AttendanceExportService
     private function toExcel(array $dataArray)
     {
         $content = (string) SimpleXLSXGen::fromArray($dataArray);
+
         return response()->streamDownload(
-            fn() => print($content),
+            fn () => print ($content),
             'Attendance_Records.xlsx'
         );
     }
@@ -84,7 +91,9 @@ class AttendanceExportService
     {
         return response()->streamDownload(function () use ($csvArray) {
             $file = fopen('php://output', 'w');
-            foreach ($csvArray as $line) fputcsv($file, $line);
+            foreach ($csvArray as $line) {
+                fputcsv($file, $line);
+            }
             fclose($file);
         }, 'Attendance_Records.csv');
     }
@@ -92,13 +101,14 @@ class AttendanceExportService
     private function toPdf($data)
     {
         $pdf = Pdf::loadView('admin.attendances.export_pdf', ['attendances' => $data]);
+
         return $pdf->download('Attendance_Records.pdf');
     }
 
     private function toZip(array $dataArray, array $csvArray, $data)
     {
-        $zip      = new \ZipArchive();
-        $zipPath  = storage_path('app/public/Attendance_Records_' . time() . '.zip');
+        $zip = new \ZipArchive;
+        $zipPath = storage_path('app/public/Attendance_Records_'.time().'.zip');
 
         if ($zip->open($zipPath, \ZipArchive::CREATE) !== true) {
             abort(500, 'Gagal membuat file ZIP.');
@@ -112,7 +122,9 @@ class AttendanceExportService
         // CSV
         $csvTemp = tempnam(sys_get_temp_dir(), 'csv');
         $f = fopen($csvTemp, 'w');
-        foreach ($csvArray as $line) fputcsv($f, $line);
+        foreach ($csvArray as $line) {
+            fputcsv($f, $line);
+        }
         fclose($f);
         $zip->addFile($csvTemp, 'Attendance_Records.csv');
 

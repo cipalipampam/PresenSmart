@@ -38,7 +38,8 @@
                 <th>Name</th>
                 <th>Role</th>
                 <th>Status</th>
-                <th>Time</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
                 <th>Approved</th>
             </tr>
         </thead>
@@ -55,6 +56,7 @@
                     </td>
                     <td>{{ ucfirst($attendance->status) }}</td>
                     <td>{{ \Carbon\Carbon::parse($attendance->recorded_at)->format('d M Y, H:i') }}</td>
+                    <td>{{ $attendance->check_out_time?->format('d M Y, H:i') ?? '-' }}</td>
                     <td>
                         @if($attendance->is_approved === null) N/A
                         @else {{ $attendance->is_approved ? 'Yes' : 'No' }}

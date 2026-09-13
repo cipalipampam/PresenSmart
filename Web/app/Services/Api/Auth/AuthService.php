@@ -2,9 +2,9 @@
 
 namespace App\Services\Api\Auth;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use App\Models\User;
 
 class AuthService
 {
@@ -13,7 +13,7 @@ class AuthService
      */
     public function login(array $credentials)
     {
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
                 'email' => ['Kredensial yang diberikan tidak cocok dengan data kami.'],
             ]);
@@ -35,7 +35,7 @@ class AuthService
         return [
             'user' => $user,
             'token' => $token,
-            'role' => $user->roles->pluck('name')->first() ?? 'user'
+            'role' => $user->roles->pluck('name')->first() ?? 'user',
         ];
     }
 
@@ -46,6 +46,7 @@ class AuthService
     {
         // Revoke the token that was used to authenticate the current request
         $user->currentAccessToken()->delete();
+
         return true;
     }
 
@@ -63,7 +64,7 @@ class AuthService
         $user->roles; // Load roles collection explicitly
 
         return collect($user)->merge([
-            'role_name' => $user->roles->pluck('name')->first()
+            'role_name' => $user->roles->pluck('name')->first(),
         ]);
     }
 }

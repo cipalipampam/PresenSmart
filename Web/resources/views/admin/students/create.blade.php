@@ -82,7 +82,12 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="grade" class="form-label text-white-50 small fw-semibold">Current Grade / Class</label>
-                                <input type="text" class="form-control" id="grade" name="grade" value="{{ old('grade') }}" placeholder="e.g. 10-A, 12-IPA">
+                                <select class="form-select @error('grade') is-invalid @enderror" id="grade" name="grade" required>
+                                    <option value="">Select class</option>
+                                    @foreach(config('student.grades') as $grade)
+                                        <option value="{{ $grade }}" @selected(old('grade') === $grade)>{{ $grade }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label for="gender" class="form-label text-white-50 small fw-semibold">Gender</label>

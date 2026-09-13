@@ -18,11 +18,11 @@ class DatabaseSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => 'admin@sekolah.com'],
             [
-                'name'     => 'Admin Utama',
+                'name' => 'Admin Utama',
                 'password' => Hash::make('admin123'),
             ]
         );
-        if (!$admin->hasRole('admin')) {
+        if (! $admin->hasRole('admin')) {
             $admin->assignRole('admin');
         }
         $this->command->info('✅ Admin berhasil di-seed. (admin@sekolah.com / admin123)');
@@ -42,25 +42,25 @@ class DatabaseSeeder extends Seeder
         // 7. Settings lengkap
         $settings = [
             // Lokasi sekolah (default: SMKN 1 Jakarta)
-            'school_lat'             => '-6.200000',
-            'school_long'            => '106.816666',
-            'school_radius'          => '100',          // meter
+            'school_lat' => '-6.200000',
+            'school_long' => '106.816666',
+            'school_radius' => '100',          // meter
 
             // Jam operasional
-            'check_in_start'         => '06:00',
-            'check_in_end'           => '07:00',        // jam masuk tepat waktu
+            'check_in_start' => '06:00',
+            'check_in_end' => '07:00',        // jam masuk tepat waktu
             'late_tolerance_minutes' => '15',           // toleransi terlambat
-            'check_out_start'        => '15:00',        // jam pulang minimal
-            'check_out_end'          => '17:00',
+            'check_out_start' => '15:00',        // jam pulang minimal
+            'check_out_end' => '17:00',
 
             // Alias yang mungkin dipakai di tempat lain
-            'presensi_start_time'    => '07:00',
-            'presensi_end_time'      => '09:00',
+            'presensi_start_time' => '07:00',
+            'presensi_end_time' => '09:00',
 
             // Info sekolah
-            'school_name'            => 'SMA Negeri 1 Contoh',
-            'school_address'         => 'Jl. Pendidikan No.1, Jakarta Pusat',
-            'school_phone'           => '021-12345678',
+            'school_name' => 'SMA Negeri 1 Contoh',
+            'school_address' => 'Jl. Pendidikan No.1, Jakarta Pusat',
+            'school_phone' => '021-12345678',
         ];
 
         foreach ($settings as $key => $value) {

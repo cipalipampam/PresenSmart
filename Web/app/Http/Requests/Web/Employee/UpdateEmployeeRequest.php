@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Web\Employee;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Models\User;
 
 class UpdateEmployeeRequest extends FormRequest
 {
@@ -15,7 +15,7 @@ class UpdateEmployeeRequest extends FormRequest
 
     public function rules()
     {
-        $userId = $this->route('employee'); 
+        $userId = $this->route('employee');
         $user = User::with('employee')->findOrFail($userId);
         $employeeId = $user->employee ? $user->employee->id : null;
 
@@ -32,7 +32,7 @@ class UpdateEmployeeRequest extends FormRequest
             'religion' => 'nullable|string',
             'address' => 'nullable|string',
             'phone_number' => 'nullable|string',
-            'profile_picture' => 'nullable|image|max:2048', 
+            'profile_picture' => 'nullable|image|max:2048',
         ];
     }
 }

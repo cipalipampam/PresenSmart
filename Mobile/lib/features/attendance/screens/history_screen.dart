@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/glass_container.dart';
+import '../models/attendance_model.dart';
 import '../providers/attendance_provider.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -114,6 +115,8 @@ class _HistoryScreenState extends State<HistoryScreen>
                           child: DropdownButton<int>(
                             value: _selectedMonth,
                             dropdownColor: AppConstants.colorBackgroundDark,
+                            menuMaxHeight: 260,
+                            isDense: true,
                             icon: const Icon(Icons.arrow_drop_down, color: AppConstants.colorPrimaryBase),
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                             items: List.generate(12, (i) {
@@ -140,6 +143,8 @@ class _HistoryScreenState extends State<HistoryScreen>
                           child: DropdownButton<int>(
                             value: _selectedYear,
                             dropdownColor: AppConstants.colorBackgroundDark,
+                            menuMaxHeight: 260,
+                            isDense: true,
                             icon: const Icon(Icons.arrow_drop_down, color: AppConstants.colorPrimaryBase),
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                             items: List.generate(5, (i) {
@@ -165,7 +170,7 @@ class _HistoryScreenState extends State<HistoryScreen>
               Expanded(
                 child: Consumer<AttendanceProvider>(
                   builder: (context, provider, child) {
-                    if (provider.isLoading) {
+                    if (provider.isLoading && provider.historyList.isEmpty) {
                       return const Center(
                           child: CircularProgressIndicator(
                               color: AppConstants.colorPrimaryBase));
@@ -184,10 +189,21 @@ class _HistoryScreenState extends State<HistoryScreen>
                       );
                     }
 
-                    return ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
-                      itemCount: provider.historyList.length,
-                      itemBuilder: (context, index) {
+                    return Stack(
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 240),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          child: ListView.builder(
+                            key: ValueKey(
+                              provider.historyList
+                                  .map((item) => '${item.id}:${item.status}:${item.isApproved}:${item.checkOutTime}')
+                                  .join('|'),
+                            ),
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                            itemCount: provider.historyList.length,
+                            itemBuilder: (context, index) {
                         final data = provider.historyList[index];
                         final badge = _resolveBadge(data);
                         final dateStr = DateFormat('dd MMM yy', 'id_ID')
@@ -298,7 +314,21 @@ class _HistoryScreenState extends State<HistoryScreen>
                             ),
                           ),
                         );
-                      },
+                            },
+                          ),
+                        ),
+                        if (provider.isLoading)
+                          const Positioned(
+                            top: 0,
+                            left: 16,
+                            right: 16,
+                            child: LinearProgressIndicator(
+                              minHeight: 2,
+                              color: AppConstants.colorPrimaryBase,
+                              backgroundColor: Colors.transparent,
+                            ),
+                          ),
+                      ],
                     );
                   },
                 ),
@@ -310,7 +340,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     );
   }
 
-  String _proofUrl(dynamic attendance) {
+  String _proofUrl(AttendanceModel attendance) {
     return attendance.proofUrl ??
         '${AppConstants.storageBaseUrl}/${attendance.proofImage!}';
   }

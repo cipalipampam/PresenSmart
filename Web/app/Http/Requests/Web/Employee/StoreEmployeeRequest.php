@@ -26,7 +26,7 @@ class StoreEmployeeRequest extends FormRequest
             'religion' => 'nullable|string',
             'address' => 'nullable|string',
             'phone_number' => 'nullable|string',
-            'profile_picture' => 'nullable|image|max:2048', 
+            'profile_picture' => 'nullable|image|max:2048',
         ];
     }
 }
