@@ -310,7 +310,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     );
   }
 
-  String _proofUrl(AttendanceModel attendance) {
+  String _proofUrl(dynamic attendance) {
     return attendance.proofUrl ??
         '${AppConstants.storageBaseUrl}/${attendance.proofImage!}';
   }
