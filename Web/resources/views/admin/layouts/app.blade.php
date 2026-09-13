@@ -28,7 +28,7 @@
             </button>
         </div>
 
-        <div class="py-3 flex-grow-1">
+        <div class="py-3 grow">
             <p class="text-white-50 px-3 mb-2" style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;">Main Navigation</p>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
