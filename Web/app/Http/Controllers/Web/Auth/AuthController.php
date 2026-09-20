@@ -19,24 +19,34 @@ class AuthController extends Controller
 
     public function adminLogin(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ], [
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'password.required' => 'Kata sandi wajib diisi.',
+        ]);
 
-        if (Auth::attempt($credentials)) {
+        $credentials = $request->only('email', 'password');
+        $remember = $request->boolean('remember');
+
+        if (Auth::attempt($credentials, $remember)) {
             $user = Auth::user();
 
             if (! $user->hasRole('admin')) {
                 Auth::logout();
 
-                return back()->withErrors(['email' => 'Anda tidak memiliki akses admin']);
+                return back()->withErrors(['email' => 'Akun ini tidak memiliki hak akses administrator sistem.']);
             }
 
             $request->session()->regenerate();
 
-            return redirect()->route('admin.dashboard');
+            return redirect()->intended(route('admin.dashboard'));
         }
 
         return back()->withErrors([
-            'email' => 'Email atau password salah.',
+            'email' => 'Kombinasi alamat email atau kata sandi tidak cocok.',
         ])->onlyInput('email');
     }
 
@@ -47,6 +57,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.login_form')->with('success', 'Anda berhasil logout');
+        return redirect()->route('admin.login_form')->with('success', 'Anda telah berhasil keluar dari portal admin.');
     }
 }
