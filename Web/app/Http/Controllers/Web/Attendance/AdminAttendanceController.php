@@ -86,6 +86,14 @@ class AdminAttendanceController extends Controller
             ? 'Permohonan berhasil disetujui (Approved).'
             : 'Permohonan ditolak. Status otomatis menjadi Absent (Alfa).';
 
+        if ($request->filled('redirect_to')) {
+            return redirect($request->input('redirect_to'))->with('success', $message);
+        }
+
+        if ($request->headers->get('referer') && str_contains($request->headers->get('referer'), 'dashboard')) {
+            return redirect()->route('admin.dashboard')->with('success', $message);
+        }
+
         return $this->redirectToScope($scope)->with('success', $message);
     }
 

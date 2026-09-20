@@ -31,6 +31,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
         Route::get('/', 'index')->name('settings.index');
         Route::post('/location', 'updateLocation')->name('update_location');
         Route::post('/attendance', 'updateAttendanceSettings')->name('update_attendance_settings');
+        Route::post('/institution', 'updateInstitution')->name('update_institution');
     });
 
     // Delegated to decoupled StudentController
@@ -70,5 +71,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
         Route::delete('/{id}', 'destroy')->name('destroy');
     });
 
+    Route::post('announcements/{id}/toggle', [AnnouncementController::class, 'toggleStatus'])->name('announcements.toggle');
     Route::resource('announcements', AnnouncementController::class)->except(['show']);
 });

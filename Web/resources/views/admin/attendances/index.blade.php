@@ -4,81 +4,93 @@
 @php
     $scopeQuery = $attendanceType ? ['scope' => $attendanceType] : [];
 @endphp
-<div class="container-fluid py-4">
+<div class="py-2">
 
     {{-- ===== PAGE HEADER ===== --}}
     <div class="row align-items-center mb-4">
         <div class="col-md-6">
-            <h2 class="fw-bold text-white mb-1">{{ $attendanceType === 'siswa' ? 'Student Attendance' : ($attendanceType === 'employee' ? 'Employee Attendance' : 'Attendance Records') }}</h2>
-            <p class="text-white-50 small mb-0">Monitor and manage {{ $attendanceType ? ($attendanceType === 'siswa' ? 'student' : 'employee and staff') : 'all member' }} attendance logs.</p>
+            <h1 class="fw-bold text-dark mb-1" style="font-size: 1.65rem; letter-spacing: -0.4px;">
+                {{ $attendanceType === 'siswa' ? 'Data Presensi Siswa' : ($attendanceType === 'employee' ? 'Data Presensi Guru & Pegawai' : 'Semua Riwayat Presensi') }}
+            </h1>
+            <p class="text-muted small mb-0">
+                Pantau riwayat presensi, tinjau bukti permohonan izin/sakit, dan ekspor laporan resmi.
+            </p>
         </div>
         <div class="col-md-6 text-md-end mt-3 mt-md-0 d-flex align-items-center justify-content-md-end gap-2 flex-wrap">
+            {{-- Tombol Cetak / Print --}}
+            <a href="{{ route('admin.attendances.print', request()->query()) }}" target="_blank" class="btn btn-outline-secondary shadow-sm py-2 px-3" style="font-size: 0.85rem;">
+                <i class="bi bi-printer me-1"></i>Cetak Dokumen
+            </a>
+
             {{-- Export Dropdown --}}
             <div class="dropdown">
-                <button class="btn border-0 bg-light-soft text-white dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-download me-2"></i>Export
+                <button class="btn btn-outline-primary dropdown-toggle shadow-sm py-2 px-3" type="button" data-bs-toggle="dropdown" style="font-size: 0.85rem;">
+                    <i class="bi bi-download me-1"></i>Ekspor Laporan
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end glass border-0 shadow py-2">
+                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg py-2">
                     <li>
-                        <a class="dropdown-item" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'excel'])) }}">
-                            <i class="bi bi-file-earmark-excel me-2 text-emerald"></i>Excel (.xlsx)
+                        <a class="dropdown-item py-2" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'excel'])) }}">
+                            <i class="bi bi-file-earmark-excel me-2 text-success"></i>Microsoft Excel (.xlsx)
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'csv'])) }}">
-                            <i class="bi bi-filetype-csv me-2 text-info"></i>CSV (.csv)
+                        <a class="dropdown-item py-2" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'csv'])) }}">
+                            <i class="bi bi-filetype-csv me-2 text-info"></i>CSV Spreadsheet (.csv)
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'pdf'])) }}">
-                            <i class="bi bi-file-earmark-pdf me-2" style="color:#ef4444;"></i>PDF
+                        <a class="dropdown-item py-2" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'pdf'])) }}">
+                            <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Dokumen PDF (.pdf)
                         </a>
                     </li>
-                    <li><hr class="dropdown-divider border-white-10"></li>
+                    <li><hr class="dropdown-divider"></li>
                     <li>
-                        <a class="dropdown-item" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'zip'])) }}">
-                            <i class="bi bi-file-earmark-zip me-2 text-warning"></i>All Formats (.zip)
+                        <a class="dropdown-item py-2" href="{{ route($attendanceRouteName, array_merge(request()->query(), ['export' => 'zip'])) }}">
+                            <i class="bi bi-file-earmark-zip me-2 text-warning"></i>Semua Format (.zip)
                         </a>
                     </li>
                 </ul>
             </div>
-            <a href="{{ route('admin.attendances.create', $scopeQuery) }}" class="btn btn-primary shadow-sm border-0">
-                <i class="bi bi-plus-lg me-2"></i>Record Manual Attendance
+
+            {{-- Tombol Catat Manual --}}
+            <a href="{{ route('admin.attendances.create', $scopeQuery) }}" class="btn btn-primary shadow-sm py-2 px-3" style="font-size: 0.85rem;">
+                <i class="bi bi-plus-lg me-1"></i>Catat Presensi Manual
             </a>
         </div>
     </div>
 
     {{-- ===== FILTER CARD ===== --}}
-    <div class="card glass border-0 shadow-lg mb-4">
-        <div class="card-body p-4">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3 p-md-4">
             <form action="{{ route($attendanceRouteName) }}" method="GET" class="js-live-filter">
+                @if($attendanceType)<input type="hidden" name="scope" value="{{ $attendanceType }}">@endif
                 <div class="row g-3 align-items-end">
                     <div class="{{ $attendanceType === 'employee' ? 'col-lg-5' : ($attendanceType === 'siswa' ? 'col-lg-4' : 'col-lg-3') }} col-md-6">
-                        <label for="search" class="form-label text-white-50 small fw-semibold">Search Member</label>
+                        <label for="search" class="form-label text-dark small fw-semibold">Pencarian Nama</label>
                         <div class="input-group">
-                            <span class="input-group-text border-0 bg-light-soft text-white-50"><i class="bi bi-search"></i></span>
-                            <input type="text" name="search" id="search" class="form-control"
-                                   placeholder="Member name..." value="{{ request('search') }}">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
+                            <input type="text" name="search" id="search" class="form-control border-start-0"
+                                   placeholder="Ketik nama anggota..." value="{{ request('search') }}">
                         </div>
                     </div>
                     <div class="{{ $attendanceType === 'employee' ? 'col-lg-4' : 'col-lg-2' }} col-md-6">
-                        <label for="date" class="form-label text-white-50 small fw-semibold">Date</label>
-                        <input type="date" name="date" id="date" class="form-control" value="{{ request('date', $date ?? now()->toDateString()) }}">
+                        <label for="date" class="form-label text-dark small fw-semibold">Tanggal Spesifik</label>
+                        <input type="date" name="date" id="date" class="form-control" value="{{ request('date', $date ?? '') }}">
                     </div>
                     <div class="col-lg-2 col-md-4">
-                        <label for="month" class="form-label text-white-50 small fw-semibold">Month</label>
+                        <label for="month" class="form-label text-dark small fw-semibold">Bulan</label>
                         <select name="month" id="month" class="form-select">
-                            <option value="">All Months</option>
+                            <option value="">Semua Bulan</option>
                             @for ($m = 1; $m <= 12; $m++)
                                 @php $mVal = sprintf('%02d', $m); @endphp
-                                <option value="{{ $mVal }}" {{ request('month', date('m')) == $mVal && !request('date') ? 'selected' : (request('month') == $mVal ? 'selected' : '') }}>
-                                    {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+                                <option value="{{ $mVal }}" {{ request('month') == $mVal ? 'selected' : '' }}>
+                                    {{ \Carbon\Carbon::create(2025, $m, 1)->translatedFormat('F') }}
                                 </option>
                             @endfor
                         </select>
                     </div>
                     <div class="col-lg-1 col-md-4">
-                        <label for="year" class="form-label text-white-50 small fw-semibold">Year</label>
+                        <label for="year" class="form-label text-dark small fw-semibold">Tahun</label>
                         <select name="year" id="year" class="form-select">
                             @php $currentYear = date('Y'); @endphp
                             @for ($y = $currentYear; $y >= $currentYear - 4; $y--)
@@ -87,23 +99,40 @@
                         </select>
                     </div>
                     <div class="{{ $attendanceType === 'siswa' ? 'col-lg-3' : 'col-lg-2' }} col-md-4" id="grade-filter-container" style="{{ $attendanceType === 'siswa' || request('role') == 'siswa' ? '' : 'display:none;' }}">
-                        <label for="grade" class="form-label text-white-50 small fw-semibold">Grade</label>
+                        <label for="grade" class="form-label text-dark small fw-semibold">Kelas</label>
                         <select name="grade" id="grade" class="form-select">
-                            <option value="">All</option>
+                            <option value="">Semua Kelas</option>
                             @foreach($grades as $g)
                                 <option value="{{ $g }}" {{ request('grade') == $g ? 'selected' : '' }}>{{ $g }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div id="role-filter-container" class="{{ $attendanceType ? 'd-none' : (request('role') == 'siswa' ? 'col-lg-2' : 'col-lg-4') }} col-md-6">
-                        <label for="role" class="form-label text-white-50 small fw-semibold">Role Filter</label>
+                        <label for="role" class="form-label text-dark small fw-semibold">Filter Peran</label>
                         <select name="role" id="role" class="form-select" onchange="toggleGradeFilter()">
-                            <option value="">All Members</option>
-                            <option value="siswa"    {{ request('role') == 'siswa'    ? 'selected' : '' }}>Students</option>
-                            <option value="employee" {{ request('role') == 'employee' ? 'selected' : '' }}>All Employees</option>
-                            <option value="guru"     {{ request('role') == 'guru'     ? 'selected' : '' }}>Teachers</option>
+                            <option value="">Semua Anggota</option>
+                            <option value="siswa"    {{ request('role') == 'siswa'    ? 'selected' : '' }}>Siswa</option>
+                            <option value="employee" {{ request('role') == 'employee' ? 'selected' : '' }}>Semua Pegawai</option>
+                            <option value="guru"     {{ request('role') == 'guru'     ? 'selected' : '' }}>Guru</option>
                             <option value="staff"    {{ request('role') == 'staff'    ? 'selected' : '' }}>Staff</option>
                         </select>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mt-3 pt-2 border-top">
+                    <div class="d-flex align-items-center gap-2">
+                        @if(request('approval') === 'pending')
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle py-2 px-2">
+                                <i class="bi bi-funnel-fill me-1"></i>Filter Aktif: Menunggu Persetujuan
+                            </span>
+                            <a href="{{ route($attendanceRouteName, request()->except('approval')) }}" class="btn btn-sm btn-link text-decoration-none p-0 text-danger small">
+                                [Hapus Filter Ini]
+                            </a>
+                        @endif
+                    </div>
+                    <div>
+                        <a href="{{ route($attendanceRouteName) }}" class="btn btn-sm btn-light text-secondary border py-1 px-3" style="font-size: 0.8rem;">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Reset Filter
+                        </a>
                     </div>
                 </div>
             </form>
@@ -111,164 +140,214 @@
     </div>
 
     @if(session('success'))
-        <div class="alert border-0 d-flex align-items-center mb-4" role="alert"
-             style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2)!important;border-radius:10px;">
-            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+        <div class="alert alert-success border-0 d-flex align-items-center mb-4 shadow-sm" role="alert" style="background-color: #ecfdf5; color: #065f46; border-left: 4px solid #059669 !important;">
+            <i class="bi bi-check-circle-fill me-2 fs-5 text-success"></i>
             <div>{{ session('success') }}</div>
-            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" style="filter:invert(1);opacity:0.5;"></button>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
     {{-- ===== DATA TABLE ===== --}}
     <div class="js-live-results">
-    <div class="card border-0 shadow-lg overflow-hidden">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th class="ps-4" style="width:50px;">No</th>
-                        <th>Member Name</th>
-                        <th>Role</th>
-                        <th>Attendance Status</th>
-                        <th>Check-in</th>
-                        <th>Check-out</th>
-                        <th>Proof</th>
-                        <th class="text-end pe-4">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="border-top-0">
-                    @forelse($attendances as $attendance)
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
                         <tr>
-                            <td class="ps-4 text-white-50">
-                                {{ ($attendances->currentPage() - 1) * $attendances->perPage() + $loop->iteration }}
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="bg-light-soft rounded-circle text-white d-flex align-items-center justify-content-center fw-bold"
-                                         style="width:34px;height:34px;font-size:0.8rem;flex-shrink:0;">
-                                        {{ strtoupper(substr($attendance->user->name, 0, 1)) }}
-                                    </div>
-                                    <span class="fw-semibold text-white">{{ $attendance->user->name }}</span>
-                                </div>
-                            </td>
-                            <td>
-                                @if($attendance->user->hasRole('siswa'))
-                                    <span class="badge px-2 py-1" style="background:rgba(6,182,212,0.1);color:#06b6d4;border:1px solid rgba(6,182,212,0.2);">Student</span>
-                                @elseif($attendance->user->hasRole('guru'))
-                                    <span class="badge px-2 py-1" style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);">Teacher</span>
-                                @elseif($attendance->user->hasRole('staff'))
-                                    <span class="badge px-2 py-1" style="background:rgba(148,163,184,0.1);color:#94a3b8;border:1px solid rgba(148,163,184,0.2);">Staff</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($attendance->status == 'present')
-                                    <div class="d-flex align-items-center gap-2" style="color:#10b981;">
-                                        <div class="rounded-circle" style="width:7px;height:7px;background:#10b981;flex-shrink:0;"></div>
-                                        <span class="small fw-medium">Present</span>
-                                    </div>
-                                @elseif($attendance->status == 'permission' || $attendance->status == 'sick')
-                                    @if($attendance->is_approved === null)
-                                        <div class="d-flex align-items-center gap-2" style="color:#f59e0b;">
-                                            <div class="rounded-circle" style="width:7px;height:7px;background:#f59e0b;flex-shrink:0;"></div>
-                                            <span class="small fw-medium">Pending — {{ $attendance->status == 'sick' ? 'Sick' : 'Permission' }}</span>
+                            <th class="ps-4" style="width: 50px;">No</th>
+                            <th>Nama Anggota</th>
+                            <th>Peran / Info</th>
+                            <th>Status Kehadiran</th>
+                            <th>Jam Masuk</th>
+                            <th>Jam Pulang</th>
+                            <th>Bukti Foto</th>
+                            <th class="text-end pe-4">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($attendances as $attendance)
+                            <tr>
+                                <td class="ps-4 text-muted small">
+                                    {{ ($attendances->currentPage() - 1) * $attendances->perPage() + $loop->iteration }}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="avatar-placeholder">
+                                            {{ strtoupper(substr($attendance->user->name ?? 'U', 0, 1)) }}
                                         </div>
-                                    @elseif($attendance->is_approved == true)
-                                        <div class="d-flex align-items-center gap-2" style="color:#06b6d4;">
-                                            <div class="rounded-circle" style="width:7px;height:7px;background:#06b6d4;flex-shrink:0;"></div>
-                                            <span class="small fw-medium">Approved — {{ $attendance->status == 'sick' ? 'Sick' : 'Permission' }}</span>
+                                        <div>
+                                            <div class="fw-semibold text-dark">{{ $attendance->user->name ?? 'Unknown' }}</div>
+                                            <div class="text-muted small" style="font-size: 0.75rem;">{{ $attendance->user->email ?? '-' }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if($attendance->user->hasRole('siswa'))
+                                        <span class="badge bg-light text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.72rem;">Siswa</span>
+                                        @if($attendance->user->student)
+                                            <span class="text-muted small ms-1">{{ $attendance->user->student->class_name }}</span>
+                                        @endif
+                                    @elseif($attendance->user->hasRole('guru'))
+                                        <span class="badge bg-light text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">Guru</span>
+                                        @if($attendance->user->employee)
+                                            <span class="text-muted small ms-1">{{ $attendance->user->employee->position }}</span>
+                                        @endif
+                                    @elseif($attendance->user->hasRole('staff'))
+                                        <span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 0.72rem;">Staff</span>
+                                    @else
+                                        <span class="badge bg-light text-dark border px-2 py-1" style="font-size: 0.72rem;">Admin</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($attendance->status == 'present')
+                                        @if($attendance->is_late)
+                                            <span class="badge-status badge-late"><i class="bi bi-clock-history"></i>Terlambat</span>
+                                        @else
+                                            <span class="badge-status badge-present"><i class="bi bi-check2"></i>Hadir</span>
+                                        @endif
+                                    @elseif($attendance->status == 'permission')
+                                        <span class="badge-status badge-permission">
+                                            <i class="bi bi-file-text"></i>Izin
+                                            @if($attendance->is_approved === true)
+                                                <i class="bi bi-check-all ms-1 text-success"></i>
+                                            @elseif($attendance->is_approved === false)
+                                                <i class="bi bi-x ms-1 text-danger"></i>
+                                            @else
+                                                <span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem;">Review</span>
+                                            @endif
+                                        </span>
+                                    @elseif($attendance->status == 'sick')
+                                        <span class="badge-status badge-sick">
+                                            <i class="bi bi-bandaid"></i>Sakit
+                                            @if($attendance->is_approved === true)
+                                                <i class="bi bi-check-all ms-1 text-success"></i>
+                                            @elseif($attendance->is_approved === false)
+                                                <i class="bi bi-x ms-1 text-danger"></i>
+                                            @else
+                                                <span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem;">Review</span>
+                                            @endif
+                                        </span>
+                                    @else
+                                        <span class="badge-status badge-absent"><i class="bi bi-x-circle"></i>Alfa</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="fw-medium text-dark" style="font-size: 0.85rem;">
+                                        <i class="bi bi-box-arrow-in-right me-1 text-success"></i>
+                                        {{ \Carbon\Carbon::parse($attendance->recorded_at)->format('H:i') }} WIB
+                                    </div>
+                                    <div class="text-muted small" style="font-size: 0.72rem;">
+                                        {{ \Carbon\Carbon::parse($attendance->recorded_at)->translatedFormat('d M Y') }}
+                                    </div>
+                                </td>
+                                <td>
+                                    @if($attendance->check_out_time)
+                                        <div class="fw-medium text-dark" style="font-size: 0.85rem;">
+                                            <i class="bi bi-box-arrow-right me-1 text-warning"></i>
+                                            {{ $attendance->check_out_time->format('H:i') }} WIB
                                         </div>
                                     @else
-                                        <div class="d-flex align-items-center gap-2" style="color:#ef4444;">
-                                            <div class="rounded-circle" style="width:7px;height:7px;background:#ef4444;flex-shrink:0;"></div>
-                                            <span class="small fw-medium">Rejected</span>
-                                        </div>
+                                        <span class="text-muted small">—</span>
                                     @endif
-                                @else
-                                    <div class="d-flex align-items-center gap-2" style="color:#ef4444;">
-                                        <div class="rounded-circle" style="width:7px;height:7px;background:#ef4444;flex-shrink:0;"></div>
-                                        <span class="small fw-medium">Absent</span>
+                                </td>
+                                <td>
+                                    @if($attendance->proof_image)
+                                        <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 rounded-pill" style="font-size: 0.75rem;"
+                                                onclick="showProofModal('{{ route('admin.attendances.proof', $attendance) }}', '{{ addslashes($attendance->user->name) }}')">
+                                            <i class="bi bi-image me-1"></i>Lihat Bukti
+                                        </button>
+                                    @else
+                                        <span class="text-muted small fst-italic">—</span>
+                                    @endif
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex align-items-center justify-content-end gap-1">
+                                        @if(($attendance->status == 'permission' || $attendance->status == 'sick') && $attendance->is_approved === null)
+                                            <form action="{{ route('admin.attendances.approve', array_merge(['id' => $attendance->id], $scopeQuery)) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @if($attendanceType)<input type="hidden" name="scope" value="{{ $attendanceType }}">@endif
+                                                <input type="hidden" name="action" value="approve">
+                                                <button type="submit" class="btn-action btn-action-approve" title="Setujui Pengajuan" onclick="return confirm('Setujui pengajuan izin/sakit ini?')">
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('admin.attendances.approve', array_merge(['id' => $attendance->id], $scopeQuery)) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @if($attendanceType)<input type="hidden" name="scope" value="{{ $attendanceType }}">@endif
+                                                <input type="hidden" name="action" value="reject">
+                                                <button type="submit" class="btn-action btn-action-delete" title="Tolak Pengajuan (Tercatat Alfa)" onclick="return confirm('Tolak permohonan ini?')">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                        <a href="{{ route('admin.attendances.show', array_merge(['id' => $attendance->id], $scopeQuery)) }}"
+                                           class="btn-action btn-action-view" title="Detail Presensi">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ route('admin.attendances.edit', array_merge(['id' => $attendance->id], $scopeQuery)) }}"
+                                           class="btn-action btn-action-edit" title="Ubah Data">
+                                           <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <button type="button"
+                                           class="btn-action btn-action-delete" title="Hapus"
+                                           data-delete-url="{{ route('admin.attendances.destroy', array_merge(['id' => $attendance->id], $scopeQuery)) }}"
+                                           data-delete-name="presensi {{ $attendance->user->name }} tanggal {{ \Carbon\Carbon::parse($attendance->recorded_at)->format('d M Y') }}">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
                                     </div>
-                                @endif
-                            </td>
-                            <td class="text-white-50 small">
-                                <i class="bi bi-box-arrow-in-right me-1 text-emerald"></i>
-                                {{ \Carbon\Carbon::parse($attendance->recorded_at)->format('d M, H:i') }}
-                            </td>
-                            <td class="text-white-50 small">
-                                @if($attendance->check_out_time)
-                                    <i class="bi bi-box-arrow-right me-1 text-amber"></i>
-                                    {{ $attendance->check_out_time->format('d M, H:i') }}
-                                @else
-                                    <span class="text-white-25">—</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($attendance->proof_image)
-                                    <a href="{{ route('admin.attendances.proof', $attendance) }}" target="_blank"
-                                       class="btn btn-sm border-0 px-3 py-1 rounded-pill"
-                                       style="background:rgba(6,182,212,0.1);color:#06b6d4;font-size:0.78rem;">
-                                        <i class="bi bi-eye me-1"></i>View
-                                    </a>
-                                @else
-                                    <span class="text-white-50 small fst-italic">None</span>
-                                @endif
-                            </td>
-                            <td class="text-end pe-4">
-                                <div class="d-flex align-items-center justify-content-end gap-1">
-                                    @if(($attendance->status == 'permission' || $attendance->status == 'sick') && $attendance->is_approved === null)
-                                        <form action="{{ route('admin.attendances.approve', array_merge(['id' => $attendance->id], $scopeQuery)) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @if($attendanceType)<input type="hidden" name="scope" value="{{ $attendanceType }}">@endif
-                                            <button type="submit" name="action" value="approve"
-                                                class="btn btn-action btn-action-approve" title="Approve">
-                                                <i class="bi bi-check-lg"></i>
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('admin.attendances.approve', array_merge(['id' => $attendance->id], $scopeQuery)) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @if($attendanceType)<input type="hidden" name="scope" value="{{ $attendanceType }}">@endif
-                                            <button type="submit" name="action" value="reject"
-                                                class="btn btn-action btn-action-reject" title="Reject">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                    <a href="{{ route('admin.attendances.edit', array_merge(['id' => $attendance->id], $scopeQuery)) }}"
-                                       class="btn btn-action btn-action-edit" title="Edit">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    <button type="button"
-                                       class="btn btn-action btn-action-delete" title="Delete"
-                                       data-delete-url="{{ route('admin.attendances.destroy', array_merge(['id' => $attendance->id], $scopeQuery)) }}"
-                                       data-delete-name="attendance for {{ $attendance->user->name }} on {{ \Carbon\Carbon::parse($attendance->recorded_at)->format('d M Y') }}">
-                                        <i class="bi bi-trash3-fill"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center py-5">
-                                <div class="mb-3"><i class="bi bi-calendar-x fs-1 text-white-25"></i></div>
-                                <h6 class="text-white-50 fw-medium">No attendance records found</h6>
-                                <p class="text-muted small mb-0">Try adjusting filters to broaden your search.</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="mb-3 text-muted"><i class="bi bi-calendar-x fs-1"></i></div>
+                                    <h6 class="text-dark fw-medium">Tidak Ada Catatan Presensi</h6>
+                                    <p class="text-muted small mb-0">Sesuaikan filter tanggal atau kelas untuk menemukan data yang dicari.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-        <div class="card-footer bg-transparent border-0 p-4 border-top border-secondary border-opacity-10 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-            <div class="text-white-50 small">
-                Showing <span class="text-white fw-bold">{{ $attendances->firstItem() ?? 0 }}-{{ $attendances->lastItem() ?? 0 }}</span>
-                from total <span class="text-white fw-bold">{{ $attendances->total() }}</span> records
-            </div>
-            <div class="pagination-modern">
-                {{ $attendances->appends(request()->query())->links('pagination::bootstrap-5') }}
-            </div>
+            @if($attendances->hasPages())
+                <div class="card-footer bg-white border-top p-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                    <div class="text-muted small">
+                        Menampilkan <strong class="text-dark">{{ $attendances->firstItem() ?? 0 }}-{{ $attendances->lastItem() ?? 0 }}</strong> dari total <strong class="text-dark">{{ $attendances->total() }}</strong> catatan
+                    </div>
+                    <div class="pagination-modern">
+                        {{ $attendances->appends(request()->query())->links('pagination::bootstrap-5') }}
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
+</div>
+
+{{-- ===== MODAL QUICK PREVIEW BUKTI ===== --}}
+<div class="modal fade" id="proofModal" tabindex="-1" aria-labelledby="proofModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom py-3">
+                <h6 class="modal-title fw-bold text-dark" id="proofModalLabel">
+                    <i class="bi bi-file-earmark-image text-primary me-2"></i>Bukti Dokumen / Surat
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 text-center bg-light">
+                <div id="proofLoading" class="py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+                <img id="proofModalImage" src="" alt="Bukti Surat" class="img-fluid rounded-3 border shadow-sm d-none" style="max-height: 480px; object-fit: contain;">
+                <p id="proofModalCaption" class="text-muted small mt-2 mb-0"></p>
+            </div>
+            <div class="modal-footer border-top py-2">
+                <a id="proofDownloadBtn" href="" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Buka Tab Baru
+                </a>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -279,171 +358,38 @@ function toggleGradeFilter() {
     const roleContainer = document.getElementById('role-filter-container');
     if (roleSelect.value === 'siswa') {
         gradeContainer.style.display = 'block';
-        roleContainer.classList.remove('col-lg-4');
-        roleContainer.classList.add('col-lg-2');
+        roleContainer.className = 'col-lg-2 col-md-6';
     } else {
         gradeContainer.style.display = 'none';
+        roleContainer.className = 'col-lg-4 col-md-6';
         document.getElementById('grade').value = '';
-        roleContainer.classList.remove('col-lg-2');
-        roleContainer.classList.add('col-lg-4');
-    }
-}
-</script>
-
-@push('scripts')
-<script>
-// ─── WebSocket: Toast notification on new attendance ─────────────────────────
-function registerAttendanceWebSocket() {
-    if (typeof window.Echo === 'undefined') return;
-
-    const attendanceScope = @json($attendanceType);
-    const belongsToCurrentScope = (data) => !attendanceScope || data.audience === attendanceScope;
-
-    const attendanceChannel = window.Echo.private('admin.attendance')
-        .listen('.AttendanceLogged', (data) => {
-            if (!belongsToCurrentScope(data)) return;
-            showAttendanceToast(data);
-            scheduleAttendanceRefresh();
-        })
-        .listen('.AdminAttendanceChanged', (data) => {
-            if (!belongsToCurrentScope(data)) return;
-            scheduleAttendanceRefresh();
-        });
-
-    attendanceChannel
-        .subscribed(() => console.info('Realtime attendance subscription ready.'))
-        .error((error) => console.error('Realtime attendance subscription failed:', error));
-}
-
-if (typeof window.Echo !== 'undefined') {
-    registerAttendanceWebSocket();
-} else {
-    window.addEventListener('echo:ready', registerAttendanceWebSocket, { once: true });
-}
-
-let attendanceRefreshTimer;
-let attendanceRefreshController;
-
-function scheduleAttendanceRefresh() {
-    clearTimeout(attendanceRefreshTimer);
-    attendanceRefreshTimer = setTimeout(refreshAttendanceTable, 150);
-}
-
-async function refreshAttendanceTable() {
-    attendanceRefreshController?.abort();
-    attendanceRefreshController = new AbortController();
-
-    try {
-        const response = await fetch(window.location.href, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            signal: attendanceRefreshController.signal,
-        });
-        if (!response.ok) return;
-
-        const html = await response.text();
-        const documentParser = new DOMParser();
-        const nextDocument = documentParser.parseFromString(html, 'text/html');
-        const currentTable = document.querySelector('.table-responsive table');
-        const nextTable = nextDocument.querySelector('.table-responsive table');
-        const currentFooter = document.querySelector('.card-footer');
-        const nextFooter = nextDocument.querySelector('.card-footer');
-
-        const currentBody = currentTable?.querySelector('tbody');
-        const nextBody = nextTable?.querySelector('tbody');
-        if (currentBody && nextBody) {
-            nextBody.classList.add('ws-table-entering');
-            currentBody.replaceWith(nextBody);
-        }
-        if (currentFooter && nextFooter) {
-            currentFooter.replaceWith(nextFooter);
-        }
-    } catch (error) {
-        if (error.name === 'AbortError') return;
-        console.error('Attendance table refresh failed:', error);
     }
 }
 
-function showAttendanceToast(data) {
-    const statusColors = {
-        present:    { bg: 'rgba(16,185,129,0.15)',  border: 'rgba(16,185,129,0.3)',  text: '#10b981', label: 'Present'    },
-        permission: { bg: 'rgba(245,158,11,0.15)',  border: 'rgba(245,158,11,0.3)',  text: '#f59e0b', label: 'Permission' },
-        sick:       { bg: 'rgba(6,182,212,0.15)',   border: 'rgba(6,182,212,0.3)',   text: '#06b6d4', label: 'Sick'       },
-        absent:     { bg: 'rgba(239,68,68,0.15)',   border: 'rgba(239,68,68,0.3)',   text: '#ef4444', label: 'Absent'     },
+function showProofModal(url, userName) {
+    const modalEl = document.getElementById('proofModal');
+    const imgEl = document.getElementById('proofModalImage');
+    const loadingEl = document.getElementById('proofLoading');
+    const captionEl = document.getElementById('proofModalCaption');
+    const downloadBtn = document.getElementById('proofDownloadBtn');
+
+    loadingEl.classList.remove('d-none');
+    imgEl.classList.add('d-none');
+    captionEl.textContent = `Surat/Bukti dari: ${userName}`;
+    downloadBtn.href = url;
+
+    imgEl.onload = function() {
+        loadingEl.classList.add('d-none');
+        imgEl.classList.remove('d-none');
     };
-    const s = statusColors[data.status] ?? statusColors.absent;
-    const name = data.user_name ?? 'Unknown';
-    const time = data.time ?? '';
+    imgEl.onerror = function() {
+        loadingEl.classList.add('d-none');
+        captionEl.textContent = 'Gagal memuat gambar bukti.';
+    };
+    imgEl.src = url;
 
-    // Toast container (create once)
-    let container = document.getElementById('ws-toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'ws-toast-container';
-        container.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:10px;';
-        document.body.appendChild(container);
-    }
-
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        background: rgba(15,23,42,0.95);
-        border: 1px solid ${s.border};
-        border-left: 3px solid ${s.text};
-        border-radius: 10px;
-        padding: 12px 16px;
-        min-width: 280px;
-        max-width: 340px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        animation: wsToastIn 0.35s ease;
-        cursor: pointer;
-    `;
-    toast.innerHTML = `
-        <div style="width:36px;height:36px;border-radius:50%;background:${s.bg};display:flex;align-items:center;justify-content:center;font-weight:700;color:${s.text};font-size:0.85rem;flex-shrink:0;">
-            ${name.charAt(0).toUpperCase()}
-        </div>
-        <div style="flex:1;min-width:0;">
-            <div style="color:#f1f5f9;font-weight:600;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
-            <div style="color:${s.text};font-size:0.78rem;font-weight:500;">
-                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${s.text};margin-right:4px;vertical-align:middle;"></span>
-                ${s.label} · ${time}
-            </div>
-        </div>
-        <div style="color:#64748b;font-size:0.7rem;font-weight:500;flex-shrink:0;">New<br>Record</div>
-    `;
-
-    // Click to dismiss
-    toast.onclick = () => toast.remove();
-
-    // Auto dismiss after 5s
-    container.prepend(toast);
-    setTimeout(() => {
-        toast.style.animation = 'wsToastOut 0.3s ease forwards';
-        setTimeout(() => toast.remove(), 300);
-    }, 5000);
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
 }
 </script>
-
-<style>
-@keyframes wsToastIn {
-    from { opacity:0; transform:translateX(40px); }
-    to   { opacity:1; transform:translateX(0); }
-}
-@keyframes wsToastOut {
-    from { opacity:1; transform:translateX(0); }
-    to   { opacity:0; transform:translateX(40px); }
-}
-
-.ws-table-entering {
-    animation: wsTableEnter 0.28s ease-out both;
-}
-
-@keyframes wsTableEnter {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-</style>
-@endpush
-
 @endsection
