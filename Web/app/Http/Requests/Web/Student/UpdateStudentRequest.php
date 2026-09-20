@@ -35,4 +35,19 @@ class UpdateStudentRequest extends FormRequest
             'profile_picture' => 'nullable|image|max:2048',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Nama lengkap siswa wajib diisi.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.unique' => 'Alamat email ini sudah terdaftar untuk pengguna lain.',
+            'password.min' => 'Kata sandi baru minimal terdiri dari 6 karakter.',
+            'nis.unique' => 'Nomor Induk Siswa (NIS) ini sudah terdaftar.',
+            'nisn.unique' => 'NISN ini sudah terdaftar untuk siswa lain.',
+            'grade.required' => 'Kelas / tingkatan wajib dipilih.',
+            'profile_picture.image' => 'Foto profil harus berupa file gambar.',
+            'profile_picture.max' => 'Ukuran foto profil maksimal 2MB.',
+        ];
+    }
 }
