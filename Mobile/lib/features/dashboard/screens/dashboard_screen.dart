@@ -9,7 +9,6 @@ import '../../attendance/screens/history_screen.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../../core/widgets/floating_nav_bar.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/app_notice.dart';
 import 'package:intl/intl.dart';
 
@@ -51,19 +50,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, auth, child) {
-        // [WEB GUARD] Jika user null (misal karena diketik via URL atau ter-logout)
-        // Maka langsung block akses dan tampilkan tampilan Login.
         if (auth.currentUser == null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             Navigator.of(context).pushReplacementNamed('/login');
           });
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator(color: Color(0xFF43C59E))),
+            backgroundColor: AppConstants.colorBackground,
+            body: Center(child: CircularProgressIndicator(color: AppConstants.colorPrimaryBase)),
           );
         }
 
         return Scaffold(
           extendBody: true,
+          backgroundColor: AppConstants.colorBackground,
           body: Stack(
             children: [
               IndexedStack(
@@ -115,321 +114,394 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
     }
   }
 
-  Widget _buildStatCard(IconData icon, String value, String label, Color color) {
+  // ── Stat Card ─────────────────────────────────────────────────────────────
+  Widget _buildStatCard(IconData icon, String value, String label, Color color, Color bgColor) {
     return Expanded(
-      child: GlassContainer(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        backgroundColor: AppConstants.colorCardDark,
-        borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        decoration: BoxDecoration(
+          color: AppConstants.colorSurface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppConstants.colorBorder),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: Column(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
+                color: bgColor,
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: color, size: 20),
             ),
-            const SizedBox(height: 12),
-            Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(label, style: const TextStyle(color: AppConstants.colorTextSecondary, fontSize: 12)),
+            const SizedBox(height: 10),
+            Text(
+              value,
+              style: TextStyle(
+                color: AppConstants.colorTextPrimary,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppConstants.colorTextSecondary,
+                fontSize: 11,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildScheduleItem(IconData icon, String title, String time, Color iconColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: iconColor.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(10),
+  // ── Schedule Item ──────────────────────────────────────────────────────────
+  Widget _buildScheduleItem(IconData icon, String title, String time, Color iconColor, Color bgColor) {
+    return Expanded(
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 22),
           ),
-          child: Icon(icon, color: iconColor, size: 20),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: const TextStyle(color: AppConstants.colorTextSecondary, fontSize: 12)),
-            const SizedBox(height: 4),
-            Text(time, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ],
+          const SizedBox(height: 8),
+          Text(title, style: const TextStyle(color: AppConstants.colorTextSecondary, fontSize: 12)),
+          const SizedBox(height: 4),
+          Text(
+            time,
+            style: const TextStyle(
+              color: AppConstants.colorTextPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Consume User Data automatically from AuthProvider
     final user = Provider.of<AuthProvider>(context).currentUser;
     final userName = user?.name ?? '-';
 
-    return Stack(
-      children: [
-        // Abstract Background elements
-        Positioned(
-          top: -150,
-          right: -50,
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppConstants.colorSecondaryBase.withValues(alpha: 0.15),
-              boxShadow: [
-                BoxShadow(color: AppConstants.colorSecondaryBase.withValues(alpha: 0.2), blurRadius: 100),
-              ],
-            ),
-          ),
-        ),
-        Positioned(
-          top: 150,
-          left: -100,
-          child: Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppConstants.colorPrimaryBase.withValues(alpha: 0.1),
-              boxShadow: [
-                BoxShadow(color: AppConstants.colorPrimaryBase.withValues(alpha: 0.2), blurRadius: 80),
-              ],
-            ),
-          ),
-        ),
-        
-        Consumer<DashboardProvider>(
-          builder: (context, dashboard, child) {
-            if (dashboard.approvalNoticeVersion > _shownApprovalNoticeVersion) {
-              _shownApprovalNoticeVersion = dashboard.approvalNoticeVersion;
-              final approved = dashboard.approvalAccepted == true;
-              final message = dashboard.approvalMessage ??
-                  'Status pengajuan presensi telah diperbarui.';
+    return Consumer<DashboardProvider>(
+      builder: (context, dashboard, child) {
+        if (dashboard.approvalNoticeVersion > _shownApprovalNoticeVersion) {
+          _shownApprovalNoticeVersion = dashboard.approvalNoticeVersion;
+          final approved = dashboard.approvalAccepted == true;
+          final message = dashboard.approvalMessage ??
+              'Status pengajuan presensi telah diperbarui.';
 
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (!mounted) return;
-                AppNotice.show(
-                  context,
-                  message,
-                  type: approved ? AppNoticeType.success : AppNoticeType.error,
-                );
-              });
-            }
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            AppNotice.show(
+              context,
+              message,
+              type: approved ? AppNoticeType.success : AppNoticeType.error,
+            );
+          });
+        }
 
-            return RefreshIndicator(
-              color: AppConstants.colorPrimaryBase,
-              backgroundColor: AppConstants.colorCardDark,
-              onRefresh: () async {
-                await dashboard.fetchDashboardData();
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 60, 24, 120), // Padding bottom for FloatingNav
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        return Scaffold(
+          backgroundColor: AppConstants.colorBackground,
+          body: RefreshIndicator(
+            color: AppConstants.colorPrimaryBase,
+            backgroundColor: AppConstants.colorSurface,
+            onRefresh: () async {
+              await dashboard.fetchDashboardData();
+            },
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                // ── App Bar ────────────────────────────────────────────────
+                SliverAppBar(
+                  backgroundColor: AppConstants.colorSurface,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  pinned: true,
+                  expandedHeight: 0,
+                  bottom: PreferredSize(
+                    preferredSize: const Size.fromHeight(1),
+                    child: Container(height: 1, color: AppConstants.colorBorder),
+                  ),
+                  title: Row(
                     children: [
-                      // HEADER: Greeting
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Haii, ${userName.split(' ').first} 👋',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Date, ${DateFormat("dd MMM yyyy", "id_ID").format(DateTime.now())}',
-                                style: const TextStyle(
-                                  color: AppConstants.colorTextSecondary,
-                                  fontSize: 14,
-                                ),
-                              ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, delay: 100.ms),
-                            ],
+                          Text(
+                            'Halo, ${userName.split(' ').first} 👋',
+                            style: const TextStyle(
+                              color: AppConstants.colorTextPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppConstants.colorCardDark,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                          Text(
+                            DateFormat('EEEE, dd MMM yyyy', 'id_ID').format(DateTime.now()),
+                            style: const TextStyle(
+                              color: AppConstants.colorTextSecondary,
+                              fontSize: 12,
                             ),
-                            child: const Icon(
-                              Icons.notifications_none_rounded,
-                              color: Colors.white,
-                            ),
-                          ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.8, 0.8)),
+                          ),
                         ],
                       ),
-                      
-                      // HERO CARD
+                    ],
+                  ),
+                  actions: [
+                    Container(
+                      margin: const EdgeInsets.only(right: 16),
+                      decoration: BoxDecoration(
+                        color: AppConstants.colorPrimaryLight,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppConstants.colorBorder),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.notifications_outlined,
+                          color: AppConstants.colorPrimaryBase,
+                          size: 22,
+                        ),
+                        onPressed: () {},
+                      ),
+                    ),
+                  ],
+                ),
+
+                // ── Content ────────────────────────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+
+                      // HERO ATTENDANCE CARD
                       Container(
                         width: double.infinity,
-                        margin: const EdgeInsets.symmetric(vertical: 24),
-                        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(32),
+                          borderRadius: BorderRadius.circular(24),
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF6C63FF), Color(0xFF00D9B5)],
+                            colors: [Color(0xFF1E40AF), Color(0xFF2563EB), Color(0xFF3B82F6)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF00D9B5).withValues(alpha: 0.3),
+                              color: const Color(0xFF2563EB).withValues(alpha: 0.3),
                               blurRadius: 20,
-                              spreadRadius: -5,
-                              offset: const Offset(0, 10),
-                            )
+                              spreadRadius: -4,
+                              offset: const Offset(0, 8),
+                            ),
                           ],
                         ),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "Today's Check In",
-                              style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                            // Status label
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.circle, color: Color(0xFF4ADE80), size: 8),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Status Hari Ini',
+                                        style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 16),
                             Text(
                               dashboard.statusHariIni,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 32,
+                                fontSize: 28,
                                 fontWeight: FontWeight.w900,
+                                height: 1.1,
                               ),
                             ),
-                            const SizedBox(height: 32),
-                            // Button pulsing
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                // Pulse effect layers
-                                Container(
-                                  width: 180,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(26),
-                                    border: Border.all(color: Colors.white30, width: 2),
-                                  ),
-                                ).animate(onPlay: (controller) => controller.repeat())
-                                 .scaleXY(begin: 1.0, end: 1.25, duration: 1500.ms, curve: Curves.easeOut)
-                                 .fadeOut(duration: 1500.ms, curve: Curves.easeOut),
-                                 
-                                Container(
-                                  width: 170,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(color: Colors.white54, width: 2),
-                                  ),
-                                ).animate(onPlay: (controller) => controller.repeat())
-                                 .scaleXY(begin: 1.0, end: 1.15, duration: 1500.ms, delay: 300.ms, curve: Curves.easeOut)
-                                 .fadeOut(duration: 1500.ms, delay: 300.ms, curve: Curves.easeOut),
+                            const SizedBox(height: 6),
+                            Text(
+                              DateFormat('HH:mm', 'id_ID').format(DateTime.now()),
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            // Action button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: AppConstants.colorPrimaryBase,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                                icon: const Icon(Icons.fingerprint_rounded, size: 20),
+                                label: const Text(
+                                  'Presensi Sekarang',
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                ),
+                                onPressed: () {},
+                              ),
+                            ),
+                          ],
+                        ),
+                      ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1),
 
-                                // Main button
-                                Container(
-                                  width: 160,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(22),
-                                    boxShadow: const [
-                                      BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))
-                                    ]
-                                  ),
-                                  child: const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.fingerprint, color: Color(0xFF6C63FF), size: 20),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Attendance',
-                                        style: TextStyle(
-                                          color: Color(0xFF6C63FF),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
+                      const SizedBox(height: 24),
+
+                      // STAT CARDS ROW
+                      Row(
+                        children: [
+                          _buildStatCard(
+                            Icons.check_circle_outline_rounded,
+                            dashboard.hadirCount.toString(),
+                            'Hadir',
+                            AppConstants.colorPresent,
+                            AppConstants.colorPresentBg,
+                          ),
+                          const SizedBox(width: 10),
+                          _buildStatCard(
+                            Icons.medical_services_outlined,
+                            dashboard.alfaCount.toString(),
+                            'Alfa',
+                            AppConstants.colorAbsent,
+                            AppConstants.colorAbsentBg,
+                          ),
+                          const SizedBox(width: 10),
+                          _buildStatCard(
+                            Icons.assignment_late_outlined,
+                            dashboard.izinCount.toString(),
+                            'Izin/Sakit',
+                            AppConstants.colorPermission,
+                            AppConstants.colorPermissionBg,
+                          ),
+                        ],
+                      ).animate().fadeIn(duration: 600.ms, delay: 100.ms).slideY(begin: 0.1),
+
+                      const SizedBox(height: 24),
+
+                      // JADWAL HARI INI CARD
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppConstants.colorSurface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppConstants.colorBorder),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Jadwal Hari Ini',
+                              style: TextStyle(
+                                color: AppConstants.colorTextPrimary,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                _buildScheduleItem(
+                                  Icons.login_rounded,
+                                  'Masuk',
+                                  dashboard.scheduleMasuk,
+                                  AppConstants.colorPresent,
+                                  AppConstants.colorPresentBg,
+                                ),
+                                Container(width: 1, height: 52, color: AppConstants.colorBorder),
+                                _buildScheduleItem(
+                                  Icons.logout_rounded,
+                                  'Pulang',
+                                  dashboard.schedulePulang,
+                                  AppConstants.colorAbsent,
+                                  AppConstants.colorAbsentBg,
+                                ),
                               ],
                             ),
                           ],
                         ),
-                      ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2),
+                      ).animate().fadeIn(duration: 600.ms, delay: 200.ms),
 
-                      // 3 Summary Cards
+                      const SizedBox(height: 28),
+
+                      // SECTION HEADER — Pengumuman
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildStatCard(Icons.person_pin_rounded, dashboard.hadirCount.toString(), 'Hadir', Colors.teal),
-                          const SizedBox(width: 12),
-                          _buildStatCard(Icons.warning_amber_rounded, dashboard.izinCount.toString(), 'Izin', Colors.orange),
-                          const SizedBox(width: 12),
-                          _buildStatCard(Icons.gpp_bad_rounded, dashboard.alfaCount.toString(), 'Alfa', Colors.redAccent),
+                          const Text(
+                            'Pengumuman Terbaru',
+                            style: TextStyle(
+                              color: AppConstants.colorTextPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Lihat Semua',
+                            style: TextStyle(
+                              color: AppConstants.colorPrimaryBase,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
-                      ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2),
-                      
-                      const SizedBox(height: 32),
+                      ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
+                      const SizedBox(height: 12),
 
-                      // Jadwal Hari Ini
-                      const Text(
-                        'Jadwal Hari Ini',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ).animate().fadeIn(duration: 500.ms),
-                      const SizedBox(height: 16),
-                      GlassContainer(
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        backgroundColor: AppConstants.colorCardDark,
-                        child: Row(
-                          children: [
-                            Expanded(child: _buildScheduleItem(Icons.check_circle, 'Check-in', dashboard.scheduleMasuk, Colors.teal)),
-                            Container(width: 1, height: 40, color: Colors.white10),
-                            Expanded(child: _buildScheduleItem(Icons.exit_to_app, 'Check-out', dashboard.schedulePulang, Colors.redAccent)),
-                          ],
-                        ),
-                      ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.2),
-                      
-                      const SizedBox(height: 48),
-
-                      const Text(
-                        'PENGUMUMAN TERBARU',
-                        style: TextStyle(
-                          color: AppConstants.colorTextSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.5,
-                        ),
-                      ).animate().fadeIn(duration: 500.ms),
-                      const SizedBox(height: 16),
-                      
+                      // ANNOUNCEMENTS
                       if (dashboard.isLoading)
                         const Center(
-                            child: Padding(
-                                padding: EdgeInsets.all(24.0),
-                                child: CircularProgressIndicator(color: AppConstants.colorPrimaryBase)))
+                          child: Padding(
+                            padding: EdgeInsets.all(24.0),
+                            child: CircularProgressIndicator(color: AppConstants.colorPrimaryBase),
+                          ),
+                        )
                       else if (dashboard.announcements.isEmpty)
-                        GlassContainer(
+                        Container(
                           padding: const EdgeInsets.all(20),
-                          backgroundColor: Colors.white.withValues(alpha: 0.02),
+                          decoration: BoxDecoration(
+                            color: AppConstants.colorSurface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppConstants.colorBorder),
+                          ),
                           child: const Center(
                             child: Text(
                               'Belum ada pengumuman',
@@ -440,8 +512,6 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
                       else
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 250),
-                          switchInCurve: Curves.easeOut,
-                          switchOutCurve: Curves.easeIn,
                           child: Column(
                             key: ValueKey(
                               dashboard.announcements
@@ -451,22 +521,33 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
                             children: dashboard.announcements.map((item) {
                               return Padding(
                                 key: ValueKey(item.id),
-                                padding: const EdgeInsets.only(bottom: 12.0),
-                                child: GlassContainer(
+                                padding: const EdgeInsets.only(bottom: 10.0),
+                                child: Container(
                                   padding: const EdgeInsets.all(16),
-                                  backgroundColor: AppConstants.colorCardDark,
+                                  decoration: BoxDecoration(
+                                    color: AppConstants.colorSurface,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppConstants.colorBorder),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Container(
                                         width: 4,
-                                        height: 40,
+                                        height: 44,
                                         decoration: BoxDecoration(
-                                          color: Colors.orangeAccent,
+                                          color: AppConstants.colorPermission,
                                           borderRadius: BorderRadius.circular(4),
                                         ),
                                       ),
-                                      const SizedBox(width: 16),
+                                      const SizedBox(width: 14),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,39 +555,42 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
                                             Text(
                                               item.title,
                                               style: const TextStyle(
-                                                color: Colors.white,
+                                                color: AppConstants.colorTextPrimary,
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 15,
+                                                fontSize: 14,
                                               ),
                                             ),
                                             if (item.content != null && item.content!.isNotEmpty) ...[
-                                              const SizedBox(height: 6),
+                                              const SizedBox(height: 4),
                                               Text(
                                                 item.content!,
                                                 style: const TextStyle(
                                                   color: AppConstants.colorTextSecondary,
                                                   fontSize: 13,
                                                 ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
-                                            ]
+                                            ],
                                           ],
                                         ),
-                                      )
+                                      ),
+                                      const Icon(Icons.chevron_right_rounded, color: AppConstants.colorTextMuted, size: 20),
                                     ],
                                   ),
                                 ),
                               );
                             }).toList(),
                           ),
-                        ),
-                    ],
+                        ).animate().fadeIn(duration: 600.ms, delay: 300.ms),
+                    ]),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-      ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
