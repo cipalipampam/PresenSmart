@@ -90,23 +90,13 @@
                                placeholder="Cari judul atau isi konten pengumuman..." value="{{ request('search') }}">
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-5">
+                <div class="col-lg-6 col-md-7">
                     <label for="status" class="form-label small fw-semibold text-secondary">Status Publikasi</label>
                     <select name="status" id="status" class="form-select">
                         <option value="">Semua Status</option>
                         <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif di Mobile</option>
                         <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Nonaktif / Arsip</option>
                     </select>
-                </div>
-                <div class="col-lg-3 col-md-7 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1">
-                        <i class="bi bi-filter me-1"></i>Terapkan
-                    </button>
-                    @if(request()->filled('search') || request()->filled('status'))
-                        <a href="{{ route('admin.announcements.index') }}" class="btn btn-outline-secondary" title="Reset Filter">
-                            <i class="bi bi-x-circle"></i>
-                        </a>
-                    @endif
                 </div>
             </form>
         </div>
@@ -135,8 +125,9 @@
     @endif
 
     {{-- ===== DATA TABLE ===== --}}
-    <div class="card border-0 shadow-sm overflow-hidden">
-        <div class="table-responsive">
+    <div class="js-live-results">
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr>
@@ -322,6 +313,7 @@
                 </div>
             </div>
         @endif
+        </div>
     </div>
 </div>
 @endsection

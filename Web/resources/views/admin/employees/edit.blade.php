@@ -173,6 +173,76 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- Teacher Subjects Card (Hanya relevan jika Peran = Guru) --}}
+                <div class="card border-0 shadow-sm mb-4" id="teacher-subjects-card" style="display: {{ $currentRole == 'guru' ? 'block' : 'none' }};">
+                    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0 text-dark fw-bold">
+                                <i class="bi bi-journal-check text-primary me-2"></i>Mata Pelajaran yang Diampu (Kurikulum Merdeka)
+                            </h6>
+                            <p class="text-muted small mb-0 mt-0.5">Pilih mapel utama dan mapel serumpun untuk pemenuhan beban tatap muka (24–40 JP/minggu).</p>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        @php
+                            $clusterLabels = [
+                                'mipa' => ['label' => 'Rumpun MIPA & Teknologi', 'badge' => 'bg-primary-subtle text-primary border-primary-subtle'],
+                                'bahasa' => ['label' => 'Rumpun Bahasa & Komunikasi', 'badge' => 'bg-success-subtle text-success border-success-subtle'],
+                                'ips' => ['label' => 'Rumpun Ilmu Pengetahuan Sosial (IPS)', 'badge' => 'bg-warning-subtle text-warning-emphasis border-warning-subtle'],
+                                'umum' => ['label' => 'Rumpun Umum, Agama & Pengembangan Diri', 'badge' => 'bg-secondary-subtle text-secondary border-secondary-subtle'],
+                            ];
+                            $existingSubjects = $employee->subjects->pluck('id')->toArray();
+                            $selectedSubjects = old('subject_ids', $existingSubjects);
+                            $existingPrimary = $employee->subjects->firstWhere('pivot.is_primary', true)?->id;
+                            $primarySubjectId = old('primary_subject_id', $existingPrimary);
+                        @endphp
+
+                        @foreach($subjects as $cluster => $clusterSubjects)
+                            <div class="mb-3 p-3 rounded border bg-light bg-opacity-50">
+                                <div class="d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom">
+                                    <span class="fw-semibold small text-dark">
+                                        {{ $clusterLabels[$cluster]['label'] ?? strtoupper($cluster) }}
+                                    </span>
+                                    <span class="badge border {{ $clusterLabels[$cluster]['badge'] ?? 'bg-light text-dark' }} px-2 py-1" style="font-size: 0.7rem;">
+                                        {{ count($clusterSubjects) }} Mapel
+                                    </span>
+                                </div>
+                                <div class="row g-2">
+                                    @foreach($clusterSubjects as $subj)
+                                        <div class="col-md-6">
+                                            <div class="form-check p-2 rounded border bg-white d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input class="form-check-input ms-1 subject-checkbox" type="checkbox"
+                                                           name="subject_ids[]" value="{{ $subj->id }}"
+                                                           id="subj_{{ $subj->id }}"
+                                                           {{ in_array($subj->id, $selectedSubjects) ? 'checked' : '' }}
+                                                           onchange="handleSubjectSelection(this, '{{ $subj->id }}')">
+                                                    <label class="form-check-label text-dark small fw-medium cursor-pointer" for="subj_{{ $subj->id }}">
+                                                        <span class="badge me-1" style="background-color: {{ $subj->color_code }}!important; color: white;">
+                                                            {{ $subj->code }}
+                                                        </span>
+                                                        {{ $subj->name }}
+                                                    </label>
+                                                </div>
+                                                <div class="form-check form-check-inline m-0 me-1" title="Tandai sebagai Mapel Utama">
+                                                    <input class="form-check-input primary-radio" type="radio"
+                                                           name="primary_subject_id" value="{{ $subj->id }}"
+                                                           id="primary_{{ $subj->id }}"
+                                                           {{ $primarySubjectId == $subj->id ? 'checked' : '' }}
+                                                           {{ in_array($subj->id, $selectedSubjects) ? '' : 'disabled' }}>
+                                                    <label class="form-check-label text-muted" for="primary_{{ $subj->id }}" style="font-size: 0.68rem;">
+                                                        Utama
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
 
             <div class="col-lg-4">
@@ -223,6 +293,38 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const roleSelect = document.getElementById('role');
+    const teacherCard = document.getElementById('teacher-subjects-card');
+
+    roleSelect.addEventListener('change', function () {
+        teacherCard.style.display = this.value === 'guru' ? 'block' : 'none';
+    });
+});
+
+function handleSubjectSelection(checkbox, subjectId) {
+    const radio = document.getElementById('primary_' + subjectId);
+    if (!radio) return;
+
+    if (checkbox.checked) {
+        radio.disabled = false;
+        const hasCheckedPrimary = document.querySelector('.primary-radio:checked');
+        if (!hasCheckedPrimary) {
+            radio.checked = true;
+        }
+    } else {
+        if (radio.checked) {
+            radio.checked = false;
+            const nextChecked = document.querySelector('.subject-checkbox:checked');
+            if (nextChecked) {
+                const nextRadio = document.getElementById('primary_' + nextChecked.value);
+                if (nextRadio) nextRadio.checked = true;
+            }
+        }
+        radio.disabled = true;
+    }
+}
+
 function previewEmployeePhoto(input) {
     const previewImg = document.getElementById('avatar-preview-img');
     const previewIcon = document.getElementById('avatar-preview-icon');

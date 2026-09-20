@@ -48,7 +48,9 @@ class EmployeeController extends Controller
 
     public function create()
     {
-        return view('admin.employees.create');
+        $subjects = \App\Models\Subject::where('is_active', true)->orderBy('cluster')->orderBy('name')->get()->groupBy('cluster');
+
+        return view('admin.employees.create', compact('subjects'));
     }
 
     public function store(StoreEmployeeRequest $request)
@@ -60,16 +62,17 @@ class EmployeeController extends Controller
 
     public function show($id)
     {
-        $employee = User::with(['employee', 'roles', 'attendances'])->findOrFail($id);
+        $employee = User::with(['employee', 'roles', 'attendances', 'subjects'])->findOrFail($id);
 
         return view('admin.employees.detail', compact('employee'));
     }
 
     public function edit($id)
     {
-        $employee = User::with(['employee', 'roles'])->findOrFail($id);
+        $employee = User::with(['employee', 'roles', 'subjects'])->findOrFail($id);
+        $subjects = \App\Models\Subject::where('is_active', true)->orderBy('cluster')->orderBy('name')->get()->groupBy('cluster');
 
-        return view('admin.employees.edit', compact('employee'));
+        return view('admin.employees.edit', compact('employee', 'subjects'));
     }
 
     public function update(UpdateEmployeeRequest $request, $id)

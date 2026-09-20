@@ -52,23 +52,13 @@
                         <option value="staff" {{ request('role') == 'staff' ? 'selected' : '' }}>Staf Administrasi / TU</option>
                     </select>
                 </div>
-                <div class="col-lg-2 col-md-4">
+                <div class="col-lg-4 col-md-7">
                     <label for="per_page" class="form-label small fw-semibold text-secondary">Baris Data</label>
                     <select name="per_page" id="per_page" class="form-select">
                         <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10 Baris</option>
                         <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25 Baris</option>
                         <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50 Baris</option>
                     </select>
-                </div>
-                <div class="col-lg-2 col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-filter me-1"></i>Filter
-                    </button>
-                    @if(request()->filled('search') || request()->filled('role'))
-                        <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary" title="Reset Filter">
-                            <i class="bi bi-x-circle"></i>
-                        </a>
-                    @endif
                 </div>
             </form>
         </div>

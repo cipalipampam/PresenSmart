@@ -27,6 +27,9 @@ class StoreEmployeeRequest extends FormRequest
             'address' => 'nullable|string',
             'phone_number' => 'nullable|string',
             'profile_picture' => 'nullable|image|max:2048',
+            'subject_ids' => 'nullable|array',
+            'subject_ids.*' => 'exists:subjects,id',
+            'primary_subject_id' => 'nullable|exists:subjects,id',
         ];
     }
 

@@ -37,6 +37,19 @@ class EmployeeService
             'profile_picture' => $fotoPath,
         ]);
 
+        if ($data['role'] === 'guru' && ! empty($data['subject_ids'])) {
+            $syncData = [];
+            $primaryId = $data['primary_subject_id'] ?? $data['subject_ids'][0] ?? null;
+            foreach ($data['subject_ids'] as $subjectId) {
+                $syncData[$subjectId] = [
+                    'is_primary' => ((int) $subjectId === (int) $primaryId),
+                ];
+            }
+            $user->subjects()->sync($syncData);
+        } else {
+            $user->subjects()->detach();
+        }
+
         event(new DirectoryChanged($user->id, 'employee', 'created'));
 
         return $user;
@@ -76,6 +89,19 @@ class EmployeeService
                 'profile_picture' => $fotoPath,
             ]
         );
+
+        if ($data['role'] === 'guru' && ! empty($data['subject_ids'])) {
+            $syncData = [];
+            $primaryId = $data['primary_subject_id'] ?? $data['subject_ids'][0] ?? null;
+            foreach ($data['subject_ids'] as $subjectId) {
+                $syncData[$subjectId] = [
+                    'is_primary' => ((int) $subjectId === (int) $primaryId),
+                ];
+            }
+            $user->subjects()->sync($syncData);
+        } else {
+            $user->subjects()->detach();
+        }
 
         event(new DirectoryChanged($user->id, 'employee', 'updated'));
 

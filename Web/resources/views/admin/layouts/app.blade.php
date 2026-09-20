@@ -57,6 +57,20 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('admin.classrooms.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.classrooms.*') ? 'active' : '' }}" title="Data Rombel & Kelas">
+                        <i class="bi bi-diagram-3-fill"></i>
+                        <span class="link-text">Rombel & Kelas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.subjects.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}" title="Mata Pelajaran">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                        <span class="link-text">Mata Pelajaran</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('admin.attendances.students') }}"
                         class="nav-link {{ request()->routeIs('admin.attendances.students') ? 'active' : '' }}" title="Presensi Siswa">
                         <i class="bi bi-calendar-check-fill"></i>
@@ -67,7 +81,7 @@
                     <a href="{{ route('admin.attendances.employees') }}"
                         class="nav-link {{ request()->routeIs('admin.attendances.employees') ? 'active' : '' }}" title="Presensi Karyawan">
                         <i class="bi bi-calendar2-check-fill"></i>
-                        <span class="link-text">Presensi Guru/Staff</span>
+                        <span class="link-text">Presensi Guru & Staff</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -110,6 +124,8 @@
                     <span class="current">
                         @if(request()->routeIs('admin.students.*')) Data Siswa
                         @elseif(request()->routeIs('admin.employees.*')) Guru & Karyawan
+                        @elseif(request()->routeIs('admin.classrooms.*')) Rombel & Kelas
+                        @elseif(request()->routeIs('admin.subjects.*')) Mata Pelajaran
                         @elseif(request()->routeIs('admin.attendances.students')) Presensi Siswa
                         @elseif(request()->routeIs('admin.attendances.employees')) Presensi Guru & Staff
                         @elseif(request()->routeIs('admin.attendances.*')) Presensi
@@ -305,6 +321,16 @@
                         nextResults.classList.add('is-entering');
                         currentResults.replaceWith(nextResults);
                         window.history.replaceState({}, '', url);
+
+                        // Sinkronisasi modal dinamis (editModal, viewModal) agar tetap di root body dan selalu up-to-date
+                        const nextModals = nextDocument.querySelectorAll('.modal[id^="editModal"], .modal[id^="viewModal"]');
+                        if (nextModals.length > 0) {
+                            document.querySelectorAll('.modal[id^="editModal"], .modal[id^="viewModal"]').forEach(m => {
+                                bootstrap.Modal.getInstance(m)?.dispose();
+                                m.remove();
+                            });
+                            nextModals.forEach(m => document.body.appendChild(m));
+                        }
                     }
                 } catch (error) {
                     if (error.name !== 'AbortError') {
@@ -318,6 +344,11 @@
                 clearTimeout(filterTimer);
                 filterTimer = setTimeout(loadResults, 400);
             };
+
+            form.addEventListener('submit', event => {
+                event.preventDefault();
+                loadResults();
+            });
 
             form.addEventListener('input', event => {
                 if (event.target.matches('input[type="text"], input[type="search"]')) {
@@ -350,6 +381,16 @@
 
                 nextResults.classList.add('is-entering');
                 currentResults.replaceWith(nextResults);
+
+                // Sinkronisasi modal dinamis (editModal, viewModal)
+                const nextModals = nextDocument.querySelectorAll('.modal[id^="editModal"], .modal[id^="viewModal"]');
+                if (nextModals.length > 0) {
+                    document.querySelectorAll('.modal[id^="editModal"], .modal[id^="viewModal"]').forEach(m => {
+                        bootstrap.Modal.getInstance(m)?.dispose();
+                        m.remove();
+                    });
+                    nextModals.forEach(m => document.body.appendChild(m));
+                }
             } catch (error) {
                 console.error('Realtime results refresh failed:', error);
             }
