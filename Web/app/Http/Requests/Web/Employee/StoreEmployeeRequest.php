@@ -29,4 +29,43 @@ class StoreEmployeeRequest extends FormRequest
             'profile_picture' => 'nullable|image|max:2048',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Nama lengkap pegawai wajib diisi.',
+            'name.max' => 'Nama tidak boleh melebihi :max karakter.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email ini sudah terdaftar oleh pengguna lain.',
+            'password.required' => 'Kata sandi wajib diisi.',
+            'password.min' => 'Kata sandi minimal berjumlah :min karakter.',
+            'role.required' => 'Klasifikasi peran wajib dipilih (Guru atau Staf).',
+            'role.in' => 'Peran yang dipilih tidak valid.',
+            'nip.unique' => 'Nomor Induk Pegawai (NIP) ini sudah terdaftar.',
+            'gender.in' => 'Pilihan jenis kelamin tidak valid.',
+            'date_of_birth.date' => 'Format tanggal lahir tidak valid.',
+            'profile_picture.image' => 'Berkas pas foto harus berformat gambar (JPG, PNG, JPEG).',
+            'profile_picture.max' => 'Ukuran pas foto maksimal 2 MB.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'name' => 'nama lengkap',
+            'email' => 'alamat email',
+            'password' => 'kata sandi',
+            'role' => 'peran kepegawaian',
+            'nip' => 'NIP',
+            'position' => 'jabatan / posisi',
+            'gender' => 'jenis kelamin',
+            'place_of_birth' => 'tempat lahir',
+            'date_of_birth' => 'tanggal lahir',
+            'religion' => 'agama',
+            'address' => 'alamat domisili',
+            'phone_number' => 'nomor telepon / WhatsApp',
+            'profile_picture' => 'pas foto',
+        ];
+    }
 }

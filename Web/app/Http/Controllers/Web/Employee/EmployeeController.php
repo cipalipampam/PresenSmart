@@ -21,16 +21,22 @@ class EmployeeController extends Controller
     public function index(Request $request)
     {
         // Get users with roles 'guru' or 'staff'
-        $query = User::with(['employee', 'roles'])->whereHas('roles', function ($q) {
-            $q->whereIn('name', ['guru', 'staff']);
+        $query = User::with(['employee', 'roles'])->whereHas('roles', function ($q) use ($request) {
+            if ($request->filled('role')) {
+                $q->where('name', $request->role);
+            } else {
+                $q->whereIn('name', ['guru', 'staff']);
+            }
         });
 
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
                     ->orWhereHas('employee', function ($eq) use ($search) {
-                        $eq->where('nip', 'like', "%{$search}%");
+                        $eq->where('nip', 'like', "%{$search}%")
+                            ->orWhere('position', 'like', "%{$search}%");
                     });
             });
         }
@@ -49,12 +55,12 @@ class EmployeeController extends Controller
     {
         $this->employeeService->createEmployee($request->validated());
 
-        return redirect()->route('admin.employees.index')->with('success', 'Employee successfully created');
+        return redirect()->route('admin.employees.index')->with('success', 'Data pegawai/guru berhasil ditambahkan.');
     }
 
     public function show($id)
     {
-        $employee = User::with(['employee'])->findOrFail($id);
+        $employee = User::with(['employee', 'roles', 'attendances'])->findOrFail($id);
 
         return view('admin.employees.detail', compact('employee'));
     }
@@ -71,7 +77,7 @@ class EmployeeController extends Controller
         $user = User::findOrFail($id);
         $this->employeeService->updateEmployee($user, $request->validated());
 
-        return redirect()->route('admin.employees.index')->with('success', 'Employee successfully updated');
+        return redirect()->route('admin.employees.index')->with('success', 'Data pegawai/guru berhasil diperbarui.');
     }
 
     public function destroy($id)
@@ -79,6 +85,6 @@ class EmployeeController extends Controller
         $user = User::findOrFail($id);
         $this->employeeService->deleteEmployee($user);
 
-        return redirect()->route('admin.employees.index')->with('success', 'Employee successfully deleted');
+        return redirect()->route('admin.employees.index')->with('success', 'Data pegawai/guru berhasil dihapus.');
     }
 }
