@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../constants/app_constants.dart';
 
 class GlassContainer extends StatelessWidget {
   final Widget child;
@@ -22,7 +23,7 @@ class GlassContainer extends StatelessWidget {
     this.padding,
     this.margin,
     this.borderRadius,
-    this.backgroundColor = const Color(0x1AFFFFFF), // 10% white by default
+    this.backgroundColor = Colors.white,
     this.blur = 15.0,
     this.enableBlur = false,
     this.border,
@@ -31,20 +32,28 @@ class GlassContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final defaultRadius = borderRadius ?? BorderRadius.circular(24.0);
+    final defaultRadius = borderRadius ?? BorderRadius.circular(16.0);
 
     return Container(
       width: width,
       height: height,
       margin: margin,
       decoration: BoxDecoration(
+        color: backgroundColor == const Color(0x1AFFFFFF) ? Colors.white : backgroundColor,
         borderRadius: defaultRadius,
         border: border ??
             Border.all(
-              color: Colors.white.withValues(alpha: 0.08),
+              color: AppConstants.colorBorder,
               width: 1.0,
             ),
-        boxShadow: boxShadow,
+        boxShadow: boxShadow ??
+            [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
       ),
       child: ClipRRect(
         borderRadius: defaultRadius,
@@ -58,12 +67,10 @@ class GlassContainer extends StatelessWidget {
     );
   }
 
-  Widget _content(BorderRadiusGeometry borderRadius) => Container(
-        padding: padding,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: borderRadius,
-        ),
-        child: child,
-      );
+  Widget _content(BorderRadiusGeometry radius) {
+    return Padding(
+      padding: padding ?? EdgeInsets.zero,
+      child: child,
+    );
+  }
 }

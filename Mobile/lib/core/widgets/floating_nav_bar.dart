@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../constants/app_constants.dart';
-import 'glass_container.dart';
 
 class FloatingNavBar extends StatelessWidget {
   final int currentIndex;
@@ -15,23 +14,30 @@ class FloatingNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      bottom: 24,
-      left: 24,
-      right: 24,
-      child: GlassContainer(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        borderRadius: BorderRadius.circular(36),
-        backgroundColor: Colors.white.withValues(alpha: 0.05),
-        blur: 25.0,
-        enableBlur: true,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+      bottom: 20,
+      left: 20,
+      right: 20,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: AppConstants.colorBorder, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(0, Icons.dashboard_rounded, 'Home'),
+            _buildNavItem(0, Icons.grid_view_rounded, 'Beranda'),
             _buildNavItem(1, Icons.fingerprint_rounded, 'Presensi'),
-            _buildNavItem(2, Icons.history_rounded, 'Riwayat'),
-            _buildNavItem(3, Icons.person_rounded, 'Profil'),
+            _buildNavItem(2, Icons.calendar_month_rounded, 'Riwayat'),
+            _buildNavItem(3, Icons.person_outline_rounded, 'Profil'),
           ],
         ),
       ),
@@ -45,51 +51,34 @@ class FloatingNavBar extends StatelessWidget {
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 220),
         curve: Curves.easeOutCubic,
         padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 16 : 12,
+          horizontal: isSelected ? 16 : 10,
           vertical: 8,
         ),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppConstants.colorPrimaryBase.withValues(alpha: 0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
-          border: isSelected
-              ? Border.all(
-                  color: AppConstants.colorPrimaryBase.withValues(alpha: 0.5),
-                  width: 1,
-                )
-              : Border.all(color: Colors.transparent, width: 1),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppConstants.colorPrimaryBase.withValues(alpha: 0.3),
-                    blurRadius: 16,
-                    spreadRadius: 1,
-                  )
-                ]
-              : null,
+          color: isSelected ? AppConstants.colorPrimaryLight : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              size: 24,
+              size: 22,
               color: isSelected
                   ? AppConstants.colorPrimaryBase
                   : AppConstants.colorTextSecondary,
             ),
             if (isSelected) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Text(
                 label,
                 style: const TextStyle(
                   color: AppConstants.colorPrimaryBase,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12.5,
                 ),
               ),
             ]

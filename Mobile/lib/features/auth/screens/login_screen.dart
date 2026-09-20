@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/app_notice.dart';
 import '../providers/auth_provider.dart';
 
@@ -34,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       AppNotice.show(
         context,
-        authProvider.errorMessage ?? 'Login gagal',
+        authProvider.errorMessage ?? 'Login gagal. Periksa email dan password.',
         type: AppNoticeType.error,
       );
     }
@@ -43,205 +42,237 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppConstants.colorBackgroundDark,
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          // Background abstract shapes
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppConstants.colorSecondaryBase.withValues(alpha: 0.15),
-                boxShadow: [
-                  BoxShadow(color: AppConstants.colorSecondaryBase.withValues(alpha: 0.2), blurRadius: 100),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -50,
-            left: -50,
-            child: Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppConstants.colorPrimaryBase.withValues(alpha: 0.1),
-                boxShadow: [
-                  BoxShadow(color: AppConstants.colorPrimaryBase.withValues(alpha: 0.2), blurRadius: 100),
-                ],
-              ),
-            ),
-          ),
-          Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: GlassContainer(
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
-                  borderRadius: BorderRadius.circular(32),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 24.0),
-                          child: Hero(
-                            tag: 'app-logo',
-                            child: Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppConstants.colorPrimaryBase.withValues(alpha: 0.1),
-                              ),
-                              child: const Icon(
-                                Icons.fingerprint_rounded,
-                                size: 40,
-                                color: AppConstants.colorPrimaryBase,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          'Selamat Datang',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                        ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.5, end: 0),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Silakan login untuk absensi',
-                          style: const TextStyle(color: AppConstants.colorTextSecondary),
-                        ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.5, end: 0),
-                        const SizedBox(height: 32),
-                        TextFormField(
-                          controller: _emailController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            labelStyle: const TextStyle(color: AppConstants.colorTextSecondary),
-                            prefixIcon: const Icon(Icons.email_outlined, color: AppConstants.colorTextSecondary),
-                            filled: true,
-                            fillColor: Colors.white.withValues(alpha: 0.03),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: AppConstants.colorPrimaryBase, width: 2),
-                            ),
-                          ),
-                          validator: (value) => (value == null || value.isEmpty) ? 'Email wajib diisi' : null,
-                          keyboardType: TextInputType.emailAddress,
-                        ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.1, end: 0),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _passwordController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            labelStyle: const TextStyle(color: AppConstants.colorTextSecondary),
-                            prefixIcon: const Icon(Icons.lock_outline, color: AppConstants.colorTextSecondary),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                color: AppConstants.colorTextSecondary,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                            filled: true,
-                            fillColor: Colors.white.withValues(alpha: 0.03),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: AppConstants.colorPrimaryBase, width: 2),
-                            ),
-                          ),
-                          obscureText: _obscurePassword,
-                          validator: (value) => (value == null || value.isEmpty) ? 'Password wajib diisi' : null,
-                        ).animate().fadeIn(duration: 500.ms).slideX(begin: 0.1, end: 0),
-                        const SizedBox(height: 32),
-                        Consumer<AuthProvider>(
-                          builder: (context, authProvider, child) {
-                            return SizedBox(
-                              width: double.infinity,
-                              height: 56,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.transparent,
-                                  shadowColor: Colors.transparent,
-                                  padding: EdgeInsets.zero,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                ),
-                                onPressed: authProvider.isLoading
-                                    ? null
-                                    : () {
-                                        if (_formKey.currentState!.validate()) {
-                                          _login();
-                                        }
-                                      },
-                                child: Ink(
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [AppConstants.colorSecondaryBase, AppConstants.colorPrimaryBase],
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    child: authProvider.isLoading
-                                        ? const SizedBox(
-                                            height: 24,
-                                            width: 24,
-                                            child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white),
-                                          )
-                                        : const Text(
-                                            'MASUK',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 1.5,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                  ),
-                                ),
-                              ),
-                            ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.9, 0.9));
-                          },
-                        ),
-                      ],
+      backgroundColor: AppConstants.colorBackground,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+                decoration: BoxDecoration(
+                  color: AppConstants.colorSurface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppConstants.colorBorder),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.05),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
                     ),
+                  ],
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Brand Logo & Header
+                      Hero(
+                        tag: 'app-logo',
+                        child: Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: AppConstants.colorPrimaryLight,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppConstants.colorPrimaryBase.withValues(alpha: 0.2)),
+                          ),
+                          child: const Icon(
+                            Icons.fingerprint_rounded,
+                            size: 36,
+                            color: AppConstants.colorPrimaryBase,
+                          ),
+                        ),
+                      ).animate().fadeIn(duration: 400.ms).scale(begin: const Offset(0.8, 0.8)),
+                      const SizedBox(height: 20),
+
+                      const Text(
+                        'PresenSmart',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppConstants.colorTextPrimary,
+                          letterSpacing: -0.5,
+                        ),
+                      ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.2, end: 0),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Masuk untuk mencatat kehadiran harian Anda',
+                        style: TextStyle(
+                          color: AppConstants.colorTextSecondary,
+                          fontSize: 13,
+                        ),
+                        textAlign: TextAlign.center,
+                      ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.2, end: 0),
+                      const SizedBox(height: 32),
+
+                      // Email Field
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Alamat Email',
+                            style: TextStyle(
+                              color: AppConstants.colorTextPrimary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          TextFormField(
+                            controller: _emailController,
+                            style: const TextStyle(color: AppConstants.colorTextPrimary, fontSize: 14),
+                            decoration: InputDecoration(
+                              hintText: 'nama@sekolah.sch.id',
+                              hintStyle: const TextStyle(color: AppConstants.colorTextMuted, fontSize: 13),
+                              prefixIcon: const Icon(Icons.mail_outline_rounded, color: AppConstants.colorTextSecondary, size: 20),
+                              filled: true,
+                              fillColor: AppConstants.colorBackground,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(color: AppConstants.colorBorder),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(color: AppConstants.colorBorder),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(color: AppConstants.colorPrimaryBase, width: 2),
+                              ),
+                            ),
+                            validator: (value) => (value == null || value.isEmpty) ? 'Email wajib diisi' : null,
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                        ],
+                      ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.05, end: 0),
+                      const SizedBox(height: 18),
+
+                      // Password Field
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Kata Sandi',
+                            style: TextStyle(
+                              color: AppConstants.colorTextPrimary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          TextFormField(
+                            controller: _passwordController,
+                            style: const TextStyle(color: AppConstants.colorTextPrimary, fontSize: 14),
+                            decoration: InputDecoration(
+                              hintText: '••••••••',
+                              hintStyle: const TextStyle(color: AppConstants.colorTextMuted, fontSize: 13),
+                              prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppConstants.colorTextSecondary, size: 20),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                  color: AppConstants.colorTextSecondary,
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                              filled: true,
+                              fillColor: AppConstants.colorBackground,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(color: AppConstants.colorBorder),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(color: AppConstants.colorBorder),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(color: AppConstants.colorPrimaryBase, width: 2),
+                              ),
+                            ),
+                            obscureText: _obscurePassword,
+                            validator: (value) => (value == null || value.isEmpty) ? 'Kata sandi wajib diisi' : null,
+                          ),
+                        ],
+                      ).animate().fadeIn(duration: 500.ms).slideX(begin: 0.05, end: 0),
+                      const SizedBox(height: 28),
+
+                      // Login Button
+                      Consumer<AuthProvider>(
+                        builder: (context, authProvider, child) {
+                          return SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppConstants.colorPrimaryBase,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              ),
+                              onPressed: authProvider.isLoading
+                                  ? null
+                                  : () {
+                                      if (_formKey.currentState!.validate()) {
+                                        _login();
+                                      }
+                                    },
+                              child: authProvider.isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    )
+                                  : const Text(
+                                      'Masuk ke Akun',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          );
+                        },
+                      ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.95, 0.95)),
+                      const SizedBox(height: 24),
+
+                      // Footer Demo / Info
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppConstants.colorPrimaryLight,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppConstants.colorPrimaryBase.withValues(alpha: 0.2)),
+                        ),
+                        child: Row(
+                          children: const [
+                            Icon(Icons.info_outline_rounded, color: AppConstants.colorPrimaryBase, size: 16),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Gunakan kredensial akun siswa atau pegawai terdaftar.',
+                                style: TextStyle(color: AppConstants.colorPrimaryBase, fontSize: 11, fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2),
+                ),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

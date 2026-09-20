@@ -89,14 +89,14 @@ class _NoticeOverlay extends StatelessWidget {
                 margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF182337),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: color.withValues(alpha: 0.55)),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: color.withValues(alpha: 0.35), width: 1.2),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.25),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -108,15 +108,15 @@ class _NoticeOverlay extends StatelessWidget {
                       child: Text(
                         message,
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
+                          color: Color(0xFF0F172A),
+                          fontSize: 13.5,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                     IconButton(
                       onPressed: onDismiss,
-                      icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 18),
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B), size: 18),
                       visualDensity: VisualDensity.compact,
                     ),
                   ],

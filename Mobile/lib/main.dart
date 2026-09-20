@@ -43,29 +43,48 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'PresenSmart',
         debugShowCheckedModeBanner: false,
-        navigatorKey: navigatorKey, // ← enables ApiClient to navigate
+        navigatorKey: navigatorKey,
         theme: ThemeData(
-          brightness: Brightness.dark,
+          useMaterial3: true,
+          brightness: Brightness.light,
           primaryColor: AppConstants.colorPrimaryBase,
-          scaffoldBackgroundColor: AppConstants.colorBackgroundDark,
-          colorScheme: const ColorScheme.dark(
+          scaffoldBackgroundColor: AppConstants.colorBackground,
+          colorScheme: const ColorScheme.light(
             primary: AppConstants.colorPrimaryBase,
             secondary: AppConstants.colorSecondaryBase,
-            surface: AppConstants.colorCardDark,
+            surface: AppConstants.colorSurface,
+            onPrimary: Colors.white,
+            onSurface: AppConstants.colorTextPrimary,
           ),
           appBarTheme: const AppBarTheme(
-            backgroundColor: AppConstants.colorBackgroundDark,
+            backgroundColor: AppConstants.colorSurface,
             foregroundColor: AppConstants.colorTextPrimary,
             elevation: 0,
+            scrolledUnderElevation: 0,
             centerTitle: true,
+            titleTextStyle: TextStyle(
+              color: AppConstants.colorTextPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppConstants.colorPrimaryBase,
-              foregroundColor: AppConstants.colorTextPrimary,
+              foregroundColor: Colors.white,
+              elevation: 0,
               shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(16)),
+                borderRadius: BorderRadius.all(Radius.circular(12)),
               ),
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+            ),
+          ),
+          cardTheme: CardThemeData(
+            color: AppConstants.colorSurface,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: AppConstants.colorBorder),
             ),
           ),
         ),
