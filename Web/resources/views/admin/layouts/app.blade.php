@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin - PresenSmart</title>
+    <title>Admin Portal - PresenSmart</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,19 +18,22 @@
 
 <body>
     <!-- ===================== SIDEBAR ===================== -->
-    <div class="sidebar d-flex flex-column" id="sidebar">
+    <aside class="sidebar d-flex flex-column" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo-full">
                 <div class="sidebar-logo-icon">PS</div>
-                <span class="fs-6 fw-bold text-gradient link-text">PresenSmart</span>
+                <div class="d-flex flex-column overflow-hidden">
+                    <span class="fs-6 fw-bold text-white link-text" style="letter-spacing: -0.3px;">PresenSmart</span>
+                    <span class="text-white-50 small link-text" style="font-size: 0.68rem; margin-top: -3px;">Enterprise EdTech</span>
+                </div>
             </div>
             <button id="toggleSidebar" class="btn p-1 border-0 bg-transparent text-white-50 ms-auto" style="font-size:1.25rem;" title="Toggle sidebar">
                 <i class="bi bi-layout-sidebar-reverse"></i>
             </button>
         </div>
 
-        <div class="py-3 grow">
-            <p class="text-white-50 px-3 mb-2" style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;">Main Navigation</p>
+        <div class="py-3 grow overflow-y-auto">
+            <p class="text-white-50 px-3 mb-2" style="font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;">Navigasi Utama</p>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
                     <a href="{{ route('admin.dashboard') }}"
@@ -41,108 +44,137 @@
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.students.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}" title="Students">
+                        class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}" title="Data Siswa">
                         <i class="bi bi-mortarboard-fill"></i>
-                        <span class="link-text">Students</span>
+                        <span class="link-text">Data Siswa</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.employees.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}" title="Employees">
+                        class="nav-link {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}" title="Data Karyawan & Guru">
                         <i class="bi bi-person-badge-fill"></i>
-                        <span class="link-text">Employees</span>
+                        <span class="link-text">Guru & Karyawan</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.attendances.students') }}"
-                        class="nav-link {{ request()->routeIs('admin.attendances.students') ? 'active' : '' }}" title="Student Attendance">
+                        class="nav-link {{ request()->routeIs('admin.attendances.students') ? 'active' : '' }}" title="Presensi Siswa">
                         <i class="bi bi-calendar-check-fill"></i>
-                        <span class="link-text">Student Attendance</span>
+                        <span class="link-text">Presensi Siswa</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.attendances.employees') }}"
-                        class="nav-link {{ request()->routeIs('admin.attendances.employees') ? 'active' : '' }}" title="Employee Attendance">
+                        class="nav-link {{ request()->routeIs('admin.attendances.employees') ? 'active' : '' }}" title="Presensi Karyawan">
                         <i class="bi bi-calendar2-check-fill"></i>
-                        <span class="link-text">Employee Attendance</span>
+                        <span class="link-text">Presensi Guru/Staff</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.announcements.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}" title="Announcements">
+                        class="nav-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}" title="Pengumuman">
                         <i class="bi bi-megaphone-fill"></i>
-                        <span class="link-text">Announcements</span>
+                        <span class="link-text">Pengumuman</span>
                     </a>
                 </li>
             </ul>
 
-            <p class="text-white-50 px-3 mb-2 mt-3" style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;">Configuration</p>
+            <p class="text-white-50 px-3 mb-2 mt-4" style="font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;">Konfigurasi</p>
             <ul class="nav nav-pills flex-column">
                 <li class="nav-item">
                     <a href="{{ route('admin.settings.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" title="System Settings">
+                        class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" title="Pengaturan Sistem">
                         <i class="bi bi-gear-fill"></i>
-                        <span class="link-text">System Settings</span>
+                        <span class="link-text">Pengaturan Sistem</span>
                     </a>
                 </li>
             </ul>
         </div>
 
-        <!-- Hidden logout form (used by navbar dropdown) -->
+        <!-- Hidden logout form -->
         <form action="{{ route('logout') }}" method="POST" id="logout-form">
             @csrf
         </form>
-    </div>
+    </aside>
 
     <!-- ===================== NAVBAR ===================== -->
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid">
-            <div class="d-flex align-items-center gap-2">
-                <span class="fw-semibold text-white-50" style="font-size:0.875rem;">Admin Portal</span>
+            <!-- Breadcrumbs / Page context -->
+            <div class="d-flex align-items-center gap-2 nav-breadcrumb">
+                <a href="{{ route('admin.dashboard') }}">
+                    <i class="bi bi-house-door me-1"></i>Home
+                </a>
+                @if(!request()->routeIs('admin.dashboard'))
+                    <span class="separator">/</span>
+                    <span class="current">
+                        @if(request()->routeIs('admin.students.*')) Data Siswa
+                        @elseif(request()->routeIs('admin.employees.*')) Guru & Karyawan
+                        @elseif(request()->routeIs('admin.attendances.students')) Presensi Siswa
+                        @elseif(request()->routeIs('admin.attendances.employees')) Presensi Guru & Staff
+                        @elseif(request()->routeIs('admin.attendances.*')) Presensi
+                        @elseif(request()->routeIs('admin.announcements.*')) Pengumuman
+                        @elseif(request()->routeIs('admin.settings.*')) Pengaturan
+                        @else Admin Portal
+                        @endif
+                    </span>
+                @else
+                    <span class="separator">/</span>
+                    <span class="current">Overview</span>
+                @endif
             </div>
 
-            <div class="ms-auto d-flex align-items-center gap-2">
-                <!-- Bell notification placeholder -->
-                <button class="btn btn-sm p-2 border-0 bg-transparent text-white-50 position-relative" title="Notifikasi" style="font-size:1.15rem;">
+            <!-- Navbar Actions -->
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <!-- Operational Status Indicator -->
+                <div class="d-none d-md-flex">
+                    <span class="nav-status-pill">
+                        <span class="gps-dot"></span>
+                        <span>Sistem Aktif</span>
+                    </span>
+                </div>
+
+                <!-- Bell Notification -->
+                <button class="btn btn-sm p-2 border-0 bg-transparent text-secondary position-relative hover-lift" title="Notifikasi" style="font-size:1.15rem;">
                     <i class="bi bi-bell"></i>
                 </button>
 
-                <!-- Profile dropdown -->
+                <!-- Profile Dropdown -->
                 <div class="dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 px-2 py-1 rounded-2" href="#" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false" style="background:rgba(255,255,255,0.05);">
-                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                             style="width:32px;height:32px;font-size:0.8rem;background:linear-gradient(135deg,#06b6d4,#0d9488)!important;">
+                        data-bs-toggle="dropdown" aria-expanded="false" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                             style="width:32px;height:32px;font-size:0.8rem;background:linear-gradient(135deg,#2563eb,#1e40af)!important;">
                             {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
                         </div>
-                        <div class="d-none d-md-block text-start">
-                            <div class="fw-semibold text-white" style="font-size:0.82rem;line-height:1.2;">{{ Auth::user()->name ?? 'Admin' }}</div>
-                            <div class="text-white-50" style="font-size:0.7rem;">Super Admin</div>
+                        <div class="d-none d-md-block text-start pe-1">
+                            <div class="fw-semibold text-dark" style="font-size:0.82rem;line-height:1.2;">{{ Auth::user()->name ?? 'Administrator' }}</div>
+                            <div class="text-muted" style="font-size:0.7rem;">Super Admin</div>
                         </div>
-                        <i class="bi bi-chevron-down text-white-50 ms-1" style="font-size:0.65rem;"></i>
+                        <i class="bi bi-chevron-down text-muted ms-1" style="font-size:0.65rem;"></i>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end glass shadow py-2 mt-2 border-0" style="min-width:240px;">
-                        <li class="px-3 py-2 border-bottom border-secondary border-opacity-10">
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg py-2 mt-2 border-0" style="min-width:240px;">
+                        <li class="px-3 py-2 border-bottom border-light">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                                     style="width:42px;height:42px;font-size:1.1rem;background:linear-gradient(135deg,#06b6d4,#0d9488);">
+                                     style="width:40px;height:40px;font-size:1rem;background:linear-gradient(135deg,#2563eb,#1e40af);">
                                     {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
                                 </div>
                                 <div class="overflow-hidden">
-                                    <div class="fw-bold text-white text-truncate" style="font-size:0.875rem;">{{ Auth::user()->name ?? 'Admin' }}</div>
-                                    <div class="text-white-50 small text-truncate">{{ Auth::user()->email ?? '' }}</div>
+                                    <div class="fw-bold text-dark text-truncate" style="font-size:0.875rem;">{{ Auth::user()->name ?? 'Administrator' }}</div>
+                                    <div class="text-muted small text-truncate">{{ Auth::user()->email ?? '' }}</div>
                                 </div>
                             </div>
                         </li>
                         <li>
                             <a class="dropdown-item mt-1" href="{{ route('admin.settings.index') }}">
-                                <i class="bi bi-gear me-2 text-white-50"></i>System Settings
+                                <i class="bi bi-gear me-2 text-secondary"></i>Pengaturan Sistem
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <button type="submit" form="logout-form" class="dropdown-item text-danger">
-                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                <i class="bi bi-box-arrow-right me-2"></i>Keluar (Logout)
                             </button>
                         </li>
                     </ul>
@@ -152,43 +184,41 @@
     </nav>
 
     <!-- ===================== CONTENT ===================== -->
-    <div class="content-wrapper">
+    <main class="content-wrapper">
         <div class="container-fluid animate-fade-up">
             @yield('content')
         </div>
-    </div>
+    </main>
 
     <!-- ===================== GLOBAL DELETE MODAL ===================== -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content glass border-0 shadow-lg">
-                <div class="modal-header border-0 pb-0">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle d-flex align-items-center justify-content-center"
-                             style="width:44px;height:44px;background:rgba(239,68,68,0.15);">
-                            <i class="bi bi-trash3-fill text-danger fs-5"></i>
+                             style="width:46px;height:46px;background:#fff1f2;border:1px solid #fecdd3;">
+                            <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
                         </div>
                         <div>
-                            <h6 class="modal-title fw-bold text-white mb-0" id="deleteModalLabel">Confirm Deletion</h6>
-                            <p class="text-white-50 small mb-0">This action cannot be undone</p>
+                            <h6 class="modal-title fw-bold text-dark mb-0" id="deleteModalLabel">Konfirmasi Penghapusan</h6>
+                            <p class="text-muted small mb-0">Tindakan ini bersifat permanen</p>
                         </div>
                     </div>
-                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body pt-3">
-                    <p class="text-white-50 mb-0">
-                        Are you sure you want to delete <strong class="text-white" id="deleteTargetName">—</strong>?
-                        Deleted data cannot be recovered.
+                <div class="modal-body py-3 px-4">
+                    <p class="text-secondary mb-0" style="font-size: 0.9rem;">
+                        Apakah Anda yakin ingin menghapus data <strong class="text-dark" id="deleteTargetName">—</strong>? Data yang telah dihapus tidak dapat dipulihkan kembali.
                     </p>
                 </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-sm btn-outline-secondary border-0 bg-light-soft text-white px-4"
-                            data-bs-dismiss="modal">Cancel</button>
+                <div class="modal-footer border-0 pt-0 pb-4 px-4">
+                    <button type="button" class="btn btn-sm btn-light border px-4" data-bs-dismiss="modal">Batal</button>
                     <form id="deleteForm" method="POST">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger px-4 fw-semibold">
-                            <i class="bi bi-trash3 me-1"></i>Yes, Delete
+                        <button type="submit" class="btn btn-sm btn-danger px-4 fw-semibold shadow-sm">
+                            <i class="bi bi-trash3 me-1"></i>Hapus Sekarang
                         </button>
                     </form>
                 </div>
@@ -198,7 +228,7 @@
 
     <!-- ===================== COPY TOAST ===================== -->
     <div id="copy-toast">
-        <i class="bi bi-clipboard-check me-1"></i> Copied!
+        <i class="bi bi-clipboard-check me-1"></i> Berhasil disalin ke clipboard!
     </div>
 
     @stack('modals')
@@ -302,9 +332,7 @@
             });
         });
 
-        // Reusable background refresh for index-page result blocks. It keeps
-        // the current URL (filters, sorting and pagination) and never reloads
-        // the surrounding page.
+        // Reusable background refresh for index-page result blocks.
         window.refreshLiveResults = async function(selector = '.js-live-results') {
             const currentResults = document.querySelector(selector);
             if (!currentResults) return;
