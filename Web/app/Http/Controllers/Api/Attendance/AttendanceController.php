@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Attendance;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Attendance\CheckInRequest;
+use App\Http\Requests\Api\Attendance\CheckOutRequest;
+use App\Http\Requests\Api\Attendance\HistoryRequest;
 use App\Http\Requests\Api\Attendance\PermissionRequest;
 use App\Models\Attendance;
 use App\Services\Api\Attendance\AttendanceService;
@@ -44,10 +46,10 @@ class AttendanceController extends Controller
         }
     }
 
-    public function checkOut(Request $request): JsonResponse
+    public function checkOut(CheckOutRequest $request): JsonResponse
     {
         try {
-            $attendance = $this->attendanceService->checkOut($request->all(), $request->user());
+            $attendance = $this->attendanceService->checkOut($request->validated(), $request->user());
 
             return response()->json([
                 'success' => true,
@@ -88,18 +90,30 @@ class AttendanceController extends Controller
         }
     }
 
-    public function history(Request $request): JsonResponse
+    public function history(HistoryRequest $request): JsonResponse
     {
-        $month = $request->query('month');
-        $year = $request->query('year');
+        try {
+            $validated = $request->validated();
+            $month = $validated['month'] ?? null;
+            $year = $validated['year'] ?? null;
 
-        $attendances = $this->attendanceService->history($request->user(), $month, $year);
+            $attendances = $this->attendanceService->history($request->user(), $month, $year);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Riwayat presensi berhasil diambil.',
-            'data' => $attendances,
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Riwayat presensi berhasil diambil.',
+                'data' => $attendances,
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->validator->errors()->first(),
+            ], 422);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $this->serverError();
+        }
     }
 
     public function proof(Attendance $attendance, AttendanceProofStorage $proofStorage)

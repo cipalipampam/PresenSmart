@@ -66,8 +66,13 @@ class AttendanceService
         }
 
         // 4. Handle time restrictions
-        $checkInEndStr = $settings->get('check_in_end', '07:00');
-        $toleranceMinutes = (int) $settings->get('late_tolerance_minutes', 10);
+        $checkInEndStr = $settings->get('check_in_end');
+        if (! $checkInEndStr) {
+            throw ValidationException::withMessages([
+                'attendance' => ['Konfigurasi jam batas presensi masuk belum diatur oleh admin.'],
+            ]);
+        }
+        $toleranceMinutes = (int) $settings->get('late_tolerance_minutes', 0);
 
         $cutoffOnTime = Carbon::createFromTimeString($checkInEndStr);
         $cutoffLate = $cutoffOnTime->copy()->addMinutes($toleranceMinutes);
@@ -170,7 +175,13 @@ class AttendanceService
             ]);
         }
 
-        $checkOutStart = Carbon::createFromTimeString(SettingCache::get('check_out_start', '15:00'));
+        $checkOutStartStr = SettingCache::get('check_out_start');
+        if (! $checkOutStartStr) {
+            throw ValidationException::withMessages([
+                'attendance' => ['Konfigurasi jam mulai absensi pulang belum diatur oleh admin.'],
+            ]);
+        }
+        $checkOutStart = Carbon::createFromTimeString($checkOutStartStr);
         $currentTime = Carbon::now();
 
         if ($currentTime->lessThan($checkOutStart)) {
@@ -239,8 +250,16 @@ class AttendanceService
             return DB::transaction($callback);
         } catch (QueryException $exception) {
             $message = $exception->getMessage();
+            $sqlState = $exception->getCode();
 
-            if (str_contains($message, 'attendance_date') && str_contains($message, 'user_id')) {
+            // SQLSTATE 23000 (Integrity constraint violation in MySQL/SQLite) or 23505 (PostgreSQL)
+            $isUniqueViolation = in_array($sqlState, ['23000', '23505', 23000]);
+            $isAttendanceDateDuplicate = (
+                str_contains($message, 'attendances_user_date_unique') ||
+                (str_contains($message, 'attendance_date') && str_contains($message, 'user_id'))
+            );
+
+            if ($isUniqueViolation && $isAttendanceDateDuplicate) {
                 throw ValidationException::withMessages([
                     'attendance' => ['Anda sudah melakukan presensi hari ini.'],
                 ]);
