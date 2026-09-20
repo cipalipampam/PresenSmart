@@ -28,9 +28,26 @@ class AdminDashboardStatsService
             ->whereNull('is_approved')
             ->count();
 
+        $studentPresent = Attendance::query()
+            ->where('recorded_at', '>=', $startOfDay)
+            ->where('recorded_at', '<', $startOfNextDay)
+            ->where('status', 'present')
+            ->whereHas('user', fn ($q) => $q->role('siswa'))
+            ->count();
+
+        $employeePresent = Attendance::query()
+            ->where('recorded_at', '>=', $startOfDay)
+            ->where('recorded_at', '<', $startOfNextDay)
+            ->where('status', 'present')
+            ->whereHas('user', fn ($q) => $q->role(['guru', 'staff']))
+            ->count();
+
         return [
             'total_students' => User::role('siswa')->count(),
+            'total_employees' => User::role(['guru', 'staff'])->count(),
             'total_present' => (int) $attendance->total_present,
+            'student_present' => $studentPresent,
+            'employee_present' => $employeePresent,
             'total_late' => (int) $attendance->total_late,
             'total_permission' => (int) $attendance->total_permission,
             'pending_approvals' => $pendingApprovals,
