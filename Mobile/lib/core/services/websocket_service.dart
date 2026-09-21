@@ -26,6 +26,18 @@ class WebSocketService with WidgetsBindingObserver {
   final List<void Function(Map<String, dynamic>)> _announcementListeners = [];
   final List<void Function(Map<String, dynamic>)> _attendanceApprovalListeners = [];
   final List<void Function(Map<String, dynamic>)> _settingsListeners = [];
+  final List<void Function(Map<String, dynamic>)> _notificationListeners = [];
+
+  void addNotificationListener(void Function(Map<String, dynamic>) listener) {
+    if (!_notificationListeners.contains(listener)) {
+      _notificationListeners.add(listener);
+    }
+  }
+
+  void removeNotificationListener(
+      void Function(Map<String, dynamic>) listener) {
+    _notificationListeners.remove(listener);
+  }
 
   void addAttendanceApprovalListener(
       void Function(Map<String, dynamic>) listener) {
@@ -217,6 +229,12 @@ class WebSocketService with WidgetsBindingObserver {
         case 'SessionInvalidated':
           debugPrint('WebSocket: session invalidated.');
           onSessionInvalidated?.call(data);
+          break;
+        case 'NotificationCreated':
+          debugPrint('WebSocket: notification created event received.');
+          for (final listener in _notificationListeners) {
+            listener(data);
+          }
           break;
         default:
           debugPrint("WebSocket: Unhandled event: ${event.name}");

@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\Academic\ClassAttendanceApiController;
+use App\Http\Controllers\Api\Academic\ScheduleApiController;
 use App\Http\Controllers\Api\Attendance\AttendanceController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\Notification\NotificationApiController;
 use App\Http\Controllers\Api\Setting\SettingController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +40,16 @@ Route::prefix('v1')->group(function () {
             Route::post('/check-out', 'checkOut');
             Route::post('/permission', 'permission');
         });
+
+        // Academic schedule and subject attendance
+        Route::get('/schedules', [ScheduleApiController::class, 'index']);
+        Route::get('/schedules/{schedule}/class-attendance', [ClassAttendanceApiController::class, 'index']);
+        Route::post('/schedules/{schedule}/class-attendance', [ClassAttendanceApiController::class, 'store']);
+
+        // In-app notification centre
+        Route::get('/notifications', [NotificationApiController::class, 'index']);
+        Route::patch('/notifications/{notification}/read', [NotificationApiController::class, 'markAsRead'])->whereNumber('notification');
+        Route::post('/notifications/mark-all-read', [NotificationApiController::class, 'markAllAsRead']);
     });
 
 });

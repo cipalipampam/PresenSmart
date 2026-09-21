@@ -57,6 +57,7 @@ class DashboardService
                     'content' => $item->content,
                     'created_at' => $item->created_at?->toDateTimeString(),
                 ]),
+            'unread_notifications_count' => (int) $user->appNotifications()->where('is_read', false)->count(),
         ];
     }
 
