@@ -71,6 +71,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('admin.schedules.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}" title="Jadwal Pelajaran">
+                        <i class="bi bi-calendar3"></i>
+                        <span class="link-text">Jadwal Pelajaran</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('admin.attendances.students') }}"
                         class="nav-link {{ request()->routeIs('admin.attendances.students') ? 'active' : '' }}" title="Presensi Siswa">
                         <i class="bi bi-calendar-check-fill"></i>
@@ -126,6 +133,7 @@
                         @elseif(request()->routeIs('admin.employees.*')) Guru & Karyawan
                         @elseif(request()->routeIs('admin.classrooms.*')) Rombel & Kelas
                         @elseif(request()->routeIs('admin.subjects.*')) Mata Pelajaran
+                        @elseif(request()->routeIs('admin.schedules.*')) Jadwal Pelajaran
                         @elseif(request()->routeIs('admin.attendances.students')) Presensi Siswa
                         @elseif(request()->routeIs('admin.attendances.employees')) Presensi Guru & Staff
                         @elseif(request()->routeIs('admin.attendances.*')) Presensi

@@ -6,16 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\Employee\StoreEmployeeRequest;
 use App\Http\Requests\Web\Employee\UpdateEmployeeRequest;
 use App\Models\User;
+use App\Models\Subject;
 use App\Services\Web\Employee\EmployeeService;
+use App\Services\Web\Academic\ScheduleService;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
-    protected $employeeService;
 
-    public function __construct(EmployeeService $employeeService)
-    {
-        $this->employeeService = $employeeService;
+    public function __construct(
+        protected EmployeeService $employeeService,
+        protected ScheduleService $scheduleService
+    ) {
     }
 
     public function index(Request $request)
@@ -48,7 +50,7 @@ class EmployeeController extends Controller
 
     public function create()
     {
-        $subjects = \App\Models\Subject::where('is_active', true)->orderBy('cluster')->orderBy('name')->get()->groupBy('cluster');
+        $subjects = Subject::where('is_active', true)->orderBy('cluster')->orderBy('name')->get()->groupBy('cluster');
 
         return view('admin.employees.create', compact('subjects'));
     }
@@ -60,33 +62,36 @@ class EmployeeController extends Controller
         return redirect()->route('admin.employees.index')->with('success', 'Data pegawai/guru berhasil ditambahkan.');
     }
 
-    public function show($id)
+    public function show(User $employee)
     {
-        $employee = User::with(['employee', 'roles', 'attendances', 'subjects'])->findOrFail($id);
+        $employee->load(['employee', 'roles', 'attendances', 'subjects']);
 
-        return view('admin.employees.detail', compact('employee'));
+        $workload = null;
+        if ($employee->hasRole('guru')) {
+            $workload = $this->scheduleService->calculateTeacherWeeklyWorkload($employee);
+        }
+
+        return view('admin.employees.detail', compact('employee', 'workload'));
     }
 
-    public function edit($id)
+    public function edit(User $employee)
     {
-        $employee = User::with(['employee', 'roles', 'subjects'])->findOrFail($id);
-        $subjects = \App\Models\Subject::where('is_active', true)->orderBy('cluster')->orderBy('name')->get()->groupBy('cluster');
+        $employee->load(['employee', 'roles', 'subjects']);
+        $subjects = Subject::where('is_active', true)->orderBy('cluster')->orderBy('name')->get()->groupBy('cluster');
 
         return view('admin.employees.edit', compact('employee', 'subjects'));
     }
 
-    public function update(UpdateEmployeeRequest $request, $id)
+    public function update(UpdateEmployeeRequest $request, User $employee)
     {
-        $user = User::findOrFail($id);
-        $this->employeeService->updateEmployee($user, $request->validated());
+        $this->employeeService->updateEmployee($employee, $request->validated());
 
         return redirect()->route('admin.employees.index')->with('success', 'Data pegawai/guru berhasil diperbarui.');
     }
 
-    public function destroy($id)
+    public function destroy(User $employee)
     {
-        $user = User::findOrFail($id);
-        $this->employeeService->deleteEmployee($user);
+        $this->employeeService->deleteEmployee($employee);
 
         return redirect()->route('admin.employees.index')->with('success', 'Data pegawai/guru berhasil dihapus.');
     }

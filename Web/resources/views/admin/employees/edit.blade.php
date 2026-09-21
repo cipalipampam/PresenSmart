@@ -293,38 +293,6 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const roleSelect = document.getElementById('role');
-    const teacherCard = document.getElementById('teacher-subjects-card');
-
-    roleSelect.addEventListener('change', function () {
-        teacherCard.style.display = this.value === 'guru' ? 'block' : 'none';
-    });
-});
-
-function handleSubjectSelection(checkbox, subjectId) {
-    const radio = document.getElementById('primary_' + subjectId);
-    if (!radio) return;
-
-    if (checkbox.checked) {
-        radio.disabled = false;
-        const hasCheckedPrimary = document.querySelector('.primary-radio:checked');
-        if (!hasCheckedPrimary) {
-            radio.checked = true;
-        }
-    } else {
-        if (radio.checked) {
-            radio.checked = false;
-            const nextChecked = document.querySelector('.subject-checkbox:checked');
-            if (nextChecked) {
-                const nextRadio = document.getElementById('primary_' + nextChecked.value);
-                if (nextRadio) nextRadio.checked = true;
-            }
-        }
-        radio.disabled = true;
-    }
-}
-
 function previewEmployeePhoto(input) {
     const previewImg = document.getElementById('avatar-preview-img');
     const previewIcon = document.getElementById('avatar-preview-icon');

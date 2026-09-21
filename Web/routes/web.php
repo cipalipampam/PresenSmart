@@ -73,4 +73,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
     Route::post('announcements/{id}/toggle', [AnnouncementController::class, 'toggleStatus'])->name('announcements.toggle');
     Route::resource('announcements', AnnouncementController::class)->except(['show']);
+
+    // Academic Master Data & Class Promotion
+    Route::get('classrooms/promotion', [\App\Http\Controllers\Web\Academic\ClassroomController::class, 'promotion'])->name('classrooms.promotion');
+    Route::post('classrooms/promotion', [\App\Http\Controllers\Web\Academic\ClassroomController::class, 'processPromotion'])->name('classrooms.promotion.process');
+    Route::get('classrooms/{classroom}/students', [\App\Http\Controllers\Web\Academic\ClassroomController::class, 'getStudents'])->name('classrooms.students');
+    Route::resource('classrooms', \App\Http\Controllers\Web\Academic\ClassroomController::class)->except(['show', 'create', 'edit']);
+    Route::resource('subjects', \App\Http\Controllers\Web\Academic\SubjectController::class)->except(['show', 'create', 'edit']);
+    Route::get('schedules/teachers-by-subject/{subject}', [\App\Http\Controllers\Web\Academic\ScheduleController::class, 'getTeachersBySubject'])->name('schedules.teachers-by-subject');
+    Route::resource('schedules', \App\Http\Controllers\Web\Academic\ScheduleController::class)->except(['show', 'create', 'edit']);
 });

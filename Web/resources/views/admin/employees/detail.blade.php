@@ -218,8 +218,8 @@
                         <div class="col-md-6">
                             <label class="form-label text-muted small fw-semibold">Nomor WhatsApp / HP</label>
                             <div class="p-2.5 rounded-3 bg-light border text-dark fw-medium d-flex align-items-center justify-content-between">
-                                <span>{{ $employee->employee->phone_number ? '+62 ' . $employee->employee->phone_number : '-' }}</span>
-                                @if($employee->employee->phone_number ?? false)
+                                <span>{{ !empty($employee->employee?->phone_number) ? '+62 ' . $employee->employee->phone_number : '-' }}</span>
+                                @if(!empty($employee->employee?->phone_number))
                                     <a href="https://wa.me/62{{ preg_replace('/^0/', '', $employee->employee->phone_number) }}" target="_blank" class="btn btn-sm btn-link text-success p-0" title="Hubungi via WhatsApp">
                                         <i class="bi bi-whatsapp"></i>
                                     </a>
@@ -235,6 +235,141 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Beban Mengajar & Linieritas Mapel (Khusus Guru) --}}
+            @if($employee->hasRole('guru') && $workload)
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0 text-dark fw-bold">
+                        <i class="bi bi-mortarboard-fill text-primary me-2"></i>Beban Mengajar & Jam Pelajaran (JP)
+                    </h6>
+                    <span class="badge bg-{{ $workload['status_color'] }}-subtle text-{{ $workload['status_color'] }} border border-{{ $workload['status_color'] }}-subtle px-3 py-1.5" style="font-size: 0.8rem;">
+                        <i class="bi bi-shield-check me-1"></i>{{ $workload['status_label'] }}
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    {{-- Summary Counter Cards --}}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-3 bg-light border text-center">
+                                <span class="text-muted small d-block mb-1">Total Jam Tatap Muka</span>
+                                <div class="d-flex align-items-baseline justify-content-center gap-1">
+                                    <h3 class="fw-bold mb-0 text-primary">{{ $workload['total_jp'] }}</h3>
+                                    <span class="text-muted small fw-semibold">JP / minggu</span>
+                                </div>
+                                <span class="badge bg-white border text-muted mt-2 px-2 py-0.5" style="font-size: 0.72rem;">
+                                    1 JP = 45 menit
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-3 bg-light border text-center">
+                                <span class="text-muted small d-block mb-1">Total Jam Riil Mengajar</span>
+                                <div class="d-flex align-items-baseline justify-content-center gap-1">
+                                    <h3 class="fw-bold mb-0 text-dark">{{ $workload['total_hours_real'] }}</h3>
+                                    <span class="text-muted small fw-semibold">Jam / minggu</span>
+                                </div>
+                                <span class="badge bg-white border text-muted mt-2 px-2 py-0.5" style="font-size: 0.72rem;">
+                                    {{ $workload['total_minutes'] }} menit pembelajaran
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-3 bg-light border text-center">
+                                <span class="text-muted small d-block mb-1">Target Regulasi (Batas Min.)</span>
+                                <div class="d-flex align-items-baseline justify-content-center gap-1">
+                                    <h3 class="fw-bold mb-0 text-{{ $workload['status_color'] }}">{{ $workload['target_percentage'] }}%</h3>
+                                    <span class="text-muted small fw-semibold">dari 24 JP</span>
+                                </div>
+                                <div class="progress mt-2" style="height: 6px;">
+                                    <div class="progress-bar bg-{{ $workload['status_color'] }}" role="progressbar"
+                                         style="width: {{ $workload['target_percentage'] }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Breakdown Mapel yang Diampu --}}
+                    <h6 class="text-dark fw-bold mb-3 small text-uppercase" style="letter-spacing: 0.5px;">
+                        <i class="bi bi-journal-bookmark me-1 text-primary"></i>Distribusi Mata Pelajaran
+                    </h6>
+                    @if(empty($workload['subjects']))
+                        <div class="alert alert-warning border-0 d-flex align-items-center mb-4">
+                            <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+                            <span class="small">Belum ada alokasi jadwal pelajaran aktif untuk guru ini. Silakan atur di menu Jadwal Pelajaran.</span>
+                        </div>
+                    @else
+                        <div class="table-responsive mb-4">
+                            <table class="table table-bordered align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr style="font-size: 0.8rem;">
+                                        <th>Mata Pelajaran</th>
+                                        <th style="width: 130px;">Kategori Linier</th>
+                                        <th style="width: 120px;">Kelas Rombel</th>
+                                        <th style="width: 100px;" class="text-center">Total Slot</th>
+                                        <th style="width: 110px;" class="text-end">Alokasi JP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($workload['subjects'] as $subItem)
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="rounded-circle" style="width: 10px; height: 10px; background-color: {{ $subItem['subject']->color_code }};"></div>
+                                                <div>
+                                                    <span class="fw-semibold text-dark">{{ $subItem['subject']->name }}</span>
+                                                    <code class="small text-muted ms-1">({{ $subItem['subject']->code }})</code>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if($subItem['is_primary'])
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-star-fill me-1"></i>Mapel Utama
+                                                </span>
+                                            @else
+                                                <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-arrow-left-right me-1"></i>Serumpun
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @foreach($subItem['classrooms'] as $clsName)
+                                                    <span class="badge bg-secondary-subtle text-secondary px-1.5 py-0.5" style="font-size: 0.72rem;">{{ $clsName }}</span>
+                                                @endforeach
+                                            </div>
+                                        </td>
+                                        <td class="text-center fw-medium text-dark">{{ $subItem['slots_count'] }} kali</td>
+                                        <td class="text-end">
+                                            <strong class="text-primary">{{ $subItem['total_jp'] }} JP</strong>
+                                            <span class="text-muted small d-block" style="font-size: 0.72rem;">{{ $subItem['total_minutes'] }} mnt</span>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+
+                    {{-- Hari Mengajar Breakdown --}}
+                    <h6 class="text-dark fw-bold mb-2 small text-uppercase" style="letter-spacing: 0.5px;">
+                        <i class="bi bi-calendar-week me-1 text-primary"></i>Distribusi Hari KBM (Full Day School: Senin - Jumat)
+                    </h6>
+                    <div class="row g-2">
+                        @foreach($workload['days'] as $dayNum => $dayData)
+                        <div class="col">
+                            <div class="p-2.5 rounded-3 border text-center {{ $dayData['jp'] > 0 ? 'bg-white shadow-xs' : 'bg-light opacity-75' }}">
+                                <span class="small fw-semibold d-block text-dark">{{ $dayData['name'] }}</span>
+                                <strong class="fs-5 d-block text-{{ $dayData['jp'] > 0 ? 'primary' : 'muted' }} my-1">{{ $dayData['jp'] }} <span style="font-size: 0.7rem;">JP</span></strong>
+                                <span class="text-muted small" style="font-size: 0.7rem;">{{ $dayData['slots'] }} sesi</span>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
 
             {{-- Riwayat Presensi Terakhir --}}
             <div class="card border-0 shadow-sm">
