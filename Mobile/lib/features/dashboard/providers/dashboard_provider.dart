@@ -18,11 +18,13 @@ class DashboardProvider with ChangeNotifier {
   int _hadirCount = 0;
   int _izinCount = 0;
   int _alfaCount = 0;
+  int _unreadNotificationsCount = 0;
   String? _approvalMessage;
   bool? _approvalAccepted;
   int _approvalNoticeVersion = 0;
+  String? _latestNotificationTitle;
+  int _notificationNoticeVersion = 0;
 
-  // Fix #2: Changed from List<String> to List<AnnouncementModel>
   List<AnnouncementModel> _announcements = [];
 
   bool get isLoading => _isLoading;
@@ -33,14 +35,15 @@ class DashboardProvider with ChangeNotifier {
   int get hadirCount => _hadirCount;
   int get izinCount => _izinCount;
   int get alfaCount => _alfaCount;
+  int get unreadNotificationsCount => _unreadNotificationsCount;
   List<AnnouncementModel> get announcements => _announcements;
   String? get approvalMessage => _approvalMessage;
   bool? get approvalAccepted => _approvalAccepted;
   int get approvalNoticeVersion => _approvalNoticeVersion;
+  String? get latestNotificationTitle => _latestNotificationTitle;
+  int get notificationNoticeVersion => _notificationNoticeVersion;
 
   DashboardProvider() {
-    // Fix #3: WebSocket listeners registered ONCE in constructor, not inside fetchDashboardData().
-    // This prevents callback overwrite and stale-closure bugs.
     WebSocketService().addAnnouncementListener((data) {
       debugPrint('Dashboard: announcement event received; fetching latest data.');
       unawaited(fetchDashboardData(showLoading: false));
@@ -56,6 +59,27 @@ class DashboardProvider with ChangeNotifier {
       notifyListeners();
       unawaited(fetchDashboardData(showLoading: false));
     });
+    WebSocketService().addNotificationListener((data) {
+      debugPrint('Dashboard: notification event received via WebSocket: $data');
+      if (data.containsKey('unread_count')) {
+        _unreadNotificationsCount = (data['unread_count'] as num?)?.toInt() ?? (_unreadNotificationsCount + 1);
+      } else {
+        _unreadNotificationsCount++;
+      }
+      _latestNotificationTitle = data['title'] as String? ?? 'Ada notifikasi baru masuk.';
+      _notificationNoticeVersion++;
+      notifyListeners();
+    });
+  }
+
+  void incrementUnreadNotifications([int amount = 1]) {
+    _unreadNotificationsCount += amount;
+    notifyListeners();
+  }
+
+  void setUnreadNotificationsCount(int count) {
+    _unreadNotificationsCount = count;
+    notifyListeners();
   }
 
   Future<void> fetchDashboardData({bool showLoading = true}) async {
@@ -77,7 +101,8 @@ class DashboardProvider with ChangeNotifier {
         _izinCount = stats['izin'] ?? 0;
         _alfaCount = stats['alfa'] ?? 0;
 
-        // Fix #2: Parse announcements as structured objects, not toString()
+        _unreadNotificationsCount = data['unread_notifications_count'] as int? ?? 0;
+
         final List<dynamic> rawAnnouncements = data['announcements'] ?? [];
         _announcements = rawAnnouncements
             .whereType<Map<String, dynamic>>()

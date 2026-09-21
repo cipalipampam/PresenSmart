@@ -6,9 +6,13 @@ import 'core/constants/app_constants.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/attendance/providers/attendance_provider.dart';
 import 'features/dashboard/providers/dashboard_provider.dart';
+import 'features/notification/providers/notification_provider.dart';
+import 'features/schedule/providers/schedule_provider.dart';
 import 'features/auth/screens/splash_screen.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/dashboard/screens/dashboard_screen.dart';
+import 'features/notification/screens/notification_screen.dart';
+import 'features/schedule/screens/schedule_screen.dart';
 
 /// Global navigator key — allows navigation from non-widget classes
 /// (e.g. ApiClient 401 interceptor) without needing BuildContext.
@@ -39,6 +43,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AttendanceProvider()),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => ScheduleProvider()),
       ],
       child: MaterialApp(
         title: 'PresenSmart',
@@ -93,6 +99,8 @@ class MyApp extends StatelessWidget {
           '/': (context) => const SplashScreen(),
           '/login': (context) => const LoginScreen(),
           '/dashboard': (context) => const DashboardScreen(),
+          '/notifications': (context) => const NotificationScreen(),
+          '/schedules': (context) => const ScheduleScreen(),
         },
       ),
     );

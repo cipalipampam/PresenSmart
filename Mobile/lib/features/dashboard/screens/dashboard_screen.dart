@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+
 import '../../auth/providers/auth_provider.dart';
 import '../providers/dashboard_provider.dart';
-
 import '../../attendance/screens/attendance_screen.dart';
 import '../../attendance/screens/history_screen.dart';
 import '../../profile/screens/profile_screen.dart';
+import '../../schedule/providers/schedule_provider.dart';
+import '../../schedule/screens/class_attendance_screen.dart';
 import '../../../core/widgets/floating_nav_bar.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/widgets/app_notice.dart';
-import 'package:intl/intl.dart';
-
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -91,6 +92,7 @@ class DashboardHomeTab extends StatefulWidget {
 class _DashboardHomeTabState extends State<DashboardHomeTab>
     with WidgetsBindingObserver {
   int _shownApprovalNoticeVersion = 0;
+  int _shownNotificationNoticeVersion = 0;
 
   @override
   void initState() {
@@ -98,6 +100,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<DashboardProvider>(context, listen: false).fetchDashboardData();
+      Provider.of<ScheduleProvider>(context, listen: false).fetchTodaySchedules();
     });
   }
 
@@ -111,7 +114,19 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       Provider.of<DashboardProvider>(context, listen: false).fetchDashboardData();
+      Provider.of<ScheduleProvider>(context, listen: false).fetchTodaySchedules();
     }
+  }
+
+  Color _parseHexColor(String? hexString, {Color fallback = AppConstants.colorPrimaryBase}) {
+    if (hexString == null || hexString.isEmpty) return fallback;
+    try {
+      final hex = hexString.replaceAll('#', '');
+      if (hex.length == 6) {
+        return Color(int.parse('FF$hex', radix: 16));
+      }
+    } catch (_) {}
+    return fallback;
   }
 
   // ── Stat Card ─────────────────────────────────────────────────────────────
@@ -144,7 +159,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
             const SizedBox(height: 10),
             Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppConstants.colorTextPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -165,7 +180,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
     );
   }
 
-  // ── Schedule Item ──────────────────────────────────────────────────────────
+  // ── Schedule Item (Gate In/Out) ────────────────────────────────────────────
   Widget _buildScheduleItem(IconData icon, String title, String time, Color iconColor, Color bgColor) {
     return Expanded(
       child: Column(
@@ -217,13 +232,30 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
           });
         }
 
+        if (dashboard.notificationNoticeVersion > _shownNotificationNoticeVersion) {
+          _shownNotificationNoticeVersion = dashboard.notificationNoticeVersion;
+          final notifTitle = dashboard.latestNotificationTitle ?? 'Ada notifikasi baru masuk.';
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            AppNotice.show(
+              context,
+              'Notifikasi: $notifTitle',
+              type: AppNoticeType.info,
+            );
+          });
+        }
+
         return Scaffold(
           backgroundColor: AppConstants.colorBackground,
           body: RefreshIndicator(
             color: AppConstants.colorPrimaryBase,
             backgroundColor: AppConstants.colorSurface,
             onRefresh: () async {
-              await dashboard.fetchDashboardData();
+              await Future.wait([
+                dashboard.fetchDashboardData(),
+                context.read<ScheduleProvider>().fetchTodaySchedules(),
+              ]);
             },
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -271,13 +303,50 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppConstants.colorBorder),
                       ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.notifications_outlined,
-                          color: AppConstants.colorPrimaryBase,
-                          size: 22,
-                        ),
-                        onPressed: () {},
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.notifications_outlined,
+                              color: AppConstants.colorPrimaryBase,
+                              size: 22,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pushNamed('/notifications').then((_) {
+                                dashboard.fetchDashboardData(showLoading: false);
+                              });
+                            },
+                          ),
+                          if (dashboard.unreadNotificationsCount > 0)
+                            Positioned(
+                              right: 6,
+                              top: 6,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: AppConstants.colorAbsent,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                child: Text(
+                                  dashboard.unreadNotificationsCount > 9
+                                      ? '9+'
+                                      : dashboard.unreadNotificationsCount.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ],
@@ -312,7 +381,6 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Status label
                             Row(
                               children: [
                                 Container(
@@ -348,34 +416,11 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
                             const SizedBox(height: 6),
                             Text(
                               DateFormat('HH:mm', 'id_ID').format(DateTime.now()),
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.7),
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            // Action button
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: AppConstants.colorPrimaryBase,
-                                  elevation: 0,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                ),
-                                icon: const Icon(Icons.fingerprint_rounded, size: 20),
-                                label: const Text(
-                                  'Presensi Sekarang',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                ),
-                                onPressed: () {},
-                              ),
+                              style: const TextStyle(color: Colors.white70, fontSize: 13),
                             ),
                           ],
                         ),
-                      ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1),
+                      ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.1),
 
                       const SizedBox(height: 24),
 
@@ -410,7 +455,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
 
                       const SizedBox(height: 24),
 
-                      // JADWAL HARI INI CARD
+                      // JADWAL GERBANG (MASUK & PULANG) CARD
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
@@ -429,7 +474,7 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Jadwal Hari Ini',
+                              'Jam Presensi Gerbang',
                               style: TextStyle(
                                 color: AppConstants.colorTextPrimary,
                                 fontSize: 15,
@@ -459,6 +504,244 @@ class _DashboardHomeTabState extends State<DashboardHomeTab>
                           ],
                         ),
                       ).animate().fadeIn(duration: 600.ms, delay: 200.ms),
+
+                      const SizedBox(height: 28),
+
+                      // ── SECTION: JADWAL PELAJARAN HARI INI ──────────────────
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_month_rounded,
+                                size: 18,
+                                color: AppConstants.colorPrimaryBase,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Jadwal Pelajaran Hari Ini',
+                                style: TextStyle(
+                                  color: AppConstants.colorTextPrimary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          InkWell(
+                            onTap: () {
+                              Navigator.of(context).pushNamed('/schedules');
+                            },
+                            borderRadius: BorderRadius.circular(6),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                              child: Text(
+                                'Lihat Semua',
+                                style: TextStyle(
+                                  color: AppConstants.colorPrimaryBase,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
+                      const SizedBox(height: 12),
+
+                      Consumer<ScheduleProvider>(
+                        builder: (context, scheduleProvider, _) {
+                          final isTeacher = scheduleProvider.userRole == 'teacher';
+                          final todayList = scheduleProvider.todaySchedules;
+
+                          if (scheduleProvider.isLoading && todayList.isEmpty) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: CircularProgressIndicator(color: AppConstants.colorPrimaryBase),
+                              ),
+                            );
+                          }
+
+                          if (todayList.isEmpty) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                              decoration: BoxDecoration(
+                                color: AppConstants.colorSurface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: AppConstants.colorBorder),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: AppConstants.colorPrimaryLight,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Icon(
+                                      Icons.event_available_rounded,
+                                      color: AppConstants.colorPrimaryBase,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  const Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Tidak Ada Pelajaran Hari Ini',
+                                          style: TextStyle(
+                                            color: AppConstants.colorTextPrimary,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          'Gunakan waktu luang untuk belajar mandiri.',
+                                          style: TextStyle(
+                                            color: AppConstants.colorTextSecondary,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+
+                          return Column(
+                            children: todayList.map((item) {
+                              final accentColor = _parseHexColor(item.subject?.colorCode);
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                decoration: BoxDecoration(
+                                  color: AppConstants.colorSurface,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: AppConstants.colorBorder),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF0F172A).withValues(alpha: 0.03),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: IntrinsicHeight(
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        Container(width: 5, color: accentColor),
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(12),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          if (item.subject?.code.isNotEmpty == true)
+                                                            Container(
+                                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                              margin: const EdgeInsets.only(right: 6),
+                                                              decoration: BoxDecoration(
+                                                                color: accentColor.withValues(alpha: 0.12),
+                                                                borderRadius: BorderRadius.circular(4),
+                                                              ),
+                                                              child: Text(
+                                                                item.subject!.code,
+                                                                style: TextStyle(
+                                                                  color: accentColor,
+                                                                  fontSize: 10,
+                                                                  fontWeight: FontWeight.bold,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          Text(
+                                                            item.timeFormatted,
+                                                            style: const TextStyle(
+                                                              color: AppConstants.colorTextSecondary,
+                                                              fontSize: 11,
+                                                              fontWeight: FontWeight.w600,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 6),
+                                                      Text(
+                                                        item.subject?.name ?? 'Mata Pelajaran',
+                                                        style: const TextStyle(
+                                                          color: AppConstants.colorTextPrimary,
+                                                          fontSize: 14,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        isTeacher
+                                                            ? 'Kelas: ${item.classroom?.name ?? '-'}'
+                                                            : (item.teacher?.name ?? 'Guru Pengajar'),
+                                                        style: const TextStyle(
+                                                          color: AppConstants.colorTextSecondary,
+                                                          fontSize: 12,
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                if (isTeacher) ...[
+                                                  const SizedBox(width: 8),
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context).push(
+                                                        MaterialPageRoute(
+                                                          builder: (_) => ClassAttendanceScreen(schedule: item),
+                                                        ),
+                                                      );
+                                                    },
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: AppConstants.colorPrimaryBase,
+                                                      foregroundColor: Colors.white,
+                                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                      minimumSize: Size.zero,
+                                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                    ),
+                                                    child: const Text(
+                                                      'Absen',
+                                                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
 
                       const SizedBox(height: 28),
 
