@@ -77,7 +77,7 @@
     {{-- ===== PETUNJUK PENGGUNAAN ===== --}}
     <div class="card border-0 shadow-sm rounded-3 mb-4 bg-light">
         <div class="card-body p-3 d-flex align-items-center gap-3">
-            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+            <div class="rounded-circle d-flex align-items-center justify-content-center shrink-0"
                  style="width: 42px; height: 42px; background: #e0f2fe; color: #0284c7;">
                 <i class="bi bi-info-circle-fill fs-5"></i>
             </div>
@@ -253,7 +253,7 @@
                                         <td class="text-muted small">{{ $index + 1 }}</td>
                                         <td>
                                             <div class="d-flex align-items-center gap-2">
-                                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+                                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shrink-0"
                                                      style="width: 34px; height: 34px; background: {{ $student->gender === 'P' ? '#ec4899' : '#3b82f6' }}; font-size: 0.8rem;">
                                                     {{ strtoupper(substr($student->user?->name ?? 'S', 0, 1)) }}
                                                 </div>
@@ -339,7 +339,7 @@
                             </div>
                         </div>
                         <div class="alert alert-warning border-0 p-2 px-3 small d-flex align-items-center gap-2 mb-0">
-                            <i class="bi bi-exclamation-triangle-fill text-warning flex-shrink-0"></i>
+                            <i class="bi bi-exclamation-triangle-fill text-warning shrink-0"></i>
                             <span>Siswa yang tidak dicentang akan tetap berada di kelas asalnya.</span>
                         </div>
                     </div>
