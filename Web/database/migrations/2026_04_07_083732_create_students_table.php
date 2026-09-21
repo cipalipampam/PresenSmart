@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('students', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('classroom_id')->nullable()->constrained('classrooms')->nullOnDelete();
             $table->string('nis')->unique()->nullable();
             $table->string('nisn')->unique()->nullable();
             $table->string('grade')->nullable();
@@ -24,7 +25,10 @@ return new class extends Migration
             $table->text('address')->nullable();
             $table->string('phone_number')->nullable();
             $table->string('profile_picture')->nullable();
+            $table->enum('academic_status', ['active', 'graduated', 'transferred', 'dropped'])->default('active');
             $table->timestamps();
+
+            $table->index(['classroom_id', 'academic_status']);
         });
     }
 

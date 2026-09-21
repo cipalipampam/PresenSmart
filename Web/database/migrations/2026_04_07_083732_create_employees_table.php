@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('nip')->unique()->nullable();
             $table->string('position')->nullable();
+            $table->boolean('is_teacher')->default(true);
             $table->enum('gender', ['male', 'female'])->nullable();
             $table->string('place_of_birth')->nullable();
             $table->date('date_of_birth')->nullable();
