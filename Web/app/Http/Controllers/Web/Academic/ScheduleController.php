@@ -73,7 +73,7 @@ class ScheduleController extends Controller
                 ->with('success', 'Jadwal pelajaran berhasil ditambahkan.');
         } catch (ValidationException $e) {
             return redirect()->back()
-                ->withErrors($e->validator)
+                ->withErrors($e->errors())
                 ->withInput();
         }
     }
@@ -89,7 +89,7 @@ class ScheduleController extends Controller
                 ->with('success', 'Jadwal pelajaran berhasil diperbarui.');
         } catch (ValidationException $e) {
             return redirect()->back()
-                ->withErrors($e->validator)
+                ->withErrors($e->errors())
                 ->withInput();
         }
     }
