@@ -164,5 +164,40 @@ class ScheduleWebTest extends TestCase
             ->assertJsonPath('data.0.id', $this->teacher->id)
             ->assertJsonPath('data.0.is_primary', true);
     }
+
+    public function test_store_schedule_fails_when_clash_occurs(): void
+    {
+        // Buat jadwal 1: X-MIPA 1, Senin 07:15-08:45
+        Schedule::create([
+            'classroom_id' => $this->classroom->id,
+            'subject_id' => $this->subject->id,
+            'teacher_id' => $this->teacher->id,
+            'day_of_week' => 1,
+            'start_time' => '07:15:00',
+            'end_time' => '08:45:00',
+            'is_active' => true,
+        ]);
+
+        // Coba buat jadwal 2 bertabrakan di kelas lain dengan guru yang sama pada waktu yang sama
+        $classroom2 = Classroom::create([
+            'name' => 'X-MIPA 2',
+            'level' => '10',
+            'major' => 'MIPA',
+            'section' => '2',
+            'academic_year' => '2026/2027',
+        ]);
+
+        $response = $this->actingAs($this->admin)->post(route('admin.schedules.store'), [
+            'classroom_id' => $classroom2->id,
+            'subject_id' => $this->subject->id,
+            'teacher_id' => $this->teacher->id,
+            'day_of_week' => 1,
+            'start_time' => '07:15',
+            'end_time' => '08:45',
+            'is_active' => '1',
+        ]);
+
+        $response->assertSessionHasErrors(['teacher_id']);
+    }
 }
 
