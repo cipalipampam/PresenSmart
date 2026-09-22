@@ -95,6 +95,62 @@ class EmployeeSeeder extends Seeder
             'phone' => '082111220008',
             'address' => 'Jl. Siliwangi No.88, Cirebon',
         ],
+        [
+            'name' => 'Bpk. Eko Prasetyo, S.Pd.',
+            'email' => 'eko.prasetyo@sekolah.sch.id',
+            'role' => 'guru',
+            'nip' => '198902112014021007',
+            'position' => 'Guru Penjasorkes',
+            'is_teacher' => true,
+            'gender' => 'male',
+            'place_of_birth' => 'Bogor',
+            'date_of_birth' => '1989-02-11',
+            'religion' => 'Islam',
+            'phone' => '082111220009',
+            'address' => 'Jl. Pajajaran No.15, Bogor',
+        ],
+        [
+            'name' => 'Ibu Maya Indah, S.Si.',
+            'email' => 'maya.indah@sekolah.sch.id',
+            'role' => 'guru',
+            'nip' => '199107082015042008',
+            'position' => 'Guru Kimia',
+            'is_teacher' => true,
+            'gender' => 'female',
+            'place_of_birth' => 'Depok',
+            'date_of_birth' => '1991-07-08',
+            'religion' => 'Islam',
+            'phone' => '082111220010',
+            'address' => 'Jl. Margonda No.50, Depok',
+        ],
+        [
+            'name' => 'Bpk. Rizky Ramadhan, S.Pd.',
+            'email' => 'rizky.ramadhan@sekolah.sch.id',
+            'role' => 'guru',
+            'nip' => '199304122018011009',
+            'position' => 'Guru Biologi',
+            'is_teacher' => true,
+            'gender' => 'male',
+            'place_of_birth' => 'Bekasi',
+            'date_of_birth' => '1993-04-12',
+            'religion' => 'Islam',
+            'phone' => '082111220011',
+            'address' => 'Jl. Ahmad Yani No.22, Bekasi',
+        ],
+        [
+            'name' => 'Ibu Dewi Lestari, S.Pd.',
+            'email' => 'dewi.lestari@sekolah.sch.id',
+            'role' => 'guru',
+            'nip' => '199410052019032010',
+            'position' => 'Guru Sejarah',
+            'is_teacher' => true,
+            'gender' => 'female',
+            'place_of_birth' => 'Tangerang',
+            'date_of_birth' => '1994-10-05',
+            'religion' => 'Islam',
+            'phone' => '082111220012',
+            'address' => 'Jl. Sudirman No.33, Tangerang',
+        ],
         // 2 Staff (is_teacher = false)
         [
             'name' => 'Agus Triyono',
@@ -189,6 +245,26 @@ class EmployeeSeeder extends Seeder
                     'siti.khadijah@sekolah.sch.id' => [
                         'PAI' => true,
                         'SEJ' => false,
+                    ],
+                    // Bpk. Eko Prasetyo: Penjasorkes (Utama) & PAI (Serumpun Umum)
+                    'eko.prasetyo@sekolah.sch.id' => [
+                        'PJK' => true,
+                        'PAI' => false,
+                    ],
+                    // Ibu Maya Indah: Kimia (Utama) & Fisika (Serumpun MIPA)
+                    'maya.indah@sekolah.sch.id' => [
+                        'KIM' => true,
+                        'FIS' => false,
+                    ],
+                    // Bpk. Rizky Ramadhan: Biologi (Utama) & Kimia (Serumpun MIPA)
+                    'rizky.ramadhan@sekolah.sch.id' => [
+                        'BIO' => true,
+                        'KIM' => false,
+                    ],
+                    // Ibu Dewi Lestari: Sejarah (Utama) & Bahasa Indonesia (Serumpun)
+                    'dewi.lestari@sekolah.sch.id' => [
+                        'SEJ' => true,
+                        'B-IND' => false,
                     ],
                 ];
 
