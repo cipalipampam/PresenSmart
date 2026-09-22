@@ -83,8 +83,8 @@ class ScheduleWebTest extends TestCase
             'subject_id' => $this->subject->id,
             'teacher_id' => $this->teacher->id,
             'day_of_week' => 2,
-            'start_time' => '09:00',
-            'end_time' => '10:30',
+            'start_time' => '10:00',
+            'end_time' => '11:30',
             'room' => 'R.102',
             'is_active' => '1',
         ]);
@@ -198,6 +198,22 @@ class ScheduleWebTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['teacher_id']);
+    }
+
+    public function test_store_schedule_fails_when_overlapping_break_time(): void
+    {
+        // Coba buat KBM jam 09:15 - 10:15 (menabrak Istirahat I 09:30 - 10:00)
+        $response = $this->actingAs($this->admin)->post(route('admin.schedules.store'), [
+            'classroom_id' => $this->classroom->id,
+            'subject_id' => $this->subject->id,
+            'teacher_id' => $this->teacher->id,
+            'day_of_week' => 1,
+            'start_time' => '09:15',
+            'end_time' => '10:15',
+            'is_active' => '1',
+        ]);
+
+        $response->assertSessionHasErrors(['start_time']);
     }
 }
 

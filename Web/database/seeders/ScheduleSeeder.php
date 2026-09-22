@@ -55,12 +55,14 @@ class ScheduleSeeder extends Seeder
         }
 
         // 3. Slot Waktu Standar KBM Per-Hari (Full Day School: 4 Slot x 2 JP = 8 JP/hari)
-        // 1 JP = 45 menit (2 JP = 90 menit)
+        // Sesuai Permendikbud No. 23/2017: Istirahat I (09:30-10:00) & Ishoma (11:30-13:00)
         $dailyTimeSlots = [
-            ['start' => '07:15:00', 'end' => '08:45:00'], // Slot 1 (2 JP)
-            ['start' => '09:00:00', 'end' => '10:30:00'], // Slot 2 (2 JP)
-            ['start' => '10:45:00', 'end' => '12:15:00'], // Slot 3 (2 JP)
-            ['start' => '13:00:00', 'end' => '14:30:00'], // Slot 4 (2 JP)
+            ['start' => '08:00:00', 'end' => '09:30:00'], // Slot 1 (2 JP) - Sebelum Istirahat I
+            // ☕ ISTIRAHAT I (09:30 - 10:00 WIB: Dhuha & Camilan)
+            ['start' => '10:00:00', 'end' => '11:30:00'], // Slot 2 (2 JP) - Sebelum Ishoma
+            // 🍱 ISTIRAHAT II / ISHOMA (11:30 - 13:00 WIB: Sholat Dzuhur/Jumat & Makan Siang)
+            ['start' => '13:00:00', 'end' => '14:30:00'], // Slot 3 (2 JP) - Sesudah Ishoma
+            ['start' => '14:30:00', 'end' => '16:00:00'], // Slot 4 (2 JP) - Sore
         ];
 
         // Hapus data jadwal sebelumnya agar seed ulang bersih

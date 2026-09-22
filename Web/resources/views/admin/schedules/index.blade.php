@@ -31,28 +31,39 @@
             <button class="btn btn-primary shadow-sm py-2 px-3" data-bs-toggle="modal" data-bs-target="#createScheduleModal">
                 <i class="bi bi-plus-circle-fill me-1"></i>Tambah Jadwal Baru
             </button>
-        </div>
+    </div>
+
     {{-- ===== ALERT NOTIFICATIONS ===== --}}
     @if (session('success'))
-        <div class="alert alert-success border-0 d-flex align-items-center mb-4 shadow-sm" role="alert" style="border-radius: 10px;">
-            <i class="bi bi-check-circle-fill fs-5 me-2.5"></i>
-            <div>{{ session('success') }}</div>
-            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-success border-0 shadow-sm rounded-3 p-3 mb-4 d-flex align-items-center justify-content-between" style="background-color: #f0fdf4; border-left: 4px solid #16a34a !important;">
+            <div class="d-flex align-items-center gap-2.5 text-success">
+                <i class="bi bi-check-circle-fill fs-5"></i>
+                <span class="fw-semibold small">{{ session('success') }}</span>
+            </div>
+            <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
     @if ($errors->any())
-        <div class="alert alert-danger border-0 d-flex align-items-start mb-4 shadow-sm" role="alert" style="border-radius: 10px;">
-            <i class="bi bi-exclamation-triangle-fill fs-5 me-2.5 mt-0.5"></i>
-            <div class="grow">
-                <div class="fw-bold mb-1">Gagal Menyimpan Jadwal (Pelanggaran Aturan / Bentrok):</div>
-                <ul class="mb-0 ps-3">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+        <div class="alert alert-danger border-0 shadow-sm rounded-3 p-3.5 mb-4" style="background-color: #fef2f2; border-left: 4px solid #dc2626 !important;">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center shrink-0 mt-0.5"
+                         style="width: 36px; height: 36px; background: #fee2e2; color: #dc2626;">
+                        <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-danger mb-1" style="font-size: 0.92rem;">Gagal Menyimpan Jadwal KBM</h6>
+                        <p class="text-secondary small mb-2">Terjadi kesalahan validasi atau pelanggaran aturan operasional:</p>
+                        <ul class="mb-0 ps-3 text-dark small">
+                            @foreach ($errors->all() as $error)
+                                <li class="fw-medium text-danger">{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-sm ms-3" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
@@ -168,58 +179,115 @@
                                 <span class="small">Belum ada jadwal KBM di hari {{ $dMeta['name'] }}.</span>
                             </div>
                         @else
-                            <div class="d-flex flex-column gap-2">
-                                @foreach($daySchedules[$dNum] as $item)
-                                <div class="p-2.5 rounded-3 border bg-white position-relative hover-shadow transition-all"
-                                     style="border-left: 4px solid {{ $item->subject->color_code }} !important;">
-                                    <div class="d-flex align-items-start justify-content-between mb-1">
-                                        <div class="d-flex align-items-center gap-1.5">
-                                            <span class="badge bg-secondary-subtle text-secondary px-2 py-0.5" style="font-size: 0.72rem; font-family: monospace;">
-                                                <i class="bi bi-clock me-1"></i>{{ substr($item->start_time, 0, 5) }} - {{ substr($item->end_time, 0, 5) }}
-                                            </span>
-                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-1.5 py-0.5" style="font-size: 0.7rem;">
-                                                {{ $item->jp_count }} JP
-                                            </span>
+                        @php
+                            $timelineItems = collect();
+
+                            foreach($daySchedules[$dNum] as $item) {
+                                $timelineItems->push([
+                                    'type' => 'kbm',
+                                    'start_time' => substr($item->start_time, 0, 5),
+                                    'data' => $item,
+                                ]);
+                            }
+
+                            // Istirahat I (09:30 - 10:00 WIB)
+                            $timelineItems->push([
+                                'type' => 'break_1',
+                                'start_time' => '09:30',
+                                'end_time' => '10:00',
+                                'title' => 'Istirahat I (Dhuha & Camilan)',
+                                'duration' => '30 Mnt',
+                            ]);
+
+                            // Istirahat II (Ishoma Utama)
+                            $timelineItems->push([
+                                'type' => 'break_2',
+                                'start_time' => ($dNum == 5 ? '11:30' : '11:45'),
+                                'end_time' => '13:00',
+                                'title' => ($dNum == 5 ? 'Ishoma Sholat Jumat & Makan Siang' : 'Ishoma Utama & Sholat Dzuhur'),
+                                'duration' => ($dNum == 5 ? '90 Mnt' : '75 Mnt'),
+                            ]);
+
+                            $timelineItems = $timelineItems->sortBy('start_time');
+                        @endphp
+
+                        <div class="d-flex flex-column gap-2">
+                            @foreach($timelineItems as $timeline)
+                                @if($timeline['type'] === 'kbm')
+                                    @php $item = $timeline['data']; @endphp
+                                    <div class="p-2.5 rounded-3 border bg-white position-relative hover-shadow transition-all"
+                                         style="border-left: 4px solid {{ $item->subject->color_code }} !important;">
+                                        <div class="d-flex align-items-start justify-content-between mb-1">
+                                            <div class="d-flex align-items-center gap-1.5">
+                                                <span class="badge bg-secondary-subtle text-secondary px-2 py-0.5" style="font-size: 0.72rem; font-family: monospace;">
+                                                    <i class="bi bi-clock me-1"></i>{{ substr($item->start_time, 0, 5) }} - {{ substr($item->end_time, 0, 5) }}
+                                                </span>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-1.5 py-0.5" style="font-size: 0.7rem;">
+                                                    {{ $item->jp_count }} JP
+                                                </span>
+                                            </div>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light border-0 py-0 px-1 text-muted" type="button" data-bs-toggle="dropdown">
+                                                    <i class="bi bi-three-dots-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-1" style="font-size: 0.8rem;">
+                                                    <li>
+                                                        <button class="dropdown-item py-1.5" data-bs-toggle="modal" data-bs-target="#editScheduleModal{{ $item->id }}">
+                                                            <i class="bi bi-pencil-square text-primary me-2"></i>Edit Slot
+                                                        </button>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider my-1"></li>
+                                                    <li>
+                                                        <button class="dropdown-item py-1.5 text-danger"
+                                                                data-delete-url="{{ route('admin.schedules.destroy', $item->id) }}"
+                                                                data-delete-name="Jadwal {{ $item->subject->name }} ({{ $dMeta['name'] }} {{ substr($item->start_time,0,5) }})">
+                                                            <i class="bi bi-trash3 me-2"></i>Hapus Jadwal
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </div>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-light border-0 py-0 px-1 text-muted" type="button" data-bs-toggle="dropdown">
-                                                <i class="bi bi-three-dots-vertical"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-1" style="font-size: 0.8rem;">
-                                                <li>
-                                                    <button class="dropdown-item py-1.5" data-bs-toggle="modal" data-bs-target="#editScheduleModal{{ $item->id }}">
-                                                        <i class="bi bi-pencil-square text-primary me-2"></i>Edit Slot
-                                                    </button>
-                                                </li>
-                                                <li><hr class="dropdown-divider my-1"></li>
-                                                <li>
-                                                    <button class="dropdown-item py-1.5 text-danger"
-                                                            data-delete-url="{{ route('admin.schedules.destroy', $item->id) }}"
-                                                            data-delete-name="Jadwal {{ $item->subject->name }} ({{ $dMeta['name'] }} {{ substr($item->start_time,0,5) }})">
-                                                        <i class="bi bi-trash3 me-2"></i>Hapus Jadwal
-                                                    </button>
-                                                </li>
-                                            </ul>
+
+                                        <h6 class="text-dark fw-bold mb-1" style="font-size: 0.9rem;">
+                                            {{ $item->subject->name }}
+                                        </h6>
+
+                                        <div class="d-flex align-items-center justify-content-between mt-2 pt-1 border-top" style="font-size: 0.76rem;">
+                                            <div class="text-truncate me-2 text-dark">
+                                                <i class="bi bi-person me-1 text-muted"></i>{{ $item->teacher->name }}
+                                            </div>
+                                            @if($item->room)
+                                                <span class="text-muted text-nowrap">
+                                                    <i class="bi bi-geo-alt me-0.5"></i>{{ $item->room }}
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
-
-                                    <h6 class="text-dark fw-bold mb-1" style="font-size: 0.9rem;">
-                                        {{ $item->subject->name }}
-                                    </h6>
-
-                                    <div class="d-flex align-items-center justify-content-between mt-2 pt-1 border-top" style="font-size: 0.76rem;">
-                                        <div class="text-truncate me-2 text-dark">
-                                            <i class="bi bi-person me-1 text-muted"></i>{{ $item->teacher->name }}
-                                        </div>
-                                        @if($item->room)
-                                            <span class="text-muted text-nowrap">
-                                                <i class="bi bi-geo-alt me-0.5"></i>{{ $item->room }}
+                                @elseif($timeline['type'] === 'break_1')
+                                    <div class="p-2 rounded-3 border border-dashed d-flex align-items-center justify-content-between"
+                                         style="background-color: #fffbe6; border-color: #ffe58f !important;">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge text-dark px-2 py-0.5" style="font-size: 0.72rem; font-family: monospace; background-color: #fff1b8; border: 1px solid #ffe58f;">
+                                                <i class="bi bi-cup-hot-fill text-warning me-1"></i>{{ $timeline['start_time'] }} - {{ $timeline['end_time'] }}
                                             </span>
-                                        @endif
+                                            <span class="fw-semibold text-dark" style="font-size: 0.8rem;">{{ $timeline['title'] }}</span>
+                                        </div>
+                                        <span class="badge bg-white text-muted border px-1.5 py-0.5" style="font-size: 0.68rem;">{{ $timeline['duration'] }}</span>
                                     </div>
-                                </div>
-                                @endforeach
-                            </div>
+                                @elseif($timeline['type'] === 'break_2')
+                                    <div class="p-2 rounded-3 border border-dashed d-flex align-items-center justify-content-between"
+                                         style="background-color: #e6f7ff; border-color: #91caff !important;">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge text-dark px-2 py-0.5" style="font-size: 0.72rem; font-family: monospace; background-color: #bae0ff; border: 1px solid #91caff;">
+                                                <i class="bi bi-moon-stars-fill text-primary me-1"></i>{{ $timeline['start_time'] }} - {{ $timeline['end_time'] }}
+                                            </span>
+                                            <span class="fw-semibold text-dark" style="font-size: 0.8rem;">{{ $timeline['title'] }}</span>
+                                        </div>
+                                        <span class="badge bg-white text-muted border px-1.5 py-0.5" style="font-size: 0.68rem;">{{ $timeline['duration'] }}</span>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
                         @endif
                     </div>
                 </div>
