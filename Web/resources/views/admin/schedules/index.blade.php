@@ -17,22 +17,44 @@
                 <h1 class="fw-bold text-dark mb-0" style="font-size: 1.65rem; letter-spacing: -0.4px;">
                     Jadwal Pelajaran
                 </h1>
-                @if($activeClassroom)
+                {{-- @if($activeClassroom)
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1" style="font-size: 0.78rem;">
                         {{ $activeClassroom->name }}
                     </span>
-                @endif
+                @endif --}}
             </div>
-            <p class="text-muted small mb-0 mt-1">
+            {{-- <p class="text-muted small mb-0 mt-1">
                 Penyusunan jadwal KBM mingguan (Full Day School: Senin – Jumat 07.00 s.d. 16.00 WIB) dengan validasi linieritas & anti-bentrok.
-            </p>
+            </p> --}}
         </div>
         <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex flex-wrap justify-content-md-end gap-2">
             <button class="btn btn-primary shadow-sm py-2 px-3" data-bs-toggle="modal" data-bs-target="#createScheduleModal">
                 <i class="bi bi-plus-circle-fill me-1"></i>Tambah Jadwal Baru
             </button>
         </div>
-    </div>
+    {{-- ===== ALERT NOTIFICATIONS ===== --}}
+    @if (session('success'))
+        <div class="alert alert-success border-0 d-flex align-items-center mb-4 shadow-sm" role="alert" style="border-radius: 10px;">
+            <i class="bi bi-check-circle-fill fs-5 me-2.5"></i>
+            <div>{{ session('success') }}</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger border-0 d-flex align-items-start mb-4 shadow-sm" role="alert" style="border-radius: 10px;">
+            <i class="bi bi-exclamation-triangle-fill fs-5 me-2.5 mt-0.5"></i>
+            <div class="grow">
+                <div class="fw-bold mb-1">Gagal Menyimpan Jadwal (Pelanggaran Aturan / Bentrok):</div>
+                <ul class="mb-0 ps-3">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
     {{-- ===== KPI MINI CARDS ===== --}}
     <div class="row g-3 mb-4">
@@ -42,7 +64,7 @@
                     <div>
                         <span class="text-muted small d-block">Total Slot KBM</span>
                         <h4 class="fw-bold text-dark mb-0 mt-1">{{ $schedules->count() }}</h4>
-                        <span class="text-muted" style="font-size: 0.75rem;">Sesi pembelajaran di kelas terpilih</span>
+                        {{-- <span class="text-muted" style="font-size: 0.75rem;">Sesi pembelajaran di kelas terpilih</span> --}}
                     </div>
                     <div class="rounded-3 d-flex align-items-center justify-content-center"
                          style="width: 44px; height: 44px; background: #eff6ff; color: #2563eb;">
@@ -57,7 +79,6 @@
                     <div>
                         <span class="text-muted small d-block">Alokasi Beban Tatap Muka</span>
                         <h4 class="fw-bold text-primary mb-0 mt-1">{{ $totalJp }} JP</h4>
-                        <span class="text-muted" style="font-size: 0.75rem;">1 JP = 45 menit pembelajaran</span>
                     </div>
                     <div class="rounded-3 d-flex align-items-center justify-content-center"
                          style="width: 44px; height: 44px; background: #f0fdf4; color: #16a34a;">
@@ -71,10 +92,7 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <span class="text-muted small d-block">Kepatuhan Operasional</span>
-                        <h4 class="fw-bold text-dark mb-0 mt-1">Full Day</h4>
-                        <span class="text-success small fw-medium" style="font-size: 0.75rem;">
-                            <i class="bi bi-check-circle-fill me-1"></i>Senin – Jumat (Sabtu/Minggu Libur)
-                        </span>
+                        <h4 class="fw-bold text-dark mb-0 mt-1">Senin – Jumat</h4>
                     </div>
                     <div class="rounded-3 d-flex align-items-center justify-content-center"
                          style="width: 44px; height: 44px; background: #faf5ff; color: #9333ea;">
@@ -237,7 +255,16 @@
 
                 <div class="modal-body py-3 px-4">
                     <div class="row g-3">
-                        <input type="hidden" name="classroom_id" value="{{ $selectedClassroomId }}">
+                        <div class="col-12">
+                            <label class="form-label text-dark fw-semibold small">Rombel / Kelas <span class="text-danger">*</span></label>
+                            <select name="classroom_id" class="form-select" required>
+                                @foreach($classrooms as $cls)
+                                    <option value="{{ $cls->id }}" {{ $selectedClassroomId == $cls->id ? 'selected' : '' }}>
+                                        {{ $cls->name }} (Tingkat {{ $cls->level }} - {{ $cls->major ?? 'Umum' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
                         <div class="col-md-6">
                             <label class="form-label text-dark fw-semibold small">Hari Pembelajaran <span class="text-danger">*</span></label>
@@ -335,11 +362,18 @@
                         </div>
                     </div>
                     <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
-                </div>
-
                 <div class="modal-body py-3 px-4">
                     <div class="row g-3">
-                        <input type="hidden" name="classroom_id" value="{{ $sched->classroom_id }}">
+                        <div class="col-12">
+                            <label class="form-label text-dark fw-semibold small">Rombel / Kelas <span class="text-danger">*</span></label>
+                            <select name="classroom_id" class="form-select" required>
+                                @foreach($classrooms as $cls)
+                                    <option value="{{ $cls->id }}" {{ old('classroom_id', $sched->classroom_id) == $cls->id ? 'selected' : '' }}>
+                                        {{ $cls->name }} (Tingkat {{ $cls->level }} - {{ $cls->major ?? 'Umum' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
                         <div class="col-md-6">
                             <label class="form-label text-dark fw-semibold small">Hari Pembelajaran <span class="text-danger">*</span></label>
