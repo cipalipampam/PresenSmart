@@ -94,7 +94,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             FadeTransition(
               opacity: _animation,
               child: const Text(
-                'PresenSmart',
+                'Kelasentra',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,

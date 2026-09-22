@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Presensi Kehadiran — PresenSmart</title>
+    <title>Laporan Presensi Kehadiran — Kelasentra</title>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -109,7 +109,7 @@
     </div>
 
     <div class="header-kop">
-        <h2>PRESENSMART — SISTEM PRESENSI RESMI</h2>
+        <h2>KELASENTRA — SISTEM OPERASI AKADEMIK SEKOLAH</h2>
         <h4>LAPORAN REKAPITULASI KEHADIRAN</h4>
         <p>Dicetak pada: {{ now()->translatedFormat('l, d F Y - H:i') }} WIB oleh {{ Auth::user()->name ?? 'Administrator' }}</p>
     </div>
@@ -204,4 +204,3 @@
     </script>
 </body>
 </html>
-

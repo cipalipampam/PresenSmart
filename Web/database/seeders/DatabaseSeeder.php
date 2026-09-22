@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => 'admin@sekolah.com'],
             [
-                'name' => 'Admin Utama PresenSmart',
+                'name' => 'Admin Utama Kelasentra',
                 'password' => Hash::make('admin123'),
             ]
         );
@@ -56,7 +56,7 @@ class DatabaseSeeder extends Seeder
 
         // 12. Settings Lengkap Sekolah
         $settings = [
-            // Lokasi sekolah (default koordinat PresenSmart)
+            // Lokasi sekolah (default koordinat Kelasentra)
             'school_lat' => '-6.200000',
             'school_long' => '106.816666',
             'school_radius' => '100',          // meter
@@ -73,7 +73,7 @@ class DatabaseSeeder extends Seeder
             'presensi_end_time' => '09:00',
 
             // Profil sekolah
-            'school_name' => 'SMA PresenSmart Unggulan',
+            'school_name' => 'SMA Kelasentra Unggulan',
             'school_address' => 'Jl. Pendidikan Karakter No. 1, Jakarta Pusat',
             'school_phone' => '021-88997766',
         ];

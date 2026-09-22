@@ -8,11 +8,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:presensmart/features/auth/providers/auth_provider.dart';
-import 'package:presensmart/features/auth/screens/splash_screen.dart';
+import 'package:kelasentra/features/auth/providers/auth_provider.dart';
+import 'package:kelasentra/features/auth/screens/splash_screen.dart';
 
 void main() {
-  testWidgets('renders the PresenSmart splash screen', (WidgetTester tester) async {
+  testWidgets('renders the Kelasentra splash screen', (WidgetTester tester) async {
     await tester.pumpWidget(
       ChangeNotifierProvider(
         create: (_) => AuthProvider(),
@@ -22,7 +22,7 @@ void main() {
       ),
     );
 
-    expect(find.text('PresenSmart'), findsOneWidget);
+    expect(find.text('Kelasentra'), findsOneWidget);
     expect(find.text('Sistem Presensi Cerdas'), findsOneWidget);
     expect(find.byIcon(Icons.fingerprint_rounded), findsOneWidget);
 

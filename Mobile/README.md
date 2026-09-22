@@ -1,16 +1,18 @@
-# epresensi
+# Kelasentra Mobile
 
-A new Flutter project.
+Aplikasi mobile Kelasentra untuk siswa, guru, dan staff sekolah. Aplikasi ini terhubung ke backend Laravel pada direktori `../Web` untuk akses jadwal, presensi, notifikasi, profil, dan informasi akademik.
 
-## Getting Started
+## Menjalankan aplikasi
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
+Untuk perangkat fisik atau emulator eksternal, atur alamat backend dengan `BACKEND_HOST`:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+flutter run --dart-define=BACKEND_HOST=YOUR_LAN_IP
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Lihat README di root repository untuk konfigurasi backend dan detail arsitektur.

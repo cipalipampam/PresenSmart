@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ScheduleProvider()),
       ],
       child: MaterialApp(
-        title: 'PresenSmart',
+        title: 'Kelasentra',
         debugShowCheckedModeBanner: false,
         navigatorKey: navigatorKey,
         theme: ThemeData(

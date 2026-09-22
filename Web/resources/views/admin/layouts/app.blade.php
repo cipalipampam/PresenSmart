@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin Portal - PresenSmart</title>
+    <title>Admin Portal - Kelasentra</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
             <div class="sidebar-logo-full">
                 <div class="sidebar-logo-icon">PS</div>
                 <div class="d-flex flex-column overflow-hidden">
-                    <span class="fs-6 fw-bold text-white link-text" style="letter-spacing: -0.3px;">PresenSmart</span>
+                    <span class="fs-6 fw-bold text-white link-text" style="letter-spacing: -0.3px;">Kelasentra</span>
                     <span class="text-white-50 small link-text" style="font-size: 0.68rem; margin-top: -3px;">Enterprise EdTech</span>
                 </div>
             </div>

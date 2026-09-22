@@ -29,7 +29,7 @@
         <div class="col-lg-7">
             <div class="d-flex align-items-center gap-2 mb-1">
                 <span class="badge px-2 py-1 text-primary fw-semibold" style="background-color: #eff6ff; border: 1px solid #bfdbfe; font-size: 0.75rem;">
-                    <i class="bi bi-building me-1"></i>{{ $setting['school_name'] ?? 'PresenSmart School' }}
+                    <i class="bi bi-building me-1"></i>{{ $setting['school_name'] ?? 'Kelasentra School' }}
                 </span>
                 <span class="text-muted small">•</span>
                 <span class="text-muted small">Tahun Ajaran {{ date('Y') }}/{{ date('Y') + 1 }}</span>

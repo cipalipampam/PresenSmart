@@ -3,16 +3,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="PresenSmart adalah sistem presensi digital terpusat untuk sekolah dan pegawai.">
-    <title>{{ config('app.name', 'PresenSmart') }} — Presensi yang Lebih Cerdas</title>
+    <meta name="description" content="Kelasentra adalah sistem operasi akademik terpusat untuk sekolah.">
+    <title>{{ config('app.name', 'Kelasentra') }} — Pusat Operasional Akademik Sekolah</title>
     <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
 </head>
 <body>
     <div class="welcome-page">
         <header class="welcome-header">
-            <a class="welcome-brand" href="{{ url('/') }}" aria-label="{{ config('app.name', 'PresenSmart') }}">
-                <span class="welcome-brand-mark" aria-hidden="true">PS</span>
-                <span>PresenSmart</span>
+            <a class="welcome-brand" href="{{ url('/') }}" aria-label="{{ config('app.name', 'Kelasentra') }}">
+                <span class="welcome-brand-mark" aria-hidden="true">KS</span>
+                <span>Kelasentra</span>
             </a>
             @auth
                 <a class="welcome-login-link" href="{{ route('admin.dashboard') }}">Buka Dashboard</a>
@@ -24,9 +24,9 @@
         <main>
             <section class="welcome-hero" aria-labelledby="welcome-title">
                 <div class="welcome-copy">
-                    <div class="welcome-eyebrow"><span class="welcome-status-dot" aria-hidden="true"></span>Sistem presensi terintegrasi</div>
-                    <h1 id="welcome-title">Kehadiran yang tercatat.<br><span>Informasi yang bergerak.</span></h1>
-                    <p class="welcome-description">PresenSmart membantu sekolah mengelola kehadiran siswa dan pegawai secara akurat, terpusat, serta tetap terhubung secara real-time.</p>
+                    <div class="welcome-eyebrow"><span class="welcome-status-dot" aria-hidden="true"></span>Sistem operasi akademik terintegrasi</div>
+                    <h1 id="welcome-title">Operasional akademik yang rapi.<br><span>Informasi yang selalu terhubung.</span></h1>
+                    <p class="welcome-description">Kelasentra membantu sekolah mengelola data, jadwal, dan kehadiran siswa serta pegawai secara akurat, terpusat, dan real-time.</p>
                     <div class="welcome-actions">
                         @auth
                             <a class="welcome-button welcome-button-primary" href="{{ route('admin.dashboard') }}">Masuk ke Dashboard <span aria-hidden="true">→</span></a>
@@ -35,16 +35,16 @@
                         @endauth
                         <a class="welcome-button welcome-button-secondary" href="#fitur">Lihat fitur</a>
                     </div>
-                    <ul class="welcome-trust-list" aria-label="Keunggulan PresenSmart">
+                    <ul class="welcome-trust-list" aria-label="Keunggulan Kelasentra">
                         <li>Data terpusat</li><li>Pembaruan real-time</li><li>Aman untuk sekolah</li>
                     </ul>
                 </div>
 
-                <div class="welcome-preview" aria-label="Ilustrasi dashboard PresenSmart">
+                <div class="welcome-preview" aria-label="Ilustrasi dashboard Kelasentra">
                     <div class="welcome-preview-glow" aria-hidden="true"></div>
                     <div class="welcome-dashboard-card">
                         <div class="welcome-card-topbar">
-                            <div class="welcome-card-brand"><span>PS</span> PresenSmart</div>
+                            <div class="welcome-card-brand"><span>KS</span> Kelasentra</div>
                             <div class="welcome-card-avatar">A</div>
                         </div>
                         <div class="welcome-card-content">
@@ -78,19 +78,19 @@
             <section class="welcome-features" id="fitur" aria-labelledby="feature-title">
                 <div class="welcome-section-heading">
                     <span>Dirancang untuk operasional harian</span>
-                    <h2 id="feature-title">Satu sistem, informasi kehadiran yang selalu siap.</h2>
+                    <h2 id="feature-title">Satu sistem, informasi akademik yang selalu siap.</h2>
                 </div>
                 <div class="welcome-feature-grid">
                     <article class="welcome-feature-card"><span class="welcome-feature-icon" aria-hidden="true">✓</span><h3>Presensi terverifikasi</h3><p>Catat check-in dan check-out dengan bukti serta lokasi yang dapat ditinjau kembali.</p></article>
                     <article class="welcome-feature-card"><span class="welcome-feature-icon" aria-hidden="true">↻</span><h3>Informasi real-time</h3><p>Dashboard dan data administrasi ikut diperbarui saat ada aktivitas baru.</p></article>
-                    <article class="welcome-feature-card"><span class="welcome-feature-icon" aria-hidden="true">▣</span><h3>Kontrol terpusat</h3><p>Kelola siswa, pegawai, pengumuman, izin, dan laporan dari satu tempat.</p></article>
+                    <article class="welcome-feature-card"><span class="welcome-feature-icon" aria-hidden="true">▣</span><h3>Kontrol terpusat</h3><p>Kelola siswa, guru, rombel, jadwal, pengumuman, izin, dan laporan dari satu tempat.</p></article>
                 </div>
             </section>
         </main>
 
         <footer class="welcome-footer">
-            <span>&copy; {{ now()->year }} {{ config('app.name', 'PresenSmart') }}</span>
-            <span>Platform manajemen kehadiran</span>
+            <span>&copy; {{ now()->year }} {{ config('app.name', 'Kelasentra') }}</span>
+            <span>Sistem operasi akademik sekolah</span>
         </footer>
     </div>
 </body>

@@ -1,11 +1,11 @@
 {
-    "name": "PresenSmart",
-    "short_name": "PresenSmart",
+    "name": "Kelasentra",
+    "short_name": "Kelasentra",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Aplikasi Kelasentra untuk operasional akademik sekolah.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

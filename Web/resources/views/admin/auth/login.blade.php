@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Masuk Admin Portal — PresenSmart</title>
+    <title>Masuk Admin Portal — Kelasentra</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -150,7 +150,7 @@
             <div class="d-flex align-items-center gap-3 mb-2">
                 <div class="brand-logo-icon">PS</div>
                 <div>
-                    <h4 class="fw-bold mb-0 text-white" style="letter-spacing: -0.3px;">PresenSmart</h4>
+                    <h4 class="fw-bold mb-0 text-white" style="letter-spacing: -0.3px;">Kelasentra</h4>
                     <span class="small text-white-50">Enterprise Attendance & Monitoring</span>
                 </div>
             </div>
@@ -191,7 +191,7 @@
         </div>
 
         <div class="position-relative" style="z-index: 2;">
-            <small class="text-white-50">&copy; {{ date('Y') }} PresenSmart. Seluruh hak cipta dilindungi.</small>
+            <small class="text-white-50">&copy; {{ date('Y') }} Kelasentra. Seluruh hak cipta dilindungi.</small>
         </div>
     </div>
 

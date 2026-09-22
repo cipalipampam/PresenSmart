@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🟢 PresenSmart
+# 🟢 Kelasentra
 
-### Sistem Presensi Digital Berbasis Web & Mobile
+### Sistem Operasi Akademik Sekolah Berbasis Web & Mobile
 
 <p>
     <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20?logo=laravel&logoColor=white" alt="Laravel 12">
@@ -15,7 +15,7 @@
     <img src="https://img.shields.io/badge/Vite-6.x-646CFF?logo=vite&logoColor=white" alt="Vite">
 </p>
 
-<p><strong>Platform presensi modern untuk mengelola kehadiran, validasi lokasi, pengajuan izin, dan laporan secara terintegrasi.</strong></p>
+<p><strong>Platform operasional akademik untuk mengelola data sekolah, jadwal, kehadiran, dan komunikasi secara terintegrasi.</strong></p>
 
 <p>
     📍 <strong>Geofencing</strong> &nbsp;•&nbsp;
@@ -40,16 +40,16 @@
 
 ## 📖 Gambaran Sistem
 
-**PresenSmart** adalah platform presensi digital untuk sekolah atau instansi yang menghubungkan panel administrasi web dengan aplikasi mobile pengguna. Sistem ini menangani presensi masuk dan pulang, validasi lokasi berbasis radius, pengajuan izin/sakit dengan bukti, pengelolaan data anggota, laporan, pengumuman, dan pembaruan informasi melalui WebSocket.
+**Kelasentra** adalah sistem operasi akademik sekolah yang menghubungkan panel administrasi web dengan aplikasi mobile pengguna. Sistem ini menangani data siswa dan guru, rombel, mata pelajaran, jadwal, presensi harian maupun per sesi, pengajuan izin/sakit, laporan, pengumuman, dan pembaruan informasi melalui WebSocket.
 
-> 💡 **Hadir lebih cerdas, kelola lebih mudah.**
+> 💡 **Pusat operasional akademik sekolah.**
 
-PresenSmart terdiri dari dua aplikasi yang memakai backend yang sama:
+Kelasentra terdiri dari dua aplikasi yang memakai backend yang sama:
 
 | Komponen | Peran | Teknologi |
 | --- | --- | --- |
 | `Web/` | REST API untuk mobile dan panel admin | Laravel 12, PHP 8.5+, Blade, Bootstrap, Vite |
-| `Mobile/` | Aplikasi presensi untuk siswa, guru, dan staff | Flutter, Dart, Provider |
+| `Mobile/` | Aplikasi akademik dan presensi untuk siswa, guru, dan staff | Flutter, Dart, Provider |
 
 Autentikasi mobile menggunakan Laravel Sanctum dengan bearer token. Panel admin memakai autentikasi session dan hanya dapat diakses oleh role `admin`. Data utama disimpan dalam database relasional, sementara file bukti presensi disimpan pada disk `public`.
 
@@ -107,7 +107,7 @@ Autentikasi mobile menggunakan Laravel Sanctum dengan bearer token. Panel admin 
 ## 🗂️ Arsitektur Direktori
 
 ```text
-PresenSmart/
+Kelasentra/
 ├── README.md
 ├── Web/                         # Laravel API, admin portal, dan database
 │   ├── app/
@@ -399,4 +399,4 @@ Backend akan merespons `401` ketika token kedaluwarsa atau dicabut. Aplikasi mob
 
 ## 🤝 Lisensi dan Kontribusi
 
-PresenSmart adalah project aplikasi pada repository ini. Aturan lisensi dan kontribusi dapat ditambahkan sesuai kebijakan pemilik project. Untuk pengembangan, pisahkan perubahan backend dan mobile dengan jelas, jalankan test yang relevan, lalu dokumentasikan perubahan konfigurasi atau endpoint baru.
+Kelasentra adalah project aplikasi pada repository ini. Aturan lisensi dan kontribusi dapat ditambahkan sesuai kebijakan pemilik project. Untuk pengembangan, pisahkan perubahan backend dan mobile dengan jelas, jalankan test yang relevan, lalu dokumentasikan perubahan konfigurasi atau endpoint baru.
