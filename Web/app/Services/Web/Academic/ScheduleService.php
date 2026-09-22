@@ -158,6 +158,29 @@ class ScheduleService
             ]);
         }
 
+        // 2b. Break Time Guard (Pasal 2 Permendikbud No. 23/2017 - Istirahat I & Ishoma)
+        // Istirahat I (Dhuha & Camilan): 09:30 - 10:00 WIB (Senin - Jumat)
+        // Istirahat II (Ishoma Utama): 11:45 - 13:00 WIB (Senin - Kamis), 11:30 - 13:00 WIB (Jumat)
+        $startStr = $startCarbon->format('H:i');
+        $endStr = $endCarbon->format('H:i');
+
+        // Check Istirahat I (09:30 - 10:00)
+        if ($startStr < '10:00' && $endStr > '09:30') {
+            throw ValidationException::withMessages([
+                'start_time' => 'Jadwal KBM bertabrakan dengan Istirahat I / Sholat Dhuha (09:30 - 10:00 WIB).',
+            ]);
+        }
+
+        // Check Istirahat II / Ishoma Utama
+        $ishomaStart = ($dayOfWeek == 5) ? '11:30' : '11:45';
+        $ishomaEnd = '13:00';
+        if ($startStr < $ishomaEnd && $endStr > $ishomaStart) {
+            $label = ($dayOfWeek == 5) ? 'Sholat Jumat & Makan Siang (11:30 - 13:00 WIB)' : 'Ishoma Utama & Sholat Dzuhur (11:45 - 13:00 WIB)';
+            throw ValidationException::withMessages([
+                'start_time' => "Jadwal KBM bertabrakan dengan waktu {$label}.",
+            ]);
+        }
+
         // 3. Durasi Minimal (1 JP = 45 menit)
         $durationMinutes = $startCarbon->diffInMinutes($endCarbon);
         if ($durationMinutes < self::JP_MINUTES) {
